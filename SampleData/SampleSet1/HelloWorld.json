@@ -1,13 +1,13 @@
 {
     "Applications": [
         {
-            "Name": "HelloWorldWpfApp1",
+            "Name": "HelloWorldWpf",
             "ComponentType": "Application",
             "HostingFramework": "DotNet7",
-            "InstallationPath": "C:\\Temp\\HelloWorldWpfApp1",
+            "InstallationPath": "C:\\Temp\\HelloWorldWpf",
             "DependedServices": [
-                "HelloWorldNTService1",
-                "HelloWorldWebApi1"
+                "HelloWorldWindowsNTServiceTopShelf",
+                "HelloWorldMinimalApi"
             ],
             "ApplicationSettings": {
                 "ServiceConnection1": "http:\\localhost:9020",
@@ -15,13 +15,13 @@
             }
         },
         {
-            "Name": "HelloWorldBlazorApp1",
+            "Name": "HelloWorldBlazor",
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
-            "InstallationPath": "C:\\Temp\\HelloWorldBlazorApp1",
+            "InstallationPath": "C:\\Temp\\HelloWorldBlazor",
             "DependedServices": [
-                "HelloWorldNTService1",
-                "HelloWorldWebApi1"
+                "HelloWorldWindowsNTServiceTopShelf",
+                "HelloWorldMinimalApi"
             ],
             "ApplicationSettings": {
                 "ServiceConnection1": "http:\\localhost:9020",
@@ -29,13 +29,13 @@
             }
         },
         {
-            "Name": "HelloWorldReactApp1",
+            "Name": "HelloWorldReact",
             "ComponentType": "InternetInformationService",
             "HostingFramework": "NodeJs",
-            "InstallationPath": "C:\\Temp\\HelloWorldReactApp1",
+            "InstallationPath": "C:\\Temp\\HelloWorldReact",
             "DependedServices": [
-                "HelloWorldNTService1",
-                "HelloWorldWebApi1"
+                "HelloWorldWindowsNTServiceTopShelf",
+                "HelloWorldMinimalApi"
             ],
             "ApplicationSettings": {
                 "ServiceConnection1": "http:\\localhost:9020",
@@ -43,10 +43,10 @@
             }
         },
         {
-            "Name": "HelloWorldNTService1",
+            "Name": "HelloWorldWindowsNTServiceTopShelf",
             "ComponentType": "WindowsService",
             "HostingFramework": "DotNet7",
-            "InstallationPath": "C:\\Temp\\HelloWorldNTService1",
+            "InstallationPath": "C:\\Temp\\HelloWorldWindowsNTServiceTopShelf",
             "DependedServices": [
             ],
             "ApplicationSettings": {
@@ -55,12 +55,12 @@
             }
         },
         {
-            "Name": "HelloWorldWebApi1",
+            "Name": "HelloWorldMinimalApi",
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
-            "InstallationPath": "C:\\Temp\\HelloWorldWebApi1",
+            "InstallationPath": "C:\\Temp\\HelloWorldMinimalApi",
             "DependedServices": [
-                "HelloWorldNTService1"
+                "HelloWorldWindowsNTServiceTopShelf"
             ],
             "InternetInformationServiceSettings": {
                 "HttpPort": 9020,
