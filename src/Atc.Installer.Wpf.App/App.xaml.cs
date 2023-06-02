@@ -1,3 +1,4 @@
+// ReSharper disable NotAccessedField.Local
 namespace Atc.Installer.Wpf.App;
 
 /// <summary>
@@ -44,7 +45,7 @@ public partial class App
             .StartAsync()
             .ConfigureAwait(false);
 
-        ThemeManager.Current.ChangeTheme(Current, "Light.Purple");
+        ThemeManager.Current.ChangeTheme(Current, "Light.Steel");
 
         var mainWindow = host
             .Services

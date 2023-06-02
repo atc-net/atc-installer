@@ -46,6 +46,8 @@
 # Custom - Code Analyzers Rules
 ##########################################
 
+dotnet_diagnostic.CA1031.severity = none                # Do not catch general execptions
+
 dotnet_diagnostic.MA0049.severity = none                # File should match
 
 dotnet_diagnostic.S4487.severity = none                	# Remove unread private field

@@ -1,5 +1,5 @@
-﻿namespace Atc.Installer.Wpf.App;
+namespace Atc.Installer.Wpf.App;
 
-public class MainWindowViewModel : MainWindowViewModelBase
+public partial class MainWindowViewModel : MainWindowViewModelBase
 {
 }
