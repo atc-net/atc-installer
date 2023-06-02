@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5B2CC895-6057-404A-AB13-1FC25B5DFCD6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.App", "src\Atc.Installer.Wpf.App\Atc.Installer.Wpf.App.csproj", "{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE} = {5B2CC895-6057-404A-AB13-1FC25B5DFCD6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0926BD66-A2C9-4EBD-8C0F-416C8276FBE5}
+	EndGlobalSection
+EndGlobal
