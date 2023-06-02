@@ -33,9 +33,13 @@ function BuildDotnetAndPackageProject {
     Set-Location $rootPath
 }
 
+function BuildNodeJSAndPackageProject {
+    # TODO: Imp. this.
+}
 
 BuildDotnetAndPackageProject "HelloWorldBlazor"
 # BuildDotnetAndPackageProject "HelloWorldMaui"
 BuildDotnetAndPackageProject "HelloWorldMinimalApi"
+BuildNodeJSAndPackageProject "HelloWorldReact"
 BuildDotnetAndPackageProject "HelloWorldWindowsNTServiceTopShelf"
 BuildDotnetAndPackageProject "HelloWorldWpf"

@@ -5,7 +5,7 @@
             "ComponentType": "Application",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldWpf",
-            "DependedServices": [
+            "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
             ],
@@ -19,7 +19,7 @@
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldBlazor",
-            "DependedServices": [
+            "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
             ],
@@ -33,7 +33,7 @@
             "ComponentType": "InternetInformationService",
             "HostingFramework": "NodeJs",
             "InstallationPath": "C:\\Temp\\HelloWorldReact",
-            "DependedServices": [
+            "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
             ],
@@ -47,7 +47,7 @@
             "ComponentType": "WindowsService",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldWindowsNTServiceTopShelf",
-            "DependedServices": [
+            "DependentServices": [
             ],
             "ApplicationSettings": {
                 "HttpPort": 9020,
@@ -59,7 +59,7 @@
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldMinimalApi",
-            "DependedServices": [
+            "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf"
             ],
             "InternetInformationServiceSettings": {
