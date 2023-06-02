@@ -1,0 +1,73 @@
+{
+    "Applications": [
+        {
+            "Name": "HelloWorldWpfApp1",
+            "ComponentType": "Application",
+            "HostingFramework": "DotNet7",
+            "InstallationPath": "C:\\Temp\\HelloWorldWpfApp1",
+            "DependedServices": [
+                "HelloWorldNTService1",
+                "HelloWorldWebApi1"
+            ],
+            "ApplicationSettings": {
+                "ServiceConnection1": "http:\\localhost:9020",
+                "ServiceConnection2": "http:\\localhost:9025"
+            }
+        },
+        {
+            "Name": "HelloWorldBlazorApp1",
+            "ComponentType": "InternetInformationService",
+            "HostingFramework": "DotNet7",
+            "InstallationPath": "C:\\Temp\\HelloWorldBlazorApp1",
+            "DependedServices": [
+                "HelloWorldNTService1",
+                "HelloWorldWebApi1"
+            ],
+            "ApplicationSettings": {
+                "ServiceConnection1": "http:\\localhost:9020",
+                "ServiceConnection2": "http:\\localhost:9025"
+            }
+        },
+        {
+            "Name": "HelloWorldReactApp1",
+            "ComponentType": "InternetInformationService",
+            "HostingFramework": "NodeJs",
+            "InstallationPath": "C:\\Temp\\HelloWorldReactApp1",
+            "DependedServices": [
+                "HelloWorldNTService1",
+                "HelloWorldWebApi1"
+            ],
+            "ApplicationSettings": {
+                "ServiceConnection1": "http:\\localhost:9020",
+                "ServiceConnection2": "http:\\localhost:9025"
+            }
+        },
+        {
+            "Name": "HelloWorldNTService1",
+            "ComponentType": "WindowsService",
+            "HostingFramework": "DotNet7",
+            "InstallationPath": "C:\\Temp\\HelloWorldNTService1",
+            "DependedServices": [
+            ],
+            "ApplicationSettings": {
+                "HttpPort": 9020,
+                "HttpsPort": 9021
+            }
+        },
+        {
+            "Name": "HelloWorldWebApi1",
+            "ComponentType": "InternetInformationService",
+            "HostingFramework": "DotNet7",
+            "InstallationPath": "C:\\Temp\\HelloWorldWebApi1",
+            "DependedServices": [
+                "HelloWorldNTService1"
+            ],
+            "InternetInformationServiceSettings": {
+                "HttpPort": 9020,
+                "HttpsPort": 9021
+            },
+            "ApplicationSettings": {
+            }
+        }
+    ]
+}
