@@ -1,63 +1,16 @@
-function HelloWorldBlazor {
+function BuildDotnetAndPackageProject {
+    param(
+        [string] $projectName
+    )
+
     $rootPath = $PSScriptRoot;
-    $projectPath = "$rootPath\Code\HelloWorldBlazor"
+    $projectPath = "$rootPath\Code\$projectName"
     $outputDirectory = "$projectPath\bin\Debug\net7.0\publish"
-    $zipFileLocation = "$rootPath\InstallationFiles\HelloWorldBlazor.zip"
+    $zipFileLocation = "$rootPath\InstallationFiles\$projectName.zip"
 
-    Set-Location $projectPath
-    Write-Host $projectPath
-
-    dotnet publish --configuration Debug
-
-    if (Test-Path $outputDirectory) {
-        if (Test-Path $zipFileLocation) {
-            Remove-Item $zipFileLocation
-        }
-
-        Get-ChildItem -Path $outputDirectory -Recurse | Where-Object { $_.Name -ne "appsettings.Development.json" } | Compress-Archive -DestinationPath $zipFileLocation
-
-        Write-Host "Build and compression completed successfully!"
+    if ($projectName -eq "HelloWorldWpf") {
+        $outputDirectory = "$projectPath\bin\Debug\net7.0-windows\publish"
     }
-    else
-    {
-        Write-Host "Build failed or output directory doesn't exist."
-    }
-
-    Set-Location $rootPath
-}
-
-function HelloWorldMaui {
-    $rootPath = $PSScriptRoot;
-    $projectPath = "$rootPath\Code\HelloWorldMaui"
-    $outputDirectory = "$projectPath\bin\Debug\net7.0\publish"
-    $zipFileLocation = "$rootPath\InstallationFiles\HelloWorldMaui.zip"
-
-    Set-Location $projectPath
-    
-    dotnet publish --configuration Debug
-
-    if (Test-Path $outputDirectory) {
-        if (Test-Path $zipFileLocation) {
-            Remove-Item $zipFileLocation
-        }
-
-        Get-ChildItem -Path $outputDirectory -Recurse | Where-Object { $_.Name -ne "appsettings.Development.json" } | Compress-Archive -DestinationPath $zipFileLocation
-
-        Write-Host "Build and compression completed successfully!"
-    }
-    else
-    {
-        Write-Host "Build failed or output directory doesn't exist."
-    }
-
-    Set-Location $rootPath
-}
-
-function HelloWorldMinimalApi {
-    $rootPath = $PSScriptRoot;
-    $projectPath = "$rootPath\Code\HelloWorldMinimalApi"
-    $outputDirectory = "$projectPath\bin\Debug\net7.0\publish"
-    $zipFileLocation = "$rootPath\InstallationFiles\HelloWorldMinimalApi.zip"
 
     Set-Location $projectPath
 
@@ -70,72 +23,19 @@ function HelloWorldMinimalApi {
 
         Get-ChildItem -Path $outputDirectory -Recurse | Where-Object { $_.Name -ne "appsettings.Development.json" } | Compress-Archive -DestinationPath $zipFileLocation
 
-        Write-Host "Build and compression completed successfully!"
+        Write-Host "Build and compression of $projectName completed successfully!"
     }
     else
     {
-        Write-Host "Build failed or output directory doesn't exist."
+        Write-Host "Build of $projectName failed or output directory doesn't exist."
     }
 
     Set-Location $rootPath
 }
 
-function HelloWorldWindowsNTServiceTopShelf {
-    $rootPath = $PSScriptRoot;
-    $projectPath = "$rootPath\Code\HelloWorldWindowsNTServiceTopShelf"
-    $outputDirectory = "$projectPath\bin\Debug\net7.0\publish"
-    $zipFileLocation = "$rootPath\InstallationFiles\HelloWorldWindowsNTServiceTopShelf.zip"
 
-    Set-Location $projectPath
-
-    dotnet publish --configuration Debug
-
-    if (Test-Path $outputDirectory) {
-        if (Test-Path $zipFileLocation) {
-            Remove-Item $zipFileLocation
-        }
-        
-        Get-ChildItem -Path $outputDirectory -Recurse | Where-Object { $_.Name -ne "appsettings.Development.json" } | Compress-Archive -DestinationPath $zipFileLocation
-
-        Write-Host "Build and compression completed successfully!"
-    }
-    else
-    {
-        Write-Host "Build failed or output directory doesn't exist."
-    }
-
-    Set-Location $rootPath
-}
-
-function HelloWorldWpf {
-    $rootPath = $PSScriptRoot;
-    $projectPath = "$rootPath\Code\HelloWorldWpf"
-    $outputDirectory = "$projectPath\bin\Debug\net7.0-windows\publish"
-    $zipFileLocation = "$rootPath\InstallationFiles\HelloWorldWpf.zip"
-
-    Set-Location $projectPath
-
-    dotnet publish --configuration Debug
-
-    if (Test-Path $outputDirectory) {
-        if (Test-Path $zipFileLocation) {
-            Remove-Item $zipFileLocation
-        }
-
-        Get-ChildItem -Path $outputDirectory -Recurse | Where-Object { $_.Name -ne "appsettings.Development.json" } | Compress-Archive -DestinationPath $zipFileLocation
-
-        Write-Host "Build and compression completed successfully!"
-    }
-    else
-    {
-        Write-Host "Build failed or output directory doesn't exist."
-    }
-
-    Set-Location $rootPath
-}
-
-# HelloWorldBlazor
-HelloWorldMaui
-# HelloWorldMinimalApi
-# HelloWorldWindowsNTServiceTopShelf
-# HelloWorldWpf
+BuildDotnetAndPackageProject "HelloWorldBlazor"
+# BuildDotnetAndPackageProject "HelloWorldMaui"
+BuildDotnetAndPackageProject "HelloWorldMinimalApi"
+BuildDotnetAndPackageProject "HelloWorldWindowsNTServiceTopShelf"
+BuildDotnetAndPackageProject "HelloWorldWpf"
