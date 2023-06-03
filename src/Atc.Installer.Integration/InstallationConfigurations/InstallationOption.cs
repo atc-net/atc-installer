@@ -1,6 +1,8 @@
-namespace Atc.Installer.Wpf.App.InstallationConfigurations;
+namespace Atc.Installer.Integration.InstallationConfigurations;
 
 public class InstallationOption
 {
+    public string Name { get; set; } = string.Empty;
+
     public IList<ApplicationOption> Applications { get; init; } = new List<ApplicationOption>();
 }

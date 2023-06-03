@@ -1,4 +1,4 @@
-namespace Atc.Installer.ComponentProvider.InternetInformationServer.Wpf;
+namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 
 public interface IInternetInformationServerComponentProvider : IComponentProvider
 {

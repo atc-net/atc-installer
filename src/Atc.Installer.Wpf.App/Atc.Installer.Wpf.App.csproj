@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -40,6 +40,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.csproj" />
+    <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.WindowsApplication\Atc.Installer.Wpf.ComponentProvider.WindowsApplication.csproj" />
+    <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider\Atc.Installer.Wpf.ComponentProvider.csproj" />
   </ItemGroup>
 
 </Project>

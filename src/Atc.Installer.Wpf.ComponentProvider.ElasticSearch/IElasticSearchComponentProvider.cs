@@ -1,4 +1,4 @@
-namespace Atc.Installer.ComponentProvider.ElasticSearch.Wpf;
+namespace Atc.Installer.Wpf.ComponentProvider.ElasticSearch;
 
 public interface IElasticSearchComponentProvider : IComponentProvider
 {

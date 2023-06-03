@@ -4,6 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:app="clr-namespace:Atc.Installer.Wpf.App"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
+    xmlns:componentProviderIis="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;assembly=Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
+    xmlns:componentProviderWa="clr-namespace:Atc.Installer.Wpf.ComponentProvider.WindowsApplication;assembly=Atc.Installer.Wpf.ComponentProvider.WindowsApplication"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="MainWindowControl"
@@ -30,7 +33,40 @@
                     <MenuItem Command="{Binding Path=ApplicationAboutCommand}" Header="_About" />
                 </MenuItem>
             </Menu>
-            <Label Content="Hallo" />
+            <atc:GridEx Columns="400,10,*" Rows="*">
+                <ListView
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Background="Aqua"
+                    ItemsSource="{Binding Path=ComponentProviders}"
+                    SelectedItem="{Binding Path=SelectedComponentProvider}">
+                    <ListView.Resources>
+                        <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                            <componentProvider:ComponentProviderHeaderView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                            <componentProvider:ComponentProviderHeaderView />
+                        </DataTemplate>
+                    </ListView.Resources>
+                </ListView>
+
+                <ContentControl
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Content="{Binding Path=SelectedComponentProvider}">
+                    <ContentControl.Resources>
+                        <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                            <componentProviderWa:WindowsApplicationComponentProviderView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                            <componentProviderIis:InternetInformationServerComponentProviderView />
+                        </DataTemplate>
+                    </ContentControl.Resources>
+                </ContentControl>
+
+            </atc:GridEx>
         </DockPanel>
     </atc:BusyOverlay>
 

@@ -7,27 +7,27 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5B2CC895-605
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.App", "src\Atc.Installer.Wpf.App\Atc.Installer.Wpf.App.csproj", "{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.ComponentProvider", "src\Atc.Installer.ComponentProvider\Atc.Installer.ComponentProvider.csproj", "{87DA0D2D-4EE2-4C7A-9C04-89D81C38D833}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.ComponentProvider.InternetInformationServer", "src\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.csproj", "{4BA4C252-CB57-4108-97FF-DECCABE3C616}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.ComponentProvider.InternetInformationServer.Wpf", "src\Atc.Installer.ComponentProvider.InternetInformationServer.Wpf\Atc.Installer.ComponentProvider.InternetInformationServer.Wpf.csproj", "{4BA4C252-CB57-4108-97FF-DECCABE3C616}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.ComponentProvider.WindowsApplication", "src\Atc.Installer.Wpf.ComponentProvider.WindowsApplication\Atc.Installer.Wpf.ComponentProvider.WindowsApplication.csproj", "{2EC39667-8C98-4177-BE2B-03E1A87BF4CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.ComponentProvider.WindowsApplication.Wpf", "src\Atc.Installer.ComponentProvider.WindowsApplication.Wpf\Atc.Installer.ComponentProvider.WindowsApplication.Wpf.csproj", "{2EC39667-8C98-4177-BE2B-03E1A87BF4CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.ComponentProvider.PostgreSql", "src\Atc.Installer.Wpf.ComponentProvider.PostgreSql\Atc.Installer.Wpf.ComponentProvider.PostgreSql.csproj", "{263ACF89-42CE-4F70-B949-DDA64534B456}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.ComponentProvider.PostgreSql.Wpf", "src\Atc.Installer.ComponentProvider.PostgreSql.Wpf\Atc.Installer.ComponentProvider.PostgreSql.Wpf.csproj", "{263ACF89-42CE-4F70-B949-DDA64534B456}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.ComponentProvider.ElasticSearch", "src\Atc.Installer.Wpf.ComponentProvider.ElasticSearch\Atc.Installer.Wpf.ComponentProvider.ElasticSearch.csproj", "{82075AB3-EAAF-4DE0-B7FA-DBCFB60A4813}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.ComponentProvider.ElasticSearch.Wpf", "src\Atc.Installer.ComponentProvider.ElasticSearch.Wpf\Atc.Installer.ComponentProvider.ElasticSearch.Wpf.csproj", "{82075AB3-EAAF-4DE0-B7FA-DBCFB60A4813}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Integration", "src\Atc.Installer.Integration\Atc.Installer.Integration.csproj", "{C0C0FD84-12D8-4B02-ABFE-F79DA6F5CA01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.Integration", "src\Atc.Installer.Integration\Atc.Installer.Integration.csproj", "{C0C0FD84-12D8-4B02-ABFE-F79DA6F5CA01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Integration.ElasticSearch", "src\Atc.Installer.Integration.ElasticSearch\Atc.Installer.Integration.ElasticSearch.csproj", "{967A6683-3D1D-432C-9A40-FC7BA7A6C43A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.Integration.ElasticSearch", "src\Atc.Installer.Integration.ElasticSearch\Atc.Installer.Integration.ElasticSearch.csproj", "{967A6683-3D1D-432C-9A40-FC7BA7A6C43A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Integration.InternetInformationServer", "src\Atc.Installer.Integration.InternetInformationServer\Atc.Installer.Integration.InternetInformationServer.csproj", "{434DF100-84ED-408D-A08D-55DC36C99ADA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.Integration.InternetInformationServer", "src\Atc.Installer.Integration.InternetInformationServer\Atc.Installer.Integration.InternetInformationServer.csproj", "{434DF100-84ED-408D-A08D-55DC36C99ADA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.Integration.WindowsApplication", "src\Atc.Installer.Integration.WindowsApplication\Atc.Installer.Integration.WindowsApplication.csproj", "{B725319B-6B21-4071-B682-FF7A051EB0B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Integration.WindowsApplication", "src\Atc.Installer.Integration.WindowsApplication\Atc.Installer.Integration.WindowsApplication.csproj", "{B725319B-6B21-4071-B682-FF7A051EB0B2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integrations", "Integrations", "{E918EEEF-1EB4-4F46-9DD6-D5B61DABE4E6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ComponentProviders", "ComponentProviders", "{C10135F8-2397-4661-86FB-3B04A8EAF15F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.ComponentProvider", "src\Atc.Installer.Wpf.ComponentProvider\Atc.Installer.Wpf.ComponentProvider.csproj", "{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,10 +39,6 @@ Global
 		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{87DA0D2D-4EE2-4C7A-9C04-89D81C38D833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{87DA0D2D-4EE2-4C7A-9C04-89D81C38D833}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{87DA0D2D-4EE2-4C7A-9C04-89D81C38D833}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{87DA0D2D-4EE2-4C7A-9C04-89D81C38D833}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4BA4C252-CB57-4108-97FF-DECCABE3C616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4BA4C252-CB57-4108-97FF-DECCABE3C616}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BA4C252-CB57-4108-97FF-DECCABE3C616}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -75,13 +71,16 @@ Global
 		{B725319B-6B21-4071-B682-FF7A051EB0B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B725319B-6B21-4071-B682-FF7A051EB0B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B725319B-6B21-4071-B682-FF7A051EB0B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3B7FC451-EA5D-4381-8B55-188D38AEA0BE} = {5B2CC895-6057-404A-AB13-1FC25B5DFCD6}
-		{87DA0D2D-4EE2-4C7A-9C04-89D81C38D833} = {C10135F8-2397-4661-86FB-3B04A8EAF15F}
 		{4BA4C252-CB57-4108-97FF-DECCABE3C616} = {C10135F8-2397-4661-86FB-3B04A8EAF15F}
 		{2EC39667-8C98-4177-BE2B-03E1A87BF4CA} = {C10135F8-2397-4661-86FB-3B04A8EAF15F}
 		{263ACF89-42CE-4F70-B949-DDA64534B456} = {C10135F8-2397-4661-86FB-3B04A8EAF15F}
@@ -92,6 +91,7 @@ Global
 		{B725319B-6B21-4071-B682-FF7A051EB0B2} = {E918EEEF-1EB4-4F46-9DD6-D5B61DABE4E6}
 		{E918EEEF-1EB4-4F46-9DD6-D5B61DABE4E6} = {5B2CC895-6057-404A-AB13-1FC25B5DFCD6}
 		{C10135F8-2397-4661-86FB-3B04A8EAF15F} = {5B2CC895-6057-404A-AB13-1FC25B5DFCD6}
+		{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF} = {C10135F8-2397-4661-86FB-3B04A8EAF15F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0926BD66-A2C9-4EBD-8C0F-416C8276FBE5}

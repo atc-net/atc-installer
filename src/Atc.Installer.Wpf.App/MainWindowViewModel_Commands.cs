@@ -10,7 +10,7 @@ public partial class MainWindowViewModel
 
     public IRelayCommandAsync ApplicationAboutCommand => new RelayCommandAsync(ApplicationAboutCommandHandler);
 
-    private Task OpenConfigurationCommandHandler()
+    private async Task OpenConfigurationCommandHandler()
     {
         var openFileDialog = new OpenFileDialog
         {
@@ -20,12 +20,12 @@ public partial class MainWindowViewModel
 
         if (openFileDialog.ShowDialog() != true)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         try
         {
-            var json = File.ReadAllText(openFileDialog.FileName);
+            var json = await File.ReadAllTextAsync(openFileDialog.FileName);
 
             var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
                 json,
@@ -36,17 +36,32 @@ public partial class MainWindowViewModel
                 throw new IOException($"Invalid format in {openFileDialog.FileName}");
             }
 
-            // TODO: Imp. this.
-            ////foreach (var appInstallationOption in installationOptions.Applications)
-            ////{
-            ////}
+            ComponentProviders.Clear();
+
+            foreach (var appInstallationOption in installationOptions.Applications)
+            {
+                switch (appInstallationOption.ComponentType)
+                {
+                    case ComponentType.Application or ComponentType.WindowsService:
+                    {
+                        var vm = new InternetInformationServerComponentProviderViewModel(appInstallationOption);
+                        ComponentProviders.Add(vm);
+                        break;
+                    }
+
+                    case ComponentType.InternetInformationService:
+                    {
+                        var vm = new WindowsApplicationComponentProviderViewModel(appInstallationOption);
+                        ComponentProviders.Add(vm);
+                        break;
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
         }
-
-        return Task.CompletedTask;
     }
 
     private Task ApplicationAboutCommandHandler()

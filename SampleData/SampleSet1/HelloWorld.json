@@ -1,4 +1,5 @@
 {
+    "Name": "Hello World",
     "Applications": [
         {
             "Name": "HelloWorldWpf",

@@ -515,4 +515,6 @@ dotnet_diagnostic.S1135.severity = suggestion       # https://github.com/atc-net
 dotnet_diagnostic.CA1040.severity = none            # Avoid empty interface
 dotnet_diagnostic.CA1724.severity = none            # The type name App conflicts in whole or in part with the namespace name
 
+dotnet_diagnostic.S3267.severity = none            	# Loops should be simplified with 'LINQ' expressions
 dotnet_diagnostic.S4487.severity = none            	# Remove this unread private field
+

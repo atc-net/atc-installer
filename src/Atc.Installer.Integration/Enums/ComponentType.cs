@@ -1,4 +1,5 @@
-namespace Atc.Installer.Wpf.App.InstallationConfigurations;
+// ReSharper disable CheckNamespace
+namespace Atc.Installer.Integration;
 
 public enum ComponentType
 {
