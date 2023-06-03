@@ -57,6 +57,11 @@ public partial class MainWindowViewModel
                     }
                 }
             }
+
+            foreach (var vm in ComponentProviders)
+            {
+                vm.StartChecking();
+            }
         }
         catch (Exception ex)
         {

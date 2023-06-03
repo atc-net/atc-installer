@@ -10,6 +10,7 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         {
             InstallationState = ComponentInstallationState.Checking;
             Name = "MyApp";
+            InstallationPath = $"C:\\ProgramFiles\\MyApp";
         }
         else
         {
@@ -23,9 +24,12 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         Name = applicationOption.Name;
+        InstallationPath = applicationOption.InstallationPath;
     }
 
-    public string Name { get; set; }
+    public string Name { get; private set; }
+
+    public string InstallationPath { get; private set; }
 
     public ComponentInstallationState InstallationState
     {
@@ -35,5 +39,21 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
             installationState = value;
             RaisePropertyChanged();
         }
+    }
+
+    public void StartChecking()
+    {
+        IsBusy = true;
+        InstallationState = ComponentInstallationState.Checking;
+
+        Task.Run(async  () =>
+        {
+            await Task.Delay(5_000);
+
+            // TODO:...
+
+            InstallationState = ComponentInstallationState.NoInstallationsFiles;
+            IsBusy = false;
+        });
     }
 }
