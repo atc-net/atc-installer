@@ -1,0 +1,60 @@
+<UserControl
+    x:Class="Atc.Installer.Wpf.ComponentProvider.ComponentProviderInfoView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Atc.Installer.Wpf.ComponentProvider"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance Type=local:ComponentProviderViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
+    </UserControl.Resources>
+
+    <atc:GridEx
+        Margin="0,50,0,0"
+        Columns="*"
+        Rows="Auto,20,Auto,Auto,Auto,Auto,Auto">
+        <Label
+            Grid.Row="0"
+            Grid.Column="0"
+            Content="{Binding Path=Name, FallbackValue='HelloWorld.WebApi'}"
+            FontSize="26" />
+        <atc:LabelTextInfo
+            Grid.Row="2"
+            Grid.Column="0"
+            HideAreas="All"
+            LabelText="Installation State"
+            Text="{Binding Path=InstallationState, FallbackValue='Installed with newest version', Converter={StaticResource EnumDescriptionToStringValueConverter}}" />
+        <atc:LabelTextInfo
+            Grid.Row="3"
+            Grid.Column="0"
+            HideAreas="All"
+            LabelText="Running State"
+            Text="{Binding Path=RunningState, FallbackValue='Running state', Converter={StaticResource EnumDescriptionToStringValueConverter}}" />
+        <atc:LabelTextInfo
+            Grid.Row="4"
+            Grid.Column="0"
+            HideAreas="All"
+            LabelText="Installation path"
+            Text="{Binding Path=InstallationPath, Mode=OneWay, FallbackValue='C:\\Temp\\HelloWorld.WebApi'}" />
+        <atc:LabelTextInfo
+            Grid.Row="5"
+            Grid.Column="0"
+            HideAreas="All"
+            LabelText="Installation file"
+            Text="{Binding Path=InstallationFile, Mode=OneWay, FallbackValue='C:\\Temp\\HelloWorld.WebApi\\HelloWorld.WebApi.dll'}" />
+        <atc:LabelTextInfo
+            Grid.Row="6"
+            Grid.Column="0"
+            HideAreas="All"
+            LabelText="Installed Main File"
+            Text="{Binding Path=InstalledMainFile, Mode=OneWay, FallbackValue='C:\\\inetpub\\\wwwroot\\HelloWorld.WebApi\\HelloWorld.WebApi.dll'}" />
+    </atc:GridEx>
+
+</UserControl>

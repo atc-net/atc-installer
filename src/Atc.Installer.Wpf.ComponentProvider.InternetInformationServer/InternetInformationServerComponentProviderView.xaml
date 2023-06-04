@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:wpf="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
@@ -12,9 +13,8 @@
     mc:Ignorable="d">
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
-        <StackPanel Background="Aqua" Orientation="Vertical">
-            <Label>InternetInformation - ServerComponentProviderView</Label>
-            <Label Content="{Binding Path=Name}" />
+        <StackPanel Orientation="Vertical">
+            <componentProvider:ComponentProviderInfoView />
         </StackPanel>
     </atc:BusyOverlay>
 

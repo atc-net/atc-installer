@@ -2,6 +2,7 @@ namespace Atc.Installer.Wpf.App;
 
 public partial class MainWindowViewModel : MainWindowViewModelBase
 {
+    private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
 
     public MainWindowViewModel()
@@ -23,6 +24,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                         Name = "My-WebApi",
                         ComponentType = ComponentType.InternetInformationService,
                     }));
+        }
+    }
+
+    public string? ProjectName
+    {
+        get => projectName;
+        set
+        {
+            projectName = value;
+            RaisePropertyChanged();
         }
     }
 

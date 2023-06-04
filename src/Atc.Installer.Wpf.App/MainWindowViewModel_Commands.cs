@@ -6,11 +6,11 @@ namespace Atc.Installer.Wpf.App;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "OK.")]
 public partial class MainWindowViewModel
 {
-    public IRelayCommandAsync OpenConfigurationCommand => new RelayCommandAsync(OpenConfigurationCommandHandler);
+    public IRelayCommandAsync OpenConfigurationFileCommand => new RelayCommandAsync(OpenConfigurationFileCommandHandler);
 
     public IRelayCommandAsync ApplicationAboutCommand => new RelayCommandAsync(ApplicationAboutCommandHandler);
 
-    private async Task OpenConfigurationCommandHandler()
+    private async Task OpenConfigurationFileCommandHandler()
     {
         var openFileDialog = new OpenFileDialog
         {
@@ -36,36 +36,48 @@ public partial class MainWindowViewModel
                 throw new IOException($"Invalid format in {openFileDialog.FileName}");
             }
 
-            ComponentProviders.Clear();
-
-            foreach (var appInstallationOption in installationOptions.Applications)
-            {
-                switch (appInstallationOption.ComponentType)
-                {
-                    case ComponentType.Application or ComponentType.WindowsService:
-                    {
-                        var vm = new InternetInformationServerComponentProviderViewModel(appInstallationOption);
-                        ComponentProviders.Add(vm);
-                        break;
-                    }
-
-                    case ComponentType.InternetInformationService:
-                    {
-                        var vm = new WindowsApplicationComponentProviderViewModel(appInstallationOption);
-                        ComponentProviders.Add(vm);
-                        break;
-                    }
-                }
-            }
-
-            foreach (var vm in ComponentProviders)
-            {
-                vm.StartChecking();
-            }
+            Populate(installationOptions);
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+        }
+    }
+
+    private void Populate(
+        InstallationOption installationOptions)
+    {
+        ProjectName = installationOptions.Name;
+        ComponentProviders.Clear();
+
+        foreach (var appInstallationOption in installationOptions.Applications)
+        {
+            switch (appInstallationOption.ComponentType)
+            {
+                case ComponentType.Application or ComponentType.WindowsService:
+                {
+                    var vm = new WindowsApplicationComponentProviderViewModel(appInstallationOption);
+                    ComponentProviders.Add(vm);
+                    break;
+                }
+
+                case ComponentType.InternetInformationService:
+                {
+                    var vm = new InternetInformationServerComponentProviderViewModel(appInstallationOption);
+                    ComponentProviders.Add(vm);
+                    break;
+                }
+            }
+
+            if (ComponentProviders.Count == 1)
+            {
+                SelectedComponentProvider = ComponentProviders[0];
+            }
+        }
+
+        foreach (var vm in ComponentProviders)
+        {
+            vm.StartChecking();
         }
     }
 

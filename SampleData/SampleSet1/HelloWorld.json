@@ -33,7 +33,7 @@
             "Name": "HelloWorldReact",
             "ComponentType": "InternetInformationService",
             "HostingFramework": "NodeJs",
-            "InstallationPath": "C:\\Temp\\HelloWorldReact",
+            "InstallationPath": ".\\HelloWorldReact",
             "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
@@ -59,7 +59,7 @@
             "Name": "HelloWorldMinimalApi",
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
-            "InstallationPath": "C:\\Temp\\HelloWorldMinimalApi",
+            "InstallationPath": ".\\HelloWorldMinimalApi",
             "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf"
             ],

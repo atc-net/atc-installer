@@ -4,10 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:app="clr-namespace:Atc.Installer.Wpf.App"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:componentProviderIis="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;assembly=Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
     xmlns:componentProviderWa="clr-namespace:Atc.Installer.Wpf.ComponentProvider.WindowsApplication;assembly=Atc.Installer.Wpf.ComponentProvider.WindowsApplication"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataTemplateSelectors="clr-namespace:Atc.Installer.Wpf.App.DataTemplateSelectors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="MainWindowControl"
     Title="..:: Atc.Installer ::.."
@@ -21,11 +23,16 @@
     WindowState="{Binding Path=WindowState}"
     mc:Ignorable="d">
 
+    <atc:NiceWindow.Resources>
+        <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
+    </atc:NiceWindow.Resources>
+
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <DockPanel>
+            <!--  Menu  -->
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem Command="{Binding Path=OpenConfigurationCommand}" Header="_Open Configuration" />
+                    <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file" />
                     <Separator />
                     <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit" />
                 </MenuItem>
@@ -33,38 +40,105 @@
                     <MenuItem Command="{Binding Path=ApplicationAboutCommand}" Header="_About" />
                 </MenuItem>
             </Menu>
-            <atc:GridEx Columns="400,10,*" Rows="*">
-                <ListView
+
+            <!--  Main-Content  -->
+            <atc:GridEx
+                Margin="10"
+                Columns="400,10,*"
+                Rows="*">
+
+                <!--  Left-Content  -->
+                <atc:GridEx
                     Grid.Row="0"
                     Grid.Column="0"
-                    Background="Aqua"
-                    ItemsSource="{Binding Path=ComponentProviders}"
-                    SelectedItem="{Binding Path=SelectedComponentProvider}">
-                    <ListView.Resources>
-                        <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                            <componentProvider:ComponentProviderHeaderView />
-                        </DataTemplate>
+                    Columns="*"
+                    Rows="Auto,*">
+                    <Label
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Margin="0,10"
+                        Content="{Binding Path=ProjectName, FallbackValue='- Project Name -'}"
+                        FontSize="24" />
+                    <GroupBox
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Header="Components">
+                        <ListBox ItemsSource="{Binding Path=ComponentProviders}" SelectedItem="{Binding Path=SelectedComponentProvider}">
+                            <ListBox.Resources>
+                                <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                                    <componentProvider:ComponentProviderMenuItemView />
+                                </DataTemplate>
 
-                        <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
-                            <componentProvider:ComponentProviderHeaderView />
-                        </DataTemplate>
-                    </ListView.Resources>
-                </ListView>
+                                <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                                    <componentProvider:ComponentProviderMenuItemView />
+                                </DataTemplate>
+                            </ListBox.Resources>
+                        </ListBox>
+                    </GroupBox>
+                </atc:GridEx>
 
-                <ContentControl
+                <!--  Right-Content  -->
+                <atc:GridEx
                     Grid.Row="0"
                     Grid.Column="2"
-                    Content="{Binding Path=SelectedComponentProvider}">
-                    <ContentControl.Resources>
-                        <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                            <componentProviderWa:WindowsApplicationComponentProviderView />
-                        </DataTemplate>
+                    Columns="*"
+                    Rows="*,Auto">
+                    <ContentControl Content="{Binding Path=SelectedComponentProvider}">
+                        <ContentControl.Resources>
+                            <DataTemplate x:Key="DefaultTemplate">
+                                <Label
+                                    Margin="0,-200,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Content="Please open a configuration file"
+                                    FontSize="26" />
+                            </DataTemplate>
 
-                        <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
-                            <componentProviderIis:InternetInformationServerComponentProviderView />
-                        </DataTemplate>
-                    </ContentControl.Resources>
-                </ContentControl>
+                            <DataTemplate x:Key="WindowsApplicationTemplate" DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                                <componentProviderWa:WindowsApplicationComponentProviderView />
+                            </DataTemplate>
+
+                            <DataTemplate x:Key="InternetInformationServerTemplate" DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                                <componentProviderIis:InternetInformationServerComponentProviderView />
+                            </DataTemplate>
+
+                            <dataTemplateSelectors:ComponentProviderTemplateSelector
+                                x:Key="ComponentProviderTemplateSelector"
+                                DefaultTemplate="{StaticResource DefaultTemplate}"
+                                InternetInformationServerTemplate="{StaticResource InternetInformationServerTemplate}"
+                                WindowsApplicationTemplate="{StaticResource WindowsApplicationTemplate}" />
+                        </ContentControl.Resources>
+
+                        <ContentControl.ContentTemplateSelector>
+                            <StaticResource ResourceKey="ComponentProviderTemplateSelector" />
+                        </ContentControl.ContentTemplateSelector>
+                    </ContentControl>
+
+                    <Grid Height="200" VerticalAlignment="Bottom">
+                        <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
+                        <GroupBox Header="Dependent Services">
+                            <ListView ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn
+                                            Width="300"
+                                            DisplayMemberBinding="{Binding Path=Name}"
+                                            Header="Name" />
+                                        <GridViewColumn
+                                            Width="200"
+                                            DisplayMemberBinding="{Binding Path=InstallationState, Converter={StaticResource EnumDescriptionToStringValueConverter}}"
+                                            Header="Installation State" />
+                                        <GridViewColumn
+                                            Width="200"
+                                            DisplayMemberBinding="{Binding Path=RunningState, Converter={StaticResource EnumDescriptionToStringValueConverter}}"
+                                            Header="Running State" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </GroupBox>
+                        <!--  ReSharper restore Xaml.PossibleNullReferenceException  -->
+                    </Grid>
+                </atc:GridEx>
 
             </atc:GridEx>
         </DockPanel>
