@@ -1,9 +1,15 @@
+using System.IO.Compression;
+
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 {
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
+    private string? installationFile;
+    private string? unpackedZipPath;
+    private string? installationPath;
+    private string? installedMainFile;
 
     public ComponentProviderViewModel()
     {
@@ -11,7 +17,7 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         {
             InstallationState = ComponentInstallationState.Checking;
             Name = "MyApp";
-            InstallationPath = $"C:\\ProgramFiles\\MyApp";
+            InstallationPath = @"C:\ProgramFiles\MyApp";
         }
         else
         {
@@ -25,16 +31,9 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         Name = applicationOption.Name;
+        HostingFramework = applicationOption.HostingFramework;
         InstallationPath = applicationOption.InstallationPath;
-        InstalledMainFile = applicationOption switch
-        {
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationPath, ".env"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.dll"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationPath, ".env"),
-            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.exe"),
-            _ => InstalledMainFile,
-        };
+        ResolveInstalledMainFile(applicationOption);
 
         foreach (var dependentServiceName in applicationOption.DependentServices)
         {
@@ -46,11 +45,47 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 
     public string Name { get; }
 
-    public string InstallationPath { get; }
+    public HostingFrameworkType HostingFramework { get; }
 
-    public string? InstallationFile { get; private set; }
+    public string? InstallationFile
+    {
+        get => installationFile;
+        private set
+        {
+            installationFile = value;
+            RaisePropertyChanged();
+        }
+    }
 
-    public string? InstalledMainFile { get; protected set; }
+    public string? UnpackedZipPath
+    {
+        get => unpackedZipPath;
+        protected set
+        {
+            unpackedZipPath = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string? InstallationPath
+    {
+        get => installationPath;
+        protected set
+        {
+            installationPath = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string? InstalledMainFile
+    {
+        get => installedMainFile;
+        protected set
+        {
+            installedMainFile = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public ComponentInstallationState InstallationState
     {
@@ -84,7 +119,44 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         }
     }
 
+    public ObservableCollectionEx<InstallationPrerequisiteViewModel> InstallationPrerequisites { get; } = new();
+
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
+
+    public void PrepareInstallationFiles()
+    {
+        // TODO: Improve - appsettings
+        var installationsBasePath = Assembly.GetEntryAssembly()!.Location.Split("src")[0];
+        var installationsPath = Path.Combine(installationsBasePath, @"SampleData\SampleApplications\InstallationFiles");
+        var files = Directory.EnumerateFiles(installationsPath).ToArray();
+
+        // TODO: Improve
+        InstallationFile = files.FirstOrDefault(x => x.Contains($"{Name}.zip", StringComparison.OrdinalIgnoreCase));
+
+        if (InstallationFile is not null &&
+            InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            UnpackedZipPath = Path.Combine(Path.Combine(Path.GetTempPath(), "AtcInstaller"), Name);
+            if (Directory.Exists(UnpackedZipPath))
+            {
+                // TODO: Check existing...
+            }
+            else
+            {
+                Directory.CreateDirectory(UnpackedZipPath);
+                ZipFile.ExtractToDirectory(InstallationFile, UnpackedZipPath, overwriteFiles: true);
+            }
+        }
+    }
+
+    public void StartChecking()
+        => Task.Run(async () => await WorkOnStartChecking());
+
+    [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
+    public virtual void CheckPrerequisites() { }
+
+    public override string ToString()
+        => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
 
     private void HandleDependentServiceState(
         UpdateDependentServiceStateMessage obj)
@@ -99,24 +171,35 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         vm.RunningState = obj.RunningState;
     }
 
-    public void StartChecking()
-        => Task.Run(async () => await WorkOnStartChecking());
+    private void ResolveInstalledMainFile(
+        ApplicationOption applicationOption)
+    {
+        if (InstallationPath is null)
+        {
+            return;
+        }
+
+        InstalledMainFile = applicationOption switch
+        {
+            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.exe"),
+            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationPath, ".env"),
+            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.dll"),
+            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationPath, ".env"),
+            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.exe"),
+            _ => InstalledMainFile,
+        };
+    }
 
     private async Task WorkOnStartChecking()
     {
         IsBusy = true;
         InstallationState = ComponentInstallationState.Checking;
 
-        // TODO: Remove
-        await Task.Delay(Random.Shared.Next(1000, 5000));
+        InstallationPrerequisites.Clear();
 
         // TODO: Improve - appsettings
         var installationsBasePath = Assembly.GetEntryAssembly()!.Location.Split("src")[0];
         var installationsPath = Path.Combine(installationsBasePath, @"SampleData\SampleApplications\InstallationFiles");
-        var files = Directory.EnumerateFiles(installationsPath).ToArray();
-
-        // TODO: Improve
-        InstallationFile = files.FirstOrDefault(x => x.Contains($"{Name}.zip", StringComparison.OrdinalIgnoreCase));
 
         if (InstallationFile is null)
         {
@@ -129,6 +212,8 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
             {
                 InstallationState = ComponentInstallationState.NotInstalled;
                 RunningState = ComponentRunningState.NotAvailable;
+
+                CheckPrerequisites();
             }
             else
             {
@@ -158,10 +243,9 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
                     ? ComponentInstallationState.InstalledWithOldVersion
                     : ComponentInstallationState.InstalledWithNewestVersion;
 
-                RunningState = ComponentRunningState.Checking;
+                CheckPrerequisites();
 
-                // TODO: Remove
-                await Task.Delay(Random.Shared.Next(1000, 5000));
+                RunningState = ComponentRunningState.Checking;
 
                 // TODO: Check runningState
                 RunningState = ComponentRunningState.Running;

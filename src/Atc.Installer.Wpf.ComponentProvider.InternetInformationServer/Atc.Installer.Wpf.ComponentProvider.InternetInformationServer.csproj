@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Atc.Installer.Integration.InternetInformationServer\Atc.Installer.Integration.InternetInformationServer.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider\Atc.Installer.Wpf.ComponentProvider.csproj" />
   </ItemGroup>
 

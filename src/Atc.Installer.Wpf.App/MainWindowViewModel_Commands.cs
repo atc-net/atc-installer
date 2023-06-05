@@ -77,6 +77,7 @@ public partial class MainWindowViewModel
 
         foreach (var vm in ComponentProviders)
         {
+            vm.PrepareInstallationFiles();
             vm.StartChecking();
         }
     }

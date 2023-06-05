@@ -11,6 +11,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataTemplateSelectors="clr-namespace:Atc.Installer.Wpf.App.DataTemplateSelectors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
     x:Name="MainWindowControl"
     Title="..:: Atc.Installer ::.."
     Width="1920"
@@ -25,6 +26,7 @@
 
     <atc:NiceWindow.Resources>
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
+        <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
     </atc:NiceWindow.Resources>
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
@@ -114,9 +116,41 @@
                         </ContentControl.ContentTemplateSelector>
                     </ContentControl>
 
-                    <Grid Height="200" VerticalAlignment="Bottom">
+                    <atc:GridEx
+                        Height="400"
+                        VerticalAlignment="Bottom"
+                        Columns="*"
+                        Rows="*,10,*">
                         <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
-                        <GroupBox Header="Dependent Services">
+                        <GroupBox
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Header="Dependent Services">
+                            <ListView ItemsSource="{Binding Path=SelectedComponentProvider.InstallationPrerequisites}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Width="80" Header="State">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate DataType="componentProvider:InstallationPrerequisiteViewModel">
+                                                    <Ellipse
+                                                        Width="20"
+                                                        Height="20"
+                                                        Fill="{Binding Path=CategoryType, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn
+                                            Width="500"
+                                            DisplayMemberBinding="{Binding Path=Message}"
+                                            Header="Message" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </GroupBox>
+                        <GroupBox
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Header="Dependent Services">
                             <ListView ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
                                 <ListView.View>
                                     <GridView>
@@ -137,7 +171,7 @@
                             </ListView>
                         </GroupBox>
                         <!--  ReSharper restore Xaml.PossibleNullReferenceException  -->
-                    </Grid>
+                    </atc:GridEx>
                 </atc:GridEx>
 
             </atc:GridEx>
