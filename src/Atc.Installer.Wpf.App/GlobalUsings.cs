@@ -7,7 +7,9 @@ global using System.Windows.Controls;
 global using System.Windows.Input;
 
 global using Atc.Installer.Integration;
+global using Atc.Installer.Integration.Azure;
 global using Atc.Installer.Integration.InstallationConfigurations;
+global using Atc.Installer.Wpf.App.Options;
 global using Atc.Installer.Wpf.ComponentProvider;
 global using Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 global using Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
@@ -20,4 +22,5 @@ global using ControlzEx.Theming;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Options;
 global using Microsoft.Win32;

@@ -1,5 +1,3 @@
-using System.IO.Compression;
-
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 public class ComponentProviderViewModel : ViewModelBase, IComponentProvider

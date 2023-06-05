@@ -8,6 +8,8 @@ public partial class MainWindowViewModel
 {
     public IRelayCommandAsync OpenConfigurationFileCommand => new RelayCommandAsync(OpenConfigurationFileCommandHandler);
 
+    public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand => new RelayCommandAsync(DownloadInstallationFilesFromAzureStorageAccountCommandHandler, CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
+
     public IRelayCommandAsync ApplicationAboutCommand => new RelayCommandAsync(ApplicationAboutCommandHandler);
 
     private async Task OpenConfigurationFileCommandHandler()
@@ -44,10 +46,50 @@ public partial class MainWindowViewModel
         }
     }
 
+    private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
+        => AzureOptions is not null &&
+           !string.IsNullOrEmpty(AzureOptions.StorageConnectionString) &&
+           !string.IsNullOrEmpty(AzureOptions.BlobContainerName) &&
+           ComponentProviders.Count != 0;
+
+    private Task DownloadInstallationFilesFromAzureStorageAccountCommandHandler()
+    {
+        if (!CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler())
+        {
+            return Task.CompletedTask;
+        }
+
+        var componentNames = ComponentProviders
+            .Where(x => x.InstallationFile is null)
+            .Select(x => x.Name)
+            .ToArray();
+
+        if (!componentNames.Any())
+        {
+            return Task.CompletedTask;
+        }
+
+        IsBusy = true;
+
+        var downloadFolder = Path.Combine(Path.Combine(Path.GetTempPath(), "AtcInstaller"), "Download");
+
+        var files = AzureStorageAccountInstallerService.Instance.DownloadLatestFilesByNames(
+            AzureOptions!.StorageConnectionString,
+            AzureOptions!.BlobContainerName,
+            downloadFolder,
+            componentNames);
+
+        // TODO: Unzip files
+        IsBusy = true;
+        return Task.CompletedTask;
+    }
+
     private void Populate(
         InstallationOption installationOptions)
     {
         ProjectName = installationOptions.Name;
+        AzureOptions = installationOptions.Azure;
+
         ComponentProviders.Clear();
 
         foreach (var appInstallationOption in installationOptions.Applications)

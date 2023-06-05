@@ -30,9 +30,13 @@ public partial class App
 
     public IServiceProvider ServiceProvider { get; }
 
-    private static void ConfigureServices(
+    private void ConfigureServices(
         IServiceCollection services)
     {
+        services
+            .AddOptions<ApplicationOptions>()
+            .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName));
+
         services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
     }

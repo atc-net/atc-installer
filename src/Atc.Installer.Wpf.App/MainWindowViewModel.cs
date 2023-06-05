@@ -27,6 +27,19 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
     }
 
+    public MainWindowViewModel(
+        IOptions<ApplicationOptions> applicationOptions)
+    {
+        ArgumentNullException.ThrowIfNull(applicationOptions);
+
+        ApplicationOptions = applicationOptions.Value;
+        AzureOptions = new AzureOptions();
+    }
+
+    public ApplicationOptions? ApplicationOptions { get; init; }
+
+    public AzureOptions? AzureOptions { get; set; }
+
     public string? ProjectName
     {
         get => projectName;

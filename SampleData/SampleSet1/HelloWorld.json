@@ -1,5 +1,13 @@
 {
     "Name": "Hello World",
+	"Azure": {
+		"StorageConnectionString": "",
+		"BlobContainerName": "deployment-files"
+	},
+	"DefaultCredentials": {
+		"Username": "JohnDoe",
+		"Password": "Ymn8p2OmnsBZDu5K"
+	},
     "Applications": [
         {
             "Name": "HelloWorldWpf",

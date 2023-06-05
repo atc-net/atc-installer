@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Atc.Installer.Integration.Azure\Atc.Installer.Integration.Azure.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.WindowsApplication\Atc.Installer.Wpf.ComponentProvider.WindowsApplication.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider\Atc.Installer.Wpf.ComponentProvider.csproj" />

@@ -13,7 +13,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
     x:Name="MainWindowControl"
-    Title="..:: Atc.Installer ::.."
+    Title="{Binding Path=ApplicationOptions.Title, FallbackValue='..:: Atc.Installer ::..'}"
     Width="1920"
     Height="1080"
     MinWidth="1024"
@@ -29,6 +29,7 @@
         <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
     </atc:NiceWindow.Resources>
 
+    <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <DockPanel>
             <!--  Menu  -->
@@ -37,6 +38,9 @@
                     <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file" />
                     <Separator />
                     <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit" />
+                </MenuItem>
+                <MenuItem Header="_Installation">
+                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount" />
                 </MenuItem>
                 <MenuItem Header="_Help">
                     <MenuItem Command="{Binding Path=ApplicationAboutCommand}" Header="_About" />
@@ -121,7 +125,6 @@
                         VerticalAlignment="Bottom"
                         Columns="*"
                         Rows="*,10,*">
-                        <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
                         <GroupBox
                             Grid.Row="0"
                             Grid.Column="0"
@@ -170,12 +173,12 @@
                                 </ListView.View>
                             </ListView>
                         </GroupBox>
-                        <!--  ReSharper restore Xaml.PossibleNullReferenceException  -->
                     </atc:GridEx>
                 </atc:GridEx>
 
             </atc:GridEx>
         </DockPanel>
     </atc:BusyOverlay>
+    <!--  ReSharper restore Xaml.PossibleNullReferenceException  -->
 
 </atc:NiceWindow>

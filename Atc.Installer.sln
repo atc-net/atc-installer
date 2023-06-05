@@ -29,7 +29,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ComponentProviders", "Compo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Wpf.ComponentProvider", "src\Atc.Installer.Wpf.ComponentProvider\Atc.Installer.Wpf.ComponentProvider.csproj", "{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.Integration.PostgreSql", "src\Atc.Installer.Integration.PostgreSql\Atc.Installer.Integration.PostgreSql.csproj", "{B47C43FE-38A6-4F0E-8EC5-6F72196F0BB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atc.Installer.Integration.PostgreSql", "src\Atc.Installer.Integration.PostgreSql\Atc.Installer.Integration.PostgreSql.csproj", "{B47C43FE-38A6-4F0E-8EC5-6F72196F0BB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atc.Installer.Integration.Azure", "src\Atc.Installer.Integration.Azure\Atc.Installer.Integration.Azure.csproj", "{C1327E5C-157E-45B0-966D-75DF6ACC2A30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{B47C43FE-38A6-4F0E-8EC5-6F72196F0BB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B47C43FE-38A6-4F0E-8EC5-6F72196F0BB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B47C43FE-38A6-4F0E-8EC5-6F72196F0BB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1327E5C-157E-45B0-966D-75DF6ACC2A30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1327E5C-157E-45B0-966D-75DF6ACC2A30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1327E5C-157E-45B0-966D-75DF6ACC2A30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1327E5C-157E-45B0-966D-75DF6ACC2A30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +105,7 @@ Global
 		{C10135F8-2397-4661-86FB-3B04A8EAF15F} = {5B2CC895-6057-404A-AB13-1FC25B5DFCD6}
 		{63A80190-6EDC-47BD-B25A-D5EC78CCEEFF} = {C10135F8-2397-4661-86FB-3B04A8EAF15F}
 		{B47C43FE-38A6-4F0E-8EC5-6F72196F0BB4} = {E918EEEF-1EB4-4F46-9DD6-D5B61DABE4E6}
+		{C1327E5C-157E-45B0-966D-75DF6ACC2A30} = {E918EEEF-1EB4-4F46-9DD6-D5B61DABE4E6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0926BD66-A2C9-4EBD-8C0F-416C8276FBE5}
