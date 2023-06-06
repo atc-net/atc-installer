@@ -10,6 +10,8 @@ public class ApplicationOption
 
     public string InstallationPath { get; set; } = string.Empty;
 
+    public IList<string> DependentComponents { get; init; } = new List<string>();
+
     public IList<string> DependentServices { get; init; } = new List<string>();
 
     public IDictionary<string, object> ApplicationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);

@@ -2,11 +2,18 @@ namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
+    private readonly WindowsApplicationInstallerService waInstallerService;
+
     public WindowsApplicationComponentProviderViewModel(
+        string projectName,
         ApplicationOption applicationOption)
-        : base(applicationOption)
+        : base(
+            projectName,
+            applicationOption)
     {
         ArgumentNullException.ThrowIfNull(applicationOption);
+
+        waInstallerService = WindowsApplicationInstallerService.Instance;
 
         if (applicationOption.ComponentType == ComponentType.WindowsService)
         {
@@ -16,27 +23,22 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public bool IsWindowsService { get; }
 
-    public override void CheckPrerequisites()
+    public override void CheckServiceState()
     {
-        base.CheckPrerequisites();
+        base.CheckServiceState();
 
-        ////if (!IsWindowsService)
-        ////{
-        ////    CheckPrerequisitesApplication();
-        ////}
-        ////else
-        ////{
-        ////    CheckPrerequisitesWindowsService();
-        ////}
+        if (IsWindowsService)
+        {
+            RunningState = ComponentRunningState.Checking;
+            RunningState = waInstallerService.GetRunningState(Name);
+            if (RunningState == ComponentRunningState.Checking)
+            {
+                RunningState = ComponentRunningState.NotAvailable;
+            }
+        }
+        else
+        {
+            RunningState = ComponentRunningState.NotAvailable;
+        }
     }
-
-    ////private void CheckPrerequisitesApplication()
-    ////{
-    ////    // TODO:
-    ////}
-
-    ////private void CheckPrerequisitesWindowsService()
-    ////{
-    ////    // TODO:
-    ////}
 }

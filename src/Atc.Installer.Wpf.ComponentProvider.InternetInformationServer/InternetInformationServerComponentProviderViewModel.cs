@@ -6,9 +6,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     private readonly InternetInformationServerInstallerService iisInstallerService;
 
     public InternetInformationServerComponentProviderViewModel(
+        string projectName,
         ApplicationOption applicationOption)
-        : base(applicationOption)
+        : base(
+            projectName,
+            applicationOption)
     {
+        ArgumentNullException.ThrowIfNull(applicationOption);
+
         iisInstallerService = InternetInformationServerInstallerService.Instance;
 
         if (InstallationPath is not null)
@@ -25,8 +30,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .ResolvedVirtuelRootPath(InstalledMainFile);
         }
 
-        // TODO: IsRequiredWebSockets = applicationOption.InternetInformationServiceSettings-lookup
-        IsRequiredWebSockets = true;
+        IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
     }
 
     public bool IsRequiredWebSockets { get; }
@@ -51,6 +55,33 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         else
         {
             AddToInstallationPrerequisites("IsInstalled", LogCategoryType.Error, "IIS is not installed");
+        }
+    }
+
+    [SuppressMessage("SonarRules", "S3440:Variables should not be checked against the values they're about to be assigned", Justification = "OK.")]
+    public override void CheckServiceState()
+    {
+        base.CheckServiceState();
+
+        if (!iisInstallerService.IsInstalled)
+        {
+            return;
+        }
+
+        RunningState = ComponentRunningState.Checking;
+        var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
+        var websiteState = iisInstallerService.GetWebsiteState(Name);
+
+        RunningState = applicationPoolState switch
+        {
+            ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
+            ComponentRunningState.Stopped when websiteState == ComponentRunningState.Stopped => ComponentRunningState.Stopped,
+            _ => ComponentRunningState.Unknown,
+        };
+
+        if (RunningState == ComponentRunningState.Checking)
+        {
+            RunningState = ComponentRunningState.NotAvailable;
         }
     }
 

@@ -519,4 +519,4 @@ dotnet_diagnostic.MA0134.severity = none            # Observe result of async ca
 
 dotnet_diagnostic.S3267.severity = none            	# Loops should be simplified with 'LINQ' expressions
 dotnet_diagnostic.S4487.severity = none            	# Remove this unread private field
-
+dotnet_diagnostic.S6602.severity = none            	# "Find" method should be used instead of the "FirstOrDefault"

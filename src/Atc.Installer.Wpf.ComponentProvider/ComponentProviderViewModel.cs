@@ -14,6 +14,7 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         if (IsInDesignMode)
         {
             InstallationState = ComponentInstallationState.Checking;
+            ProjectName = "MyProject";
             Name = "MyApp";
             InstallationPath = @"C:\ProgramFiles\MyApp";
         }
@@ -24,10 +25,12 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
     }
 
     public ComponentProviderViewModel(
+        string projectName,
         ApplicationOption applicationOption)
     {
         ArgumentNullException.ThrowIfNull(applicationOption);
 
+        ProjectName = projectName;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
         InstallationPath = applicationOption.InstallationPath;
@@ -40,6 +43,8 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 
         Messenger.Default.Register<UpdateDependentServiceStateMessage>(this, HandleDependentServiceState);
     }
+
+    public string ProjectName { get; }
 
     public string Name { get; }
 
@@ -123,9 +128,8 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 
     public void PrepareInstallationFiles()
     {
-        // TODO: Improve - appsettings
-        var installationsBasePath = Assembly.GetEntryAssembly()!.Location.Split("src")[0];
-        var installationsPath = Path.Combine(installationsBasePath, @"SampleData\SampleApplications\InstallationFiles");
+        // TODO: Improve installationsPath
+        var installationsPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
         var files = Directory.EnumerateFiles(installationsPath).ToArray();
 
         // TODO: Improve
@@ -134,7 +138,7 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         if (InstallationFile is not null &&
             InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
-            UnpackedZipPath = Path.Combine(Path.Combine(Path.GetTempPath(), "AtcInstaller"), Name);
+            UnpackedZipPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Unpacked\{Name}");
             if (Directory.Exists(UnpackedZipPath))
             {
                 // TODO: Check existing...
@@ -152,6 +156,9 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 
     [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
     public virtual void CheckPrerequisites() { }
+
+    [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
+    public virtual void CheckServiceState() { }
 
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
@@ -195,29 +202,34 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 
         InstallationPrerequisites.Clear();
 
-        // TODO: Improve - appsettings
-        var installationsBasePath = Assembly.GetEntryAssembly()!.Location.Split("src")[0];
-        var installationsPath = Path.Combine(installationsBasePath, @"SampleData\SampleApplications\InstallationFiles");
-
-        if (InstallationFile is null)
+        if (UnpackedZipPath is null)
         {
+            // TODO:...
             InstallationState = ComponentInstallationState.NoInstallationsFiles;
             RunningState = ComponentRunningState.NotAvailable;
+
+            CheckPrerequisites();
+        }
+        else if (InstalledMainFile is null ||
+            !File.Exists(InstalledMainFile))
+        {
+            // TODO:...
+            InstallationState = ComponentInstallationState.NotInstalled;
+            RunningState = ComponentRunningState.NotAvailable;
+
+            CheckPrerequisites();
         }
         else
         {
-            if (InstalledMainFile is null || !File.Exists(InstalledMainFile))
+            // TODO: Improve
+            var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
+            if (!File.Exists(installationMainFile))
             {
-                InstallationState = ComponentInstallationState.NotInstalled;
-                RunningState = ComponentRunningState.NotAvailable;
-
-                CheckPrerequisites();
+                installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.dll");
             }
-            else
-            {
-                // TODO: Improve
-                var installationMainFile = Path.Combine(installationsPath, $"{Name}\\{Name}.dll");
 
+            if (File.Exists(installationMainFile))
+            {
                 var hasInstalledWithOldVersion = false;
                 if (File.Exists(installationMainFile))
                 {
@@ -242,11 +254,7 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
                     : ComponentInstallationState.InstalledWithNewestVersion;
 
                 CheckPrerequisites();
-
-                RunningState = ComponentRunningState.Checking;
-
-                // TODO: Check runningState
-                RunningState = ComponentRunningState.Running;
+                CheckServiceState();
             }
         }
 

@@ -29,7 +29,7 @@ public class LogCategoryTypeToBrushValueConverter : IValueConverter
             LogCategoryType.Service => Brushes.BurlyWood,
             LogCategoryType.UI => Brushes.Aquamarine,
             LogCategoryType.Information => Brushes.Green,
-            LogCategoryType.Debug => Brushes.Yellow,
+            LogCategoryType.Debug => Brushes.Gold,
             LogCategoryType.Trace => Brushes.Gray,
             _ => throw new SwitchCaseDefaultException(type),
         };

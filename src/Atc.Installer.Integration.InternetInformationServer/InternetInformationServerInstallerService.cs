@@ -115,4 +115,60 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
            GetWwwRootPath() is not null
             ? path.Replace(@".\", GetWwwRootPath()!.FullName + @"\", StringComparison.Ordinal)
             : path;
+
+    public ComponentRunningState GetApplicationPoolState(
+        string applicationPoolName)
+    {
+        try
+        {
+            using var serverManager = new ServerManager();
+            var applicationPool = serverManager.ApplicationPools[applicationPoolName];
+            if (applicationPool is null)
+            {
+                return ComponentRunningState.NotAvailable;
+            }
+
+            return applicationPool.State switch
+            {
+                ObjectState.Starting => ComponentRunningState.Checking,
+                ObjectState.Started => ComponentRunningState.Running,
+                ObjectState.Stopping => ComponentRunningState.Checking,
+                ObjectState.Stopped => ComponentRunningState.Stopped,
+                ObjectState.Unknown => ComponentRunningState.Unknown,
+                _ => throw new SwitchExpressionException(applicationPool.State),
+            };
+        }
+        catch
+        {
+            return ComponentRunningState.Unknown;
+        }
+    }
+
+    public ComponentRunningState GetWebsiteState(
+        string websiteName)
+    {
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return ComponentRunningState.NotAvailable;
+            }
+
+            return site.State switch
+            {
+                ObjectState.Starting => ComponentRunningState.Checking,
+                ObjectState.Started => ComponentRunningState.Running,
+                ObjectState.Stopping => ComponentRunningState.Checking,
+                ObjectState.Stopped => ComponentRunningState.Stopped,
+                ObjectState.Unknown => ComponentRunningState.Unknown,
+                _ => throw new SwitchExpressionException(site.State),
+            };
+        }
+        catch
+        {
+            return ComponentRunningState.Unknown;
+        }
+    }
 }

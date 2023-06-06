@@ -2,7 +2,7 @@
     "Name": "Hello World",
 	"Azure": {
 		"StorageConnectionString": "",
-		"BlobContainerName": "deployment-files"
+		"BlobContainerName": ""
 	},
 	"DefaultCredentials": {
 		"Username": "JohnDoe",
@@ -14,6 +14,8 @@
             "ComponentType": "Application",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldWpf",
+            "DependentComponents": [
+            ],
             "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
@@ -28,6 +30,9 @@
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldBlazor",
+            "DependentComponents": [
+                "WebSockets"
+            ],
             "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
@@ -42,6 +47,9 @@
             "ComponentType": "InternetInformationService",
             "HostingFramework": "NodeJs",
             "InstallationPath": ".\\HelloWorldReact",
+            "DependentComponents": [
+                "WebSockets"
+            ],
             "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf",
                 "HelloWorldMinimalApi"
@@ -56,6 +64,8 @@
             "ComponentType": "WindowsService",
             "HostingFramework": "DotNet7",
             "InstallationPath": "C:\\Temp\\HelloWorldWindowsNTServiceTopShelf",
+            "DependentComponents": [
+            ],
             "DependentServices": [
             ],
             "ApplicationSettings": {
@@ -68,6 +78,9 @@
             "ComponentType": "InternetInformationService",
             "HostingFramework": "DotNet7",
             "InstallationPath": ".\\HelloWorldMinimalApi",
+            "DependentComponents": [
+                "WebSockets"
+            ],
             "DependentServices": [
                 "HelloWorldWindowsNTServiceTopShelf"
             ],

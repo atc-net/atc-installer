@@ -26,7 +26,7 @@ public class ComponentInstallationStateToBrushValueConverter : IValueConverter
             ComponentInstallationState.NoInstallationsFiles => Brushes.Chocolate,
             ComponentInstallationState.NotInstalled => Brushes.DodgerBlue,
             ComponentInstallationState.Installing => Brushes.Crimson,
-            ComponentInstallationState.InstalledWithOldVersion => Brushes.Yellow,
+            ComponentInstallationState.InstalledWithOldVersion => Brushes.Gold,
             ComponentInstallationState.InstalledWithNewestVersion => Brushes.Green,
             _ => throw new SwitchCaseDefaultException(state),
         };

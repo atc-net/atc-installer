@@ -25,25 +25,7 @@ public partial class MainWindowViewModel
             return;
         }
 
-        try
-        {
-            var json = await File.ReadAllTextAsync(openFileDialog.FileName);
-
-            var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
-                json,
-                Serialization.JsonSerializerOptionsFactory.Create());
-
-            if (installationOptions is null)
-            {
-                throw new IOException($"Invalid format in {openFileDialog.FileName}");
-            }
-
-            Populate(installationOptions);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
-        }
+        await LoadConfigurationFile(openFileDialog.FileName);
     }
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
@@ -60,7 +42,6 @@ public partial class MainWindowViewModel
         }
 
         var componentNames = ComponentProviders
-            .Where(x => x.InstallationFile is null)
             .Select(x => x.Name)
             .ToArray();
 
@@ -71,7 +52,7 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
-        var downloadFolder = Path.Combine(Path.Combine(Path.GetTempPath(), "AtcInstaller"), "Download");
+        var downloadFolder = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
 
         var files = AzureStorageAccountInstallerService.Instance.DownloadLatestFilesByNames(
             AzureOptions!.StorageConnectionString,
@@ -82,46 +63,6 @@ public partial class MainWindowViewModel
         // TODO: Unzip files
         IsBusy = true;
         return Task.CompletedTask;
-    }
-
-    private void Populate(
-        InstallationOption installationOptions)
-    {
-        ProjectName = installationOptions.Name;
-        AzureOptions = installationOptions.Azure;
-
-        ComponentProviders.Clear();
-
-        foreach (var appInstallationOption in installationOptions.Applications)
-        {
-            switch (appInstallationOption.ComponentType)
-            {
-                case ComponentType.Application or ComponentType.WindowsService:
-                {
-                    var vm = new WindowsApplicationComponentProviderViewModel(appInstallationOption);
-                    ComponentProviders.Add(vm);
-                    break;
-                }
-
-                case ComponentType.InternetInformationService:
-                {
-                    var vm = new InternetInformationServerComponentProviderViewModel(appInstallationOption);
-                    ComponentProviders.Add(vm);
-                    break;
-                }
-            }
-
-            if (ComponentProviders.Count == 1)
-            {
-                SelectedComponentProvider = ComponentProviders[0];
-            }
-        }
-
-        foreach (var vm in ComponentProviders)
-        {
-            vm.PrepareInstallationFiles();
-            vm.StartChecking();
-        }
     }
 
     private Task ApplicationAboutCommandHandler()
