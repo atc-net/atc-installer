@@ -8,6 +8,10 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     DirectoryInfo? GetWwwRootPath();
 
+    bool IsMicrosoftDonNetFramework48();
+
+    bool IsMicrosoftDonNet7();
+
     bool IsInstalledManagementConsole();
 
     bool IsComponentInstalledWebSockets();

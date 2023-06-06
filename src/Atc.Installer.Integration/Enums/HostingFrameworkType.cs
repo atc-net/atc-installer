@@ -5,5 +5,6 @@ public enum HostingFrameworkType
 {
     None,
     DotNet7,
+    DonNetFramework48,
     NodeJs,
 }

@@ -72,6 +72,12 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
             : null;
     }
 
+    public bool IsMicrosoftDonNetFramework48()
+        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNetFramework48();
+
+    public bool IsMicrosoftDonNet7()
+        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNet7();
+
     public bool IsInstalledManagementConsole()
     {
         try
@@ -93,7 +99,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         {
             using var registryKey = Registry.LocalMachine.OpenSubKey(IisComponentsRegistryPath);
             var registryKeyValue = registryKey?.GetValue("WebSockets");
-            return registryKeyValue is not null && (int)registryKeyValue == 1;
+            return registryKeyValue is not null &&
+                   (int)registryKeyValue == 1;
         }
         catch
         {

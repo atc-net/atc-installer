@@ -1,3 +1,4 @@
+// ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
@@ -124,5 +125,43 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         // TODO:
         ////LogItems.Add(LogItemFactory.CreateTrace("Deployed"));
         return Task.CompletedTask;
+    }
+
+    public override void CheckPrerequisites()
+    {
+        base.CheckPrerequisites();
+
+        CheckPrerequisitesForHostingFramework();
+    }
+
+    private void CheckPrerequisitesForHostingFramework()
+    {
+        switch (HostingFramework)
+        {
+            case HostingFrameworkType.DotNet7 when waInstallerService.IsMicrosoftDonNet7():
+                AddToInstallationPrerequisites("IsMicrosoftDonNet7", LogCategoryType.Information, "Microsoft .NET 7 is installed");
+                break;
+            case HostingFrameworkType.DotNet7:
+                AddToInstallationPrerequisites("IsMicrosoftDonNet7", LogCategoryType.Warning, "Microsoft .NET 7 is not installed");
+                break;
+            case HostingFrameworkType.DonNetFramework48 when waInstallerService.IsMicrosoftDonNetFramework48():
+                AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
+                break;
+            case HostingFrameworkType.DonNetFramework48:
+                AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
+                break;
+        }
+    }
+
+    private void AddToInstallationPrerequisites(
+        string key,
+        LogCategoryType categoryType,
+        string message)
+    {
+        InstallationPrerequisites.Add(
+            new InstallationPrerequisiteViewModel(
+                $"WA_{key}",
+                categoryType,
+                message));
     }
 }

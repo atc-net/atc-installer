@@ -45,12 +45,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             if (iisInstallerService.IsRunning)
             {
                 AddToInstallationPrerequisites("IsRunning", LogCategoryType.Information, "IIS is running");
-                CheckPrerequisitesForInstalled();
             }
             else
             {
                 AddToInstallationPrerequisites("IsRunning", LogCategoryType.Error, "IIS is not running");
             }
+
+            CheckPrerequisitesForInstalled();
+            CheckPrerequisitesForHostingFramework();
         }
         else
         {
@@ -191,14 +193,24 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 AddToInstallationPrerequisites("IsComponentInstalledWebSockets", LogCategoryType.Warning, "IIS WebSockets is not installed");
             }
         }
-
-        CheckPrerequisitesForHostingFramework();
     }
 
     private void CheckPrerequisitesForHostingFramework()
     {
         switch (HostingFramework)
         {
+            case HostingFrameworkType.DonNetFramework48:
+                if (iisInstallerService.IsMicrosoftDonNetFramework48())
+                {
+                    AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
+                }
+                else
+                {
+                    AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
+                }
+
+                break;
+
             case HostingFrameworkType.DotNet7:
                 if (iisInstallerService.IsComponentInstalledMicrosoftNetAppHostPack7())
                 {
@@ -210,6 +222,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 }
 
                 break;
+
             case HostingFrameworkType.NodeJs:
                 if (iisInstallerService.IsComponentInstalledUrlRewriteModule2())
                 {

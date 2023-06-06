@@ -21,6 +21,12 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         }
     }
 
+    public bool IsMicrosoftDonNetFramework48()
+        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNetFramework48();
+
+    public bool IsMicrosoftDonNet7()
+        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNet7();
+
     public ComponentRunningState GetRunningState(
         string serviceName)
     {

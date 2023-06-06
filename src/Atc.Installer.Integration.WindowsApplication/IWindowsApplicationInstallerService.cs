@@ -2,6 +2,10 @@ namespace Atc.Installer.Integration.WindowsApplication;
 
 public interface IWindowsApplicationInstallerService : IInstallerService
 {
+    bool IsMicrosoftDonNetFramework48();
+
+    bool IsMicrosoftDonNet7();
+
     ComponentRunningState GetRunningState(
         string serviceName);
 
