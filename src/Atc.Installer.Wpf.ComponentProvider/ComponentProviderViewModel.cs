@@ -1,6 +1,7 @@
 namespace Atc.Installer.Wpf.ComponentProvider;
 
-public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
+[SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
+public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 {
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
@@ -33,6 +34,7 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         ProjectName = projectName;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
+        IsService = applicationOption.ComponentType is ComponentType.InternetInformationService or ComponentType.WindowsService;
         InstallationPath = applicationOption.InstallationPath;
         ResolveInstalledMainFile(applicationOption);
 
@@ -49,6 +51,8 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
     public string Name { get; }
 
     public HostingFrameworkType HostingFramework { get; }
+
+    public bool IsService { get; }
 
     public string? InstallationFile
     {
@@ -122,6 +126,8 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         }
     }
 
+    public ObservableCollectionEx<LogItem> LogItems { get; } = new();
+
     public ObservableCollectionEx<InstallationPrerequisiteViewModel> InstallationPrerequisites { get; } = new();
 
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
@@ -152,12 +158,15 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
     }
 
     public void StartChecking()
-        => Task.Run(async () => await WorkOnStartChecking());
+    {
+        Task.Run(async () =>
+        {
+            await WorkOnStartChecking().ConfigureAwait(true);
+        });
+    }
 
-    [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
     public virtual void CheckPrerequisites() { }
 
-    [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
     public virtual void CheckServiceState() { }
 
     public override string ToString()
@@ -195,7 +204,9 @@ public class ComponentProviderViewModel : ViewModelBase, IComponentProvider
         };
     }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     private async Task WorkOnStartChecking()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         IsBusy = true;
         InstallationState = ComponentInstallationState.Checking;

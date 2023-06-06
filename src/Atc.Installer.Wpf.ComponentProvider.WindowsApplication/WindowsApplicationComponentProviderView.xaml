@@ -14,7 +14,7 @@
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <StackPanel Orientation="Vertical">
-            <componentProvider:ComponentProviderInfoView />
+            <componentProvider:ComponentProviderPanelView />
         </StackPanel>
     </atc:BusyOverlay>
 

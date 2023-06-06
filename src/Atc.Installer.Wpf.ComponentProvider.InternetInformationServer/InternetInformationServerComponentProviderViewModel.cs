@@ -85,6 +85,85 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
     }
 
+    public override bool CanServiceStopCommandHandler()
+        => RunningState == ComponentRunningState.Running;
+
+    public override async Task ServiceStopCommandHandler()
+    {
+        if (!CanServiceStopCommandHandler())
+        {
+            return;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Stop service"));
+
+        var isStopped = await iisInstallerService
+            .StopWebsiteApplicationPool(Name, Name)
+            .ConfigureAwait(true);
+
+        if (isStopped)
+        {
+            RunningState = ComponentRunningState.Stopped;
+            LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+        }
+        else
+        {
+            LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+        }
+    }
+
+    public override bool CanServiceStartCommandHandler()
+        => RunningState == ComponentRunningState.Stopped;
+
+    public override async Task ServiceStartCommandHandler()
+    {
+        if (!CanServiceStartCommandHandler())
+        {
+            return;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+
+        var isStarted = await iisInstallerService
+            .StartWebsiteAndApplicationPool(Name, Name)
+            .ConfigureAwait(true);
+
+        if (isStarted)
+        {
+            RunningState = ComponentRunningState.Running;
+            LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+        }
+        else
+        {
+            LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+        }
+    }
+
+    public override bool CanServiceDeployCommandHandler()
+    {
+        if (RunningState == ComponentRunningState.Stopped)
+        {
+            // TODO: Check installation data...
+            return true;
+        }
+
+        return false;
+    }
+
+    public override Task ServiceDeployCommandHandler()
+    {
+        if (!CanServiceDeployCommandHandler())
+        {
+            return Task.CompletedTask;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Deploy"));
+
+        // TODO:
+        ////LogItems.Add(LogItemFactory.CreateTrace("Deployed"));
+        return Task.CompletedTask;
+    }
+
     private void CheckPrerequisitesForInstalled()
     {
         if (iisInstallerService.GetWwwRootPath() is null)

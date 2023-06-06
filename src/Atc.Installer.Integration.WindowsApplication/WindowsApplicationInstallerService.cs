@@ -1,7 +1,6 @@
 namespace Atc.Installer.Integration.WindowsApplication;
 
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
-[SuppressMessage("Microsoft.Design", "CA1416:Validate platform compatibility", Justification = "OK.")]
 public sealed class WindowsApplicationInstallerService : IWindowsApplicationInstallerService
 {
     private static readonly object InstanceLock = new();
@@ -49,6 +48,70 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         catch
         {
             return ComponentRunningState.Unknown;
+        }
+    }
+
+    public async Task<bool> StopService(
+        string serviceName,
+        ushort timeoutInSeconds = 60)
+    {
+        try
+        {
+            var services = ServiceController.GetServices();
+            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            if (service is null ||
+                service.Status != ServiceControllerStatus.Running)
+            {
+                return false;
+            }
+
+            await Task
+                .Run(() =>
+                {
+                    service.Stop();
+                    service.WaitForStatus(
+                        ServiceControllerStatus.Stopped,
+                        TimeSpan.FromSeconds(timeoutInSeconds));
+                })
+                .ConfigureAwait(false);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> StartService(
+        string serviceName,
+        ushort timeoutInSeconds = 60)
+    {
+        try
+        {
+            var services = ServiceController.GetServices();
+            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            if (service is null ||
+                service.Status != ServiceControllerStatus.Stopped)
+            {
+                return false;
+            }
+
+            await Task
+                .Run(() =>
+                {
+                    service.Start();
+                    service.WaitForStatus(
+                        ServiceControllerStatus.Running,
+                        TimeSpan.FromSeconds(timeoutInSeconds));
+                })
+                .ConfigureAwait(false);
+
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

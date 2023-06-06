@@ -171,4 +171,160 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
             return ComponentRunningState.Unknown;
         }
     }
+
+    public Task<bool> StopApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var serverManager = new ServerManager();
+            var applicationPool = serverManager.ApplicationPools[applicationPoolName];
+            if (applicationPool?.State is not (ObjectState.Started or ObjectState.Starting))
+            {
+                return Task.FromResult(false);
+            }
+
+            applicationPool.Stop();
+            serverManager.CommitChanges();
+
+            var totalSecondsElapsed = 0;
+            while (applicationPool is not { State: ObjectState.Stopped } &&
+                   totalSecondsElapsed < timeoutInSeconds &&
+                   !cancellationToken.IsCancellationRequested)
+            {
+                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                totalSecondsElapsed++;
+            }
+
+            var result = applicationPool.State == ObjectState.Stopped;
+            return Task.FromResult(result);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    public Task<bool> StopWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site?.State is not (ObjectState.Started or ObjectState.Starting))
+            {
+                return Task.FromResult(false);
+            }
+
+            site.Stop();
+            serverManager.CommitChanges();
+
+            var totalSecondsElapsed = 0;
+            while (site is not { State: ObjectState.Stopped } &&
+                   totalSecondsElapsed < timeoutInSeconds &&
+                   !cancellationToken.IsCancellationRequested)
+            {
+                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                totalSecondsElapsed++;
+            }
+
+            var result = site.State == ObjectState.Stopped;
+            return Task.FromResult(result);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    public async Task<bool> StopWebsiteApplicationPool(
+        string websiteName,
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+        => await StopApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
+           await StopWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
+
+    public Task<bool> StartApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var serverManager = new ServerManager();
+            var applicationPool = serverManager.ApplicationPools[applicationPoolName];
+            if (applicationPool?.State is not (ObjectState.Stopped or ObjectState.Stopping))
+            {
+                return Task.FromResult(false);
+            }
+
+            applicationPool.Start();
+            serverManager.CommitChanges();
+
+            var totalSecondsElapsed = 0;
+            while (applicationPool is not { State: ObjectState.Started } &&
+                   totalSecondsElapsed < timeoutInSeconds &&
+                   !cancellationToken.IsCancellationRequested)
+            {
+                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                totalSecondsElapsed++;
+            }
+
+            var result = applicationPool.State == ObjectState.Started;
+            return Task.FromResult(result);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    public Task<bool> StartWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site?.State is not (ObjectState.Stopped or ObjectState.Stopping))
+            {
+                return Task.FromResult(false);
+            }
+
+            site.Start();
+            serverManager.CommitChanges();
+
+            var totalSecondsElapsed = 0;
+            while (site is not { State: ObjectState.Started } &&
+                   totalSecondsElapsed < timeoutInSeconds &&
+                   !cancellationToken.IsCancellationRequested)
+            {
+                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                totalSecondsElapsed++;
+            }
+
+            var result = site.State == ObjectState.Started;
+            return Task.FromResult(result);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    public async Task<bool> StartWebsiteAndApplicationPool(
+        string websiteName,
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+        => await StartApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
+           await StartWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
 }

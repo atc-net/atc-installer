@@ -21,4 +21,36 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     ComponentRunningState GetWebsiteState(
         string websiteName);
+
+    Task<bool> StopApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> StopWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> StopWebsiteApplicationPool(
+        string websiteName,
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> StartApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> StartWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> StartWebsiteAndApplicationPool(
+        string websiteName,
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
 }
