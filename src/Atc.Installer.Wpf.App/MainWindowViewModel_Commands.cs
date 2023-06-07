@@ -34,11 +34,11 @@ public partial class MainWindowViewModel
            !string.IsNullOrEmpty(AzureOptions.BlobContainerName) &&
            ComponentProviders.Count != 0;
 
-    private Task DownloadInstallationFilesFromAzureStorageAccountCommandHandler()
+    private async Task DownloadInstallationFilesFromAzureStorageAccountCommandHandler()
     {
         if (!CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler())
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var componentNames = ComponentProviders
@@ -47,22 +47,32 @@ public partial class MainWindowViewModel
 
         if (!componentNames.Any())
         {
-            return Task.CompletedTask;
+            return;
         }
 
         IsBusy = true;
 
         var downloadFolder = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
 
-        var files = AzureStorageAccountInstallerService.Instance.DownloadLatestFilesByNames(
+        var files = await AzureStorageAccountInstallerService.Instance.DownloadLatestFilesByNames(
             AzureOptions!.StorageConnectionString,
             AzureOptions!.BlobContainerName,
             downloadFolder,
             componentNames);
 
-        // TODO: Unzip files
-        IsBusy = true;
-        return Task.CompletedTask;
+        foreach (var vm in ComponentProviders)
+        {
+            var fileInfo = files.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
+            if (fileInfo is null)
+            {
+                continue;
+            }
+
+            vm.PrepareInstallationFiles(unpackIfIfExist: true);
+            vm.AnalyzeAndUpdateStatesInBackgroundThread();
+        }
+
+        IsBusy = false;
     }
 
     private Task ApplicationAboutCommandHandler()

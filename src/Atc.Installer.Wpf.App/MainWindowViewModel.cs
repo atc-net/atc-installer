@@ -126,13 +126,10 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             }
         }
 
-        // TODO: REMOVE
-        //foreach (var vm in ComponentProviders.Where(x => x.Name == "Schur.Connector.KEPServerEX.Api"))
-        //foreach (var vm in ComponentProviders.Where(x => x.Name == "Schur.PrintServer.NiceLabel10"))
         foreach (var vm in ComponentProviders)
         {
-            vm.PrepareInstallationFiles();
-            vm.StartChecking();
+            vm.PrepareInstallationFiles(unpackIfIfExist: false);
+            vm.AnalyzeAndUpdateStatesInBackgroundThread();
         }
     }
 }

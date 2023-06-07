@@ -39,6 +39,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         base.CheckPrerequisites();
 
+        InstallationPrerequisites.SuppressOnChangedNotification = true;
+
         if (iisInstallerService.IsInstalled)
         {
             AddToInstallationPrerequisites("IsInstalled", LogCategoryType.Information, "IIS is installed");
@@ -58,6 +60,9 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             AddToInstallationPrerequisites("IsInstalled", LogCategoryType.Error, "IIS is not installed");
         }
+
+        InstallationPrerequisites.SuppressOnChangedNotification = false;
+        RaisePropertyChanged(nameof(InstallationPrerequisites));
     }
 
     [SuppressMessage("SonarRules", "S3440:Variables should not be checked against the values they're about to be assigned", Justification = "OK.")]

@@ -132,7 +132,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
 
-    public void PrepareInstallationFiles()
+    public void PrepareInstallationFiles(
+        bool unpackIfIfExist)
     {
         // TODO: Improve installationsPath
         var installationsPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
@@ -141,27 +142,40 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         // TODO: Improve
         InstallationFile = files.FirstOrDefault(x => x.Contains($"{Name}.zip", StringComparison.OrdinalIgnoreCase));
 
-        if (InstallationFile is not null &&
-            InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        if (InstallationFile is null ||
+            !InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
-            UnpackedZipPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Unpacked\{Name}");
-            if (Directory.Exists(UnpackedZipPath))
-            {
-                // TODO: Check existing...
-            }
-            else
-            {
-                Directory.CreateDirectory(UnpackedZipPath);
-                ZipFile.ExtractToDirectory(InstallationFile, UnpackedZipPath, overwriteFiles: true);
-            }
+            return;
         }
+
+        UnpackedZipPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Unpacked\{Name}");
+
+        if (!unpackIfIfExist &&
+            Directory.Exists(UnpackedZipPath))
+        {
+            return;
+        }
+
+        if (Directory.Exists(UnpackedZipPath))
+        {
+            Directory.Delete(UnpackedZipPath, recursive: true);
+        }
+
+        Directory.CreateDirectory(UnpackedZipPath);
+
+        ZipFile.ExtractToDirectory(InstallationFile, UnpackedZipPath, overwriteFiles: true);
     }
 
-    public void StartChecking()
+    public void AnalyzeAndUpdateStatesInBackgroundThread()
     {
         Task.Run(async () =>
         {
-            await WorkOnStartChecking().ConfigureAwait(true);
+            IsBusy = true;
+
+            await Task.Delay(3000);
+            WorkOnAnalyzeAndUpdateStates();
+
+            IsBusy = false;
         });
     }
 
@@ -207,49 +221,35 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         };
     }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-    private async Task WorkOnStartChecking()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    private void WorkOnAnalyzeAndUpdateStates()
     {
-        IsBusy = true;
         InstallationState = ComponentInstallationState.Checking;
 
         InstallationPrerequisites.Clear();
 
-        if (UnpackedZipPath is null)
+        if (UnpackedZipPath is null) // TODO: check for setup.exe or .msi file
         {
-            // TODO:...
             InstallationState = ComponentInstallationState.NoInstallationsFiles;
             RunningState = ComponentRunningState.NotAvailable;
-
-            CheckPrerequisites();
         }
-        else if (InstalledMainFile is null ||
-            !File.Exists(InstalledMainFile))
-        {
-            // TODO:...
-            InstallationState = ComponentInstallationState.NotInstalled;
-            RunningState = ComponentRunningState.NotAvailable;
 
-            CheckPrerequisites();
-        }
-        else
+        if (InstalledMainFile is not null &&
+            File.Exists(InstalledMainFile))
         {
-            // TODO: Improve
-            var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
-            if (!File.Exists(installationMainFile))
-            {
-                installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.dll");
-            }
+            InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
-            if (File.Exists(installationMainFile))
+            if (UnpackedZipPath is not null) // TODO: Improve
             {
-                var hasInstalledWithOldVersion = false;
+                var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
+                if (!File.Exists(installationMainFile))
+                {
+                    installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.dll");
+                }
+
                 if (File.Exists(installationMainFile))
                 {
                     var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
                     var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFile);
-
                     if (installationMainFileVersion.FileVersion is not null &&
                         installedMainFileVersion.FileVersion is not null)
                     {
@@ -258,20 +258,19 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
                         if (a.IsNewerThan(b))
                         {
-                            hasInstalledWithOldVersion = true;
+                            InstallationState = ComponentInstallationState.InstalledWithOldVersion;
                         }
                     }
                 }
-
-                InstallationState = hasInstalledWithOldVersion
-                    ? ComponentInstallationState.InstalledWithOldVersion
-                    : ComponentInstallationState.InstalledWithNewestVersion;
-
-                CheckPrerequisites();
-                CheckServiceState();
             }
         }
+        else
+        {
+            InstallationState = ComponentInstallationState.NotInstalled;
+            RunningState = ComponentRunningState.NotAvailable;
+        }
 
-        IsBusy = false;
+        CheckPrerequisites();
+        CheckServiceState();
     }
 }
