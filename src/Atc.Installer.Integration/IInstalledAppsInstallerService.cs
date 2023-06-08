@@ -6,5 +6,8 @@ public interface IInstalledAppsInstallerService : IInstallerService
 
     bool IsMicrosoftDonNet7();
 
-    bool IsAppInstalledByDisplayName(string appDisplayName);
+    bool IsNodeJs18();
+
+    bool IsAppInstalledByDisplayName(
+        string appDisplayName);
 }

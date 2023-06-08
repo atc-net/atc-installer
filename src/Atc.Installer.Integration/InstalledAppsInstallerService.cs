@@ -1,4 +1,5 @@
 // ReSharper disable LoopCanBeConvertedToQuery
+// ReSharper disable UseNullPropagation
 namespace Atc.Installer.Integration;
 
 /// <summary>
@@ -9,7 +10,6 @@ namespace Atc.Installer.Integration;
 /// </remarks>>
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
 [SuppressMessage("Microsoft.Design", "CA1416:Validate platform compatibility", Justification = "OK.")]
-[SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "OK.")]
 public class InstalledAppsInstallerService : IInstalledAppsInstallerService
 {
     private const string InstalledAppsRegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -38,6 +38,9 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
 
     public bool IsMicrosoftDonNet7()
         => IsMicrosoftDonNet(7);
+
+    public bool IsNodeJs18()
+        => IsNodeJs(18);
 
     public bool IsAppInstalledByDisplayName(
         string appDisplayName)
@@ -92,7 +95,7 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     }
 
     private static bool IsMicrosoftDonNet(
-        int mainVersion)
+        ushort mainVersion)
     {
         try
         {
@@ -107,6 +110,59 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
                 .ToArray();
 
             return directories.Any(x => x.Contains($"Microsoft.NETCore.App\\{mainVersion}.", StringComparison.Ordinal));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsNodeJs(
+        ushort mainVersion)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+            };
+
+            var process = Process.Start(psi);
+            if (process is null)
+            {
+                return false;
+            }
+
+            process.StandardInput.WriteLine("node.exe -v");
+            process.StandardInput.WriteLine("exit");
+
+            var output = process.StandardOutput.ReadToEnd();
+            if (output is null)
+            {
+                return false;
+            }
+
+            var lineWithVersion = output
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault(x => x.StartsWith('v'));
+
+            if (lineWithVersion is null)
+            {
+                return false;
+            }
+
+            var versionAsStr = lineWithVersion[(lineWithVersion.IndexOf('v', StringComparison.Ordinal) + 1)..];
+            if (!Version.TryParse(versionAsStr, out var version))
+            {
+                return false;
+            }
+
+            var minVersion = new Version(mainVersion, 0);
+            return version.GreaterThanOrEqualTo(minVersion, 1);
         }
         catch
         {

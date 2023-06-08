@@ -12,6 +12,8 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     bool IsMicrosoftDonNet7();
 
+    bool IsNodeJs18();
+
     bool IsInstalledManagementConsole();
 
     bool IsComponentInstalledWebSockets();

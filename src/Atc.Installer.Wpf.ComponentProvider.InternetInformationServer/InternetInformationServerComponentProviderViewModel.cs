@@ -284,6 +284,15 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     AddToInstallationPrerequisites("IsComponentInstalledUrlRewriteModule2", LogCategoryType.Warning, "IIS module 'URL Rewrite Module 2' is not installed");
                 }
 
+                if (iisInstallerService.IsNodeJs18())
+                {
+                    AddToInstallationPrerequisites("IsNodeJs", LogCategoryType.Information, "NodeJS is installed");
+                }
+                else
+                {
+                    AddToInstallationPrerequisites("IsNodeJs", LogCategoryType.Warning, "NodeJS is not installed");
+                }
+
                 break;
             default:
                 throw new SwitchCaseDefaultException(HostingFramework);
@@ -360,7 +369,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
-            await ServiceDeployWebsiteStart();
+            await ServiceDeployWebsiteStart().ConfigureAwait(true);
 
             isDone = true;
         }

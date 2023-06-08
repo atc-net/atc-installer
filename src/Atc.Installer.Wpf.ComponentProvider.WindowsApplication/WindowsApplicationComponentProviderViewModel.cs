@@ -112,6 +112,12 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return true;
         }
 
+        if (!IsWindowsService)
+        {
+            // TODO: Check installation data...
+            return true;
+        }
+
         return false;
     }
 

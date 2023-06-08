@@ -78,6 +78,9 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public bool IsMicrosoftDonNet7()
         => InstalledAppsInstallerService.Instance.IsMicrosoftDonNet7();
 
+    public bool IsNodeJs18()
+        => InstalledAppsInstallerService.Instance.IsNodeJs18();
+
     public bool IsInstalledManagementConsole()
     {
         try
