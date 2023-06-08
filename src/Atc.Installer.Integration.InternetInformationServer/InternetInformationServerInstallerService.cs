@@ -323,75 +323,89 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         }
     }
 
-    public Task<bool> StopApplicationPool(
+    public async Task<bool> StopApplicationPool(
         string applicationPoolName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
+
+        var applicationPoolState = GetApplicationPoolState(applicationPoolName);
+        if (applicationPoolState is not ComponentRunningState.Running)
+        {
+            return false;
+        }
+
         try
         {
             using var serverManager = new ServerManager();
             var applicationPool = serverManager.ApplicationPools[applicationPoolName];
-            if (applicationPool?.State is not (ObjectState.Started or ObjectState.Starting))
-            {
-                return Task.FromResult(false);
-            }
-
             applicationPool.Stop();
             serverManager.CommitChanges();
 
             var totalSecondsElapsed = 0;
-            while (applicationPool is not { State: ObjectState.Stopped } &&
+            while (applicationPoolState is
+                       ComponentRunningState.Checking or
+                       ComponentRunningState.Running &&
                    totalSecondsElapsed < timeoutInSeconds &&
                    !cancellationToken.IsCancellationRequested)
             {
-                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                await Task
+                    .Delay(TimeSpan.FromSeconds(1), cancellationToken)
+                    .ConfigureAwait(true);
                 totalSecondsElapsed++;
+
+                applicationPoolState = GetApplicationPoolState(applicationPoolName);
             }
 
-            var result = applicationPool.State == ObjectState.Stopped;
-            return Task.FromResult(result);
+            return applicationPoolState == ComponentRunningState.Stopped;
         }
         catch
         {
-            return Task.FromResult(false);
+            return false;
         }
     }
 
-    public Task<bool> StopWebsite(
+    public async Task<bool> StopWebsite(
         string websiteName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(websiteName);
 
+        var websiteState = GetWebsiteState(websiteName);
+        if (websiteState is not ComponentRunningState.Running)
+        {
+            return false;
+        }
+
         try
         {
             using var serverManager = new ServerManager();
             var website = serverManager.Sites[websiteName];
-            if (website?.State is not (ObjectState.Started or ObjectState.Starting))
-            {
-                return Task.FromResult(false);
-            }
-
             website.Stop();
             serverManager.CommitChanges();
 
             var totalSecondsElapsed = 0;
-            while (website is not { State: ObjectState.Stopped } &&
+            while (websiteState is
+                       ComponentRunningState.Checking or
+                       ComponentRunningState.Running &&
                    totalSecondsElapsed < timeoutInSeconds &&
                    !cancellationToken.IsCancellationRequested)
             {
-                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                await Task
+                    .Delay(TimeSpan.FromSeconds(1), cancellationToken)
+                    .ConfigureAwait(true);
                 totalSecondsElapsed++;
+
+                websiteState = GetWebsiteState(websiteName);
             }
 
-            var result = website.State == ObjectState.Stopped;
-            return Task.FromResult(result);
+            return websiteState == ComponentRunningState.Stopped;
         }
         catch
         {
-            return Task.FromResult(false);
+            return false;
         }
     }
 
@@ -400,80 +414,92 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         string applicationPoolName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
-        => await StopApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
-           await StopWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
+        => await StopWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
+           await StopApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
 
-    public Task<bool> StartApplicationPool(
+    public async Task<bool> StartApplicationPool(
         string applicationPoolName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
 
+        var applicationPoolState = GetApplicationPoolState(applicationPoolName);
+        if (applicationPoolState is not ComponentRunningState.Stopped)
+        {
+            return false;
+        }
+
         try
         {
             using var serverManager = new ServerManager();
             var applicationPool = serverManager.ApplicationPools[applicationPoolName];
-            if (applicationPool?.State is not (ObjectState.Stopped or ObjectState.Stopping))
-            {
-                return Task.FromResult(false);
-            }
-
             applicationPool.Start();
             serverManager.CommitChanges();
 
             var totalSecondsElapsed = 0;
-            while (applicationPool is not { State: ObjectState.Started } &&
+            while (applicationPoolState is
+                       ComponentRunningState.Checking or
+                       ComponentRunningState.Stopped &&
                    totalSecondsElapsed < timeoutInSeconds &&
                    !cancellationToken.IsCancellationRequested)
             {
-                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                await Task
+                    .Delay(TimeSpan.FromSeconds(1), cancellationToken)
+                    .ConfigureAwait(true);
                 totalSecondsElapsed++;
+
+                applicationPoolState = GetApplicationPoolState(applicationPoolName);
             }
 
-            var result = applicationPool.State == ObjectState.Started;
-            return Task.FromResult(result);
+            return applicationPoolState == ComponentRunningState.Running;
         }
         catch
         {
-            return Task.FromResult(false);
+            return false;
         }
     }
 
-    public Task<bool> StartWebsite(
+    public async Task<bool> StartWebsite(
         string websiteName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(websiteName);
 
+        var websiteState = GetWebsiteState(websiteName);
+        if (websiteState is not ComponentRunningState.Stopped)
+        {
+            return false;
+        }
+
         try
         {
             using var serverManager = new ServerManager();
             var website = serverManager.Sites[websiteName];
-            if (website?.State is not (ObjectState.Stopped or ObjectState.Stopping))
-            {
-                return Task.FromResult(false);
-            }
-
             website.Start();
             serverManager.CommitChanges();
 
             var totalSecondsElapsed = 0;
-            while (website is not { State: ObjectState.Started } &&
+            while (websiteState is
+                       ComponentRunningState.Checking or
+                       ComponentRunningState.Stopped &&
                    totalSecondsElapsed < timeoutInSeconds &&
                    !cancellationToken.IsCancellationRequested)
             {
-                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                await Task
+                    .Delay(TimeSpan.FromSeconds(1), cancellationToken)
+                    .ConfigureAwait(true);
                 totalSecondsElapsed++;
+
+                websiteState = GetWebsiteState(websiteName);
             }
 
-            var result = website.State == ObjectState.Started;
-            return Task.FromResult(result);
+            return websiteState == ComponentRunningState.Running;
         }
         catch
         {
-            return Task.FromResult(false);
+            return false;
         }
     }
 
