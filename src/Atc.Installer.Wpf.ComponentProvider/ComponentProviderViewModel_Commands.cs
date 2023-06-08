@@ -13,6 +13,8 @@ public partial class ComponentProviderViewModel
 
     public IRelayCommandAsync ServiceDeployCommand => new RelayCommandAsync(ServiceDeployCommandHandler, CanServiceDeployCommandHandler);
 
+    public IRelayCommandAsync ServiceDeployAndStartCommand => new RelayCommandAsync(ServiceDeployAndStartCommandHandler, CanServiceDeployCommandHandler);
+
     public virtual bool CanServiceStopCommandHandler()
         => false;
 
@@ -29,5 +31,8 @@ public partial class ComponentProviderViewModel
         => false;
 
     public virtual Task ServiceDeployCommandHandler()
+        => Task.CompletedTask;
+
+    public virtual Task ServiceDeployAndStartCommandHandler()
         => Task.CompletedTask;
 }

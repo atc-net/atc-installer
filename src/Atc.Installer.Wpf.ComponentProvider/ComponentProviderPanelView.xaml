@@ -83,6 +83,7 @@
                     <Button Command="{Binding Path=ServiceStopCommand}" Content="Stop" />
                     <Button Command="{Binding Path=ServiceStartCommand}" Content="Start" />
                     <Button Command="{Binding Path=ServiceDeployCommand}" Content="Deploy" />
+                    <Button Command="{Binding Path=ServiceDeployAndStartCommand}" Content="Deploy and start" />
                 </atc:UniformSpacingPanel>
             </GroupBox>
 

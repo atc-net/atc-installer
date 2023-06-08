@@ -192,7 +192,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         };
     }
 
-    public override async Task ServiceDeployCommandHandler()
+    public override Task ServiceDeployCommandHandler()
+        => ServiceDeployAndStart(useAutoStart: false);
+
+    public override Task ServiceDeployAndStartCommandHandler()
+        => ServiceDeployAndStart(useAutoStart: true);
+
+    private async Task ServiceDeployAndStart(
+        bool useAutoStart)
     {
         if (!CanServiceDeployCommandHandler())
         {
@@ -210,13 +217,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             InstallationPath is not null &&
             Http.HasValue)
         {
-            isDone = await ServiceDeployWebsiteCreate().ConfigureAwait(true);
+            isDone = await ServiceDeployWebsiteCreate(useAutoStart).ConfigureAwait(true);
         }
         else if (RunningState == ComponentRunningState.Stopped &&
                  UnpackedZipPath is not null &&
                  InstallationPath is not null)
         {
-            isDone = ServiceDeployWebsiteUpdate();
+            isDone = await ServiceDeployWebsiteUpdate(useAutoStart).ConfigureAwait(true);
         }
 
         LogItems.Add(isDone
@@ -320,7 +327,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 message));
     }
 
-    private async Task<bool> ServiceDeployWebsiteCreate()
+    private async Task<bool> ServiceDeployWebsiteCreate(
+        bool useAutoStart)
     {
         var isDone = false;
 
@@ -355,7 +363,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
-            await ServiceDeployWebsiteStart().ConfigureAwait(true);
+            if (useAutoStart)
+            {
+                LogItems.Add(LogItemFactory.CreateTrace("Auto starting website"));
+                await ServiceDeployWebsiteStart().ConfigureAwait(true);
+                LogItems.Add(RunningState == ComponentRunningState.Running
+                    ? LogItemFactory.CreateInformation("Website is started")
+                    : LogItemFactory.CreateWarning("Website is not started"));
+            }
 
             isDone = true;
         }
@@ -363,6 +378,37 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             LogItems.Add(LogItemFactory.CreateError("Website is not created"));
         }
+
+        return isDone;
+    }
+
+    private async Task<bool> ServiceDeployWebsiteUpdate(
+        bool useAutoStart)
+    {
+        var isDone = false;
+
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+        InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+
+        if (useAutoStart)
+        {
+            LogItems.Add(LogItemFactory.CreateTrace("Auto starting website"));
+            await ServiceDeployWebsiteStart().ConfigureAwait(true);
+            LogItems.Add(RunningState == ComponentRunningState.Running
+                ? LogItemFactory.CreateInformation("Website is started")
+                : LogItemFactory.CreateWarning("Website is not started"));
+        }
+
+        isDone = true;
 
         return isDone;
     }
@@ -388,22 +434,5 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
             RunningState = iisInstallerService.GetWebsiteState(Name);
         }
-    }
-
-    private bool ServiceDeployWebsiteUpdate()
-    {
-        var isDone = false;
-
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
-        {
-            return isDone;
-        }
-
-        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
-        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
-
-        return isDone;
     }
 }
