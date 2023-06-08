@@ -36,6 +36,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         ProjectName = projectName;
         DefaultApplicationSettings = defaultApplicationSettings;
+        ApplicationSettings = applicationOption.ApplicationSettings;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.InternetInformationService or ComponentType.WindowsService;
@@ -52,7 +53,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public string ProjectName { get; }
 
-    public IDictionary<string, object> DefaultApplicationSettings { get; private set; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public IDictionary<string, object> DefaultApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+
+    public IDictionary<string, object> ApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
     public string Name { get; }
 
@@ -137,6 +140,26 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public ObservableCollectionEx<InstallationPrerequisiteViewModel> InstallationPrerequisites { get; } = new();
 
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
+
+    public bool TryGetStringFromDefaultApplicationSettings(
+        string key,
+        out string value)
+        => DefaultApplicationSettings.TryGetStringFromDictionary(key, out value);
+
+    public bool TryGetUshortFromDefaultApplicationSettings(
+        string key,
+        out ushort value)
+        => DefaultApplicationSettings.TryGetUshortFromDictionary(key, out value);
+
+    public bool TryGetStringFromApplicationSettings(
+        string key,
+        out string value)
+        => DefaultApplicationSettings.TryGetStringFromDictionary(key, out value);
+
+    public bool TryGetUshortFromApplicationSettings(
+        string key,
+        out ushort value)
+        => ApplicationSettings.TryGetUshortFromDictionary(key, out value);
 
     public void PrepareInstallationFiles(
         bool unpackIfIfExist)

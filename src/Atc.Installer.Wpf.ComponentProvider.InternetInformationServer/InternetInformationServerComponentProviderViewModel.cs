@@ -34,29 +34,19 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
 
-        if (applicationOption.ApplicationSettings.TryGetValue("http", out var objValueHttp) &&
-            ushort.TryParse(
-                objValueHttp.ToString(),
-                NumberStyles.Number,
-                GlobalizationConstants.EnglishCultureInfo,
-                out var http))
+        if (TryGetUshortFromApplicationSettings("http", out var httpValue))
         {
-            Http = http;
+            Http = httpValue;
         }
 
-        if (applicationOption.ApplicationSettings.TryGetValue("https", out var objValueHttps) &&
-            ushort.TryParse(
-                objValueHttps.ToString(),
-                NumberStyles.Number,
-                GlobalizationConstants.EnglishCultureInfo,
-                out var https))
+        if (TryGetUshortFromApplicationSettings("https", out var httpsValue))
         {
-            Https = https;
+            Https = httpsValue;
         }
 
-        if (DefaultApplicationSettings.TryGetValue("HostName", out var objValueHostName))
+        if (TryGetStringFromDefaultApplicationSettings("HostName", out var hostnameValue))
         {
-            HostName = objValueHostName.ToString();
+            HostName = hostnameValue;
         }
     }
 
