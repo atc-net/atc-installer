@@ -125,6 +125,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return;
         }
 
+        IsBusy = true;
+
         LogItems.Add(LogItemFactory.CreateTrace("Stop service"));
 
         var isStopped = await iisInstallerService
@@ -140,6 +142,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
         }
+
+        IsBusy = false;
     }
 
     public override bool CanServiceStartCommandHandler()
@@ -151,6 +155,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             return;
         }
+
+        IsBusy = true;
 
         LogItems.Add(LogItemFactory.CreateTrace("Start"));
 
@@ -167,6 +173,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             LogItems.Add(LogItemFactory.CreateError("Could not start service"));
         }
+
+        IsBusy = false;
     }
 
     public override bool CanServiceDeployCommandHandler()
@@ -179,7 +187,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         return RunningState switch
         {
             ComponentRunningState.Stopped => true,
-            ComponentRunningState.Unknown when InstallationState == ComponentInstallationState.NotInstalled => true,
+            ComponentRunningState.Unknown when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
             _ => false,
         };
     }
@@ -196,6 +204,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         LogItems.Add(LogItemFactory.CreateTrace("Deploy"));
 
         var isDone = false;
+
         if (InstallationState == ComponentInstallationState.NotInstalled &&
             UnpackedZipPath is not null &&
             InstallationPath is not null &&
@@ -311,33 +320,10 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 message));
     }
 
-    private static void CopyAll(
-        string sourcePath,
-        string destinationPath)
-    {
-        // Create the destination directory if it doesn't exist
-        Directory.CreateDirectory(destinationPath);
-
-        // Copy all files
-        foreach (var sourceFile in Directory.GetFiles(sourcePath))
-        {
-            var fileName = Path.GetFileName(sourceFile);
-            var destinationFile = Path.Combine(destinationPath, fileName);
-            File.Copy(sourceFile, destinationFile, overwrite: true);
-        }
-
-        // Recursively copy all subdirectories
-        foreach (var sourceSubDirectory in Directory.GetDirectories(sourcePath))
-        {
-            var subDirectoryName = Path.GetFileName(sourceSubDirectory);
-            var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName);
-            CopyAll(sourceSubDirectory, destinationSubDirectory);
-        }
-    }
-
     private async Task<bool> ServiceDeployWebsiteCreate()
     {
         var isDone = false;
+
         if (UnpackedZipPath is null ||
             InstallationPath is null ||
             Http is null)
@@ -364,7 +350,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
 
             LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-            CopyAll(UnpackedZipPath, InstallationPath);
+            new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
             LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
 
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
@@ -407,6 +393,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     private bool ServiceDeployWebsiteUpdate()
     {
         var isDone = false;
+
         if (UnpackedZipPath is null ||
             InstallationPath is null)
         {
@@ -414,7 +401,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
 
         LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        CopyAll(UnpackedZipPath, InstallationPath);
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
         LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
 
         return isDone;

@@ -5,9 +5,9 @@ global using System.IO;
 global using System.IO.Compression;
 global using System.Windows.Data;
 global using System.Windows.Media;
+
 global using Atc.Data.Models;
 global using Atc.Installer.Integration;
-global using Atc.Installer.Integration.Extensions;
 global using Atc.Installer.Integration.InstallationConfigurations;
 global using Atc.Installer.Wpf.ComponentProvider.Messages;
 global using Atc.Wpf.Collections;

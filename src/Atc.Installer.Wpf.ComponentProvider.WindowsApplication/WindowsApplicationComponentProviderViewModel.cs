@@ -46,8 +46,19 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     }
 
     public override bool CanServiceStopCommandHandler()
-        => IsWindowsService &&
-           RunningState == ComponentRunningState.Running;
+    {
+        if (IsWindowsService)
+        {
+            return RunningState switch
+            {
+                ComponentRunningState.Running => true,
+                _ => false,
+            };
+        }
+
+        // TODO: Check application installation data / running process...
+        return true;
+    }
 
     public override async Task ServiceStopCommandHandler()
     {
@@ -56,8 +67,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return;
         }
 
+        IsBusy = true;
+
         LogItems.Add(LogItemFactory.CreateTrace("Stop"));
-        RunningState = ComponentRunningState.Checking;
 
         var isStopped = await waInstallerService
             .StopService(Name)
@@ -72,11 +84,24 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         {
             LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
         }
+
+        IsBusy = false;
     }
 
     public override bool CanServiceStartCommandHandler()
-        => IsWindowsService &&
-           RunningState == ComponentRunningState.Stopped;
+    {
+        if (IsWindowsService)
+        {
+            return RunningState switch
+            {
+                ComponentRunningState.Stopped => true,
+                _ => false,
+            };
+        }
+
+        // TODO: Check application installation data / running process...
+        return true;
+    }
 
     public override async Task ServiceStartCommandHandler()
     {
@@ -85,8 +110,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return;
         }
 
+        IsBusy = true;
+
         LogItems.Add(LogItemFactory.CreateTrace("Start"));
-        RunningState = ComponentRunningState.Checking;
 
         var isStarted = await waInstallerService
             .StartService(Name)
@@ -101,38 +127,74 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         {
             LogItems.Add(LogItemFactory.CreateError("Could not start service"));
         }
+
+        IsBusy = false;
     }
 
     public override bool CanServiceDeployCommandHandler()
     {
-        if (IsWindowsService &&
-            RunningState == ComponentRunningState.Stopped)
+        if (IsWindowsService)
         {
-            // TODO: Check installation data...
-            return true;
+            return RunningState switch
+            {
+                ComponentRunningState.Stopped => true,
+                ComponentRunningState.Unknown when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
+                _ => false,
+            };
         }
 
-        if (!IsWindowsService)
-        {
-            // TODO: Check installation data...
-            return true;
-        }
-
-        return false;
+        // TODO: Check application installation data / running process...
+        return true;
     }
 
-    public override Task ServiceDeployCommandHandler()
+    public override async Task ServiceDeployCommandHandler()
     {
         if (!CanServiceDeployCommandHandler())
         {
-            return Task.CompletedTask;
+            return;
         }
+
+        IsBusy = true;
 
         LogItems.Add(LogItemFactory.CreateTrace("Deploy"));
 
-        // TODO:
-        ////LogItems.Add(LogItemFactory.CreateTrace("Deployed"));
-        return Task.CompletedTask;
+        var isDone = false;
+
+        if (IsWindowsService)
+        {
+            if (InstallationState == ComponentInstallationState.NotInstalled &&
+                UnpackedZipPath is not null &&
+                InstallationPath is not null)
+            {
+                isDone = await ServiceDeployWindowServiceCreate().ConfigureAwait(true);
+            }
+            else if (RunningState == ComponentRunningState.Stopped &&
+                     UnpackedZipPath is not null &&
+                     InstallationPath is not null)
+            {
+                isDone = ServiceDeployWindowServiceUpdate();
+            }
+        }
+        else
+        {
+            if (InstallationState == ComponentInstallationState.NotInstalled &&
+                UnpackedZipPath is not null &&
+                InstallationPath is not null)
+            {
+                isDone = await ServiceDeployWindowApplicationCreate().ConfigureAwait(true);
+            }
+            else if (UnpackedZipPath is not null &&
+                     InstallationPath is not null)
+            {
+                isDone = ServiceDeployWindowApplicationUpdate();
+            }
+        }
+
+        LogItems.Add(isDone
+            ? LogItemFactory.CreateInformation("Deployed")
+            : LogItemFactory.CreateError("Not deployed"));
+
+        IsBusy = false;
     }
 
     public override void CheckPrerequisites()
@@ -171,5 +233,73 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 $"WA_{key}",
                 categoryType,
                 message));
+    }
+
+    private async Task<bool> ServiceDeployWindowServiceCreate()
+    {
+        var isDone = false;
+
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+        return isDone;
+    }
+
+    private bool ServiceDeployWindowServiceUpdate()
+    {
+        var isDone = false;
+
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+        return isDone;
+    }
+
+    private async Task<bool> ServiceDeployWindowApplicationCreate()
+    {
+        var isDone = false;
+
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+        return isDone;
+    }
+
+    private bool ServiceDeployWindowApplicationUpdate()
+    {
+        var isDone = false;
+
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+        return isDone;
     }
 }
