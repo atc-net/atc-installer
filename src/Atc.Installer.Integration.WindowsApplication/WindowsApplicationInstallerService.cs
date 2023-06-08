@@ -27,7 +27,7 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
     public bool IsMicrosoftDonNet7()
         => InstalledAppsInstallerService.Instance.IsMicrosoftDonNet7();
 
-    public ComponentRunningState GetRunningState(
+    public ComponentRunningState GetServiceState(
         string serviceName)
     {
         try

@@ -33,7 +33,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (IsWindowsService)
         {
             RunningState = ComponentRunningState.Checking;
-            RunningState = waInstallerService.GetRunningState(Name);
+            RunningState = waInstallerService.GetServiceState(Name);
             if (RunningState == ComponentRunningState.Checking)
             {
                 RunningState = ComponentRunningState.NotAvailable;

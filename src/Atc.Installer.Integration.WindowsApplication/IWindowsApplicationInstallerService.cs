@@ -6,7 +6,7 @@ public interface IWindowsApplicationInstallerService : IInstallerService
 
     bool IsMicrosoftDonNet7();
 
-    ComponentRunningState GetRunningState(
+    ComponentRunningState GetServiceState(
         string serviceName);
 
     Task<bool> StopService(
