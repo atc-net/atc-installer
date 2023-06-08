@@ -103,7 +103,8 @@
                                         <Ellipse
                                             Width="20"
                                             Height="20"
-                                            Fill="{Binding Path=Severity, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}" />
+                                            Fill="{Binding Path=Severity, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}"
+                                            ToolTip="{Binding Path=Severity}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

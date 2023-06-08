@@ -27,11 +27,15 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public ComponentProviderViewModel(
         string projectName,
+        IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
     {
+        ArgumentException.ThrowIfNullOrEmpty(projectName);
+        ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         ProjectName = projectName;
+        DefaultApplicationSettings = defaultApplicationSettings;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.InternetInformationService or ComponentType.WindowsService;
@@ -47,6 +51,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public string ProjectName { get; }
+
+    public IDictionary<string, object> DefaultApplicationSettings { get; private set; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
     public string Name { get; }
 
@@ -137,6 +143,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     {
         // TODO: Improve installationsPath
         var installationsPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
+        if (!Directory.Exists(installationsPath))
+        {
+            Directory.CreateDirectory(installationsPath);
+        }
+
         var files = Directory.EnumerateFiles(installationsPath).ToArray();
 
         // TODO: Improve

@@ -126,6 +126,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public ComponentRunningState GetApplicationPoolState(
         string applicationPoolName)
     {
+        ArgumentNullException.ThrowIfNull(applicationPoolName);
+
         try
         {
             using var serverManager = new ServerManager();
@@ -154,6 +156,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public ComponentRunningState GetWebsiteState(
         string websiteName)
     {
+        ArgumentNullException.ThrowIfNull(websiteName);
+
         try
         {
             using var serverManager = new ServerManager();
@@ -176,6 +180,136 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         catch
         {
             return ComponentRunningState.Unknown;
+        }
+    }
+
+    public Task<bool> CreateApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(applicationPoolName);
+
+        var applicationPoolState = GetApplicationPoolState(applicationPoolName);
+        if (applicationPoolState != ComponentRunningState.NotAvailable)
+        {
+            return Task.FromResult(false);
+        }
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var applicationPool = serverManager.ApplicationPools.Add(applicationPoolName);
+            applicationPool.ManagedRuntimeVersion = "v4.0";
+            applicationPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
+            applicationPool.StartMode = StartMode.AlwaysRunning;
+            serverManager.CommitChanges();
+            return Task.FromResult(true);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    public Task<bool> CreateWebsite(
+        string websiteName,
+        string applicationPoolName,
+        DirectoryInfo physicalPath,
+        ushort port,
+        string? hostName = null,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+        => CreateWebsite(
+            websiteName,
+            applicationPoolName,
+            physicalPath,
+            port,
+            httpsPort: null,
+            hostName,
+            requireServerNameIndication: false,
+            timeoutInSeconds,
+            cancellationToken);
+
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+    public async Task<bool> CreateWebsite(
+        string websiteName,
+        string applicationPoolName,
+        DirectoryInfo physicalPath,
+        ushort httpPort,
+        ushort? httpsPort,
+        string? hostName,
+        bool requireServerNameIndication,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(websiteName);
+        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentNullException.ThrowIfNull(physicalPath);
+
+        var websiteState = GetWebsiteState(websiteName);
+        if (websiteState != ComponentRunningState.NotAvailable)
+        {
+            return false;
+        }
+
+        var applicationPoolState = GetApplicationPoolState(applicationPoolName);
+        if (applicationPoolState == ComponentRunningState.NotAvailable)
+        {
+            var isApplicationPoolCreated = await CreateApplicationPool(
+                applicationPoolName,
+                timeoutInSeconds,
+                cancellationToken).ConfigureAwait(false);
+
+            if (!isApplicationPoolCreated)
+            {
+                return false;
+            }
+        }
+
+        var httpBindingInformation = $"*:{httpPort}:";
+        var httpsBindingInformation = $"*:{httpsPort}:";
+        if (!string.IsNullOrEmpty(hostName))
+        {
+            httpBindingInformation += hostName;
+            httpsBindingInformation += hostName;
+        }
+
+        try
+        {
+            if (!Directory.Exists(physicalPath.FullName))
+            {
+                Directory.CreateDirectory(physicalPath.FullName);
+            }
+
+            using var serverManager = new ServerManager();
+            var website = serverManager.Sites.Add(
+                websiteName,
+                "http",
+                httpBindingInformation,
+                physicalPath.FullName);
+            website.ApplicationDefaults.ApplicationPoolName = applicationPoolName;
+            website.ServerAutoStart = true;
+
+            if (httpsPort is not null &&
+                !string.IsNullOrEmpty(hostName))
+            {
+                var bindingIpAddress = httpsBindingInformation.Split(':')[0];
+                var bindingPort = httpsBindingInformation.Split(':')[1];
+                var newBinding = website.Bindings.Add(
+                    $"{bindingIpAddress}:{bindingPort}:{hostName}",
+                    "https");
+                newBinding.SslFlags = requireServerNameIndication
+                    ? SslFlags.Sni
+                    : SslFlags.None;
+            }
+
+            serverManager.CommitChanges();
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -219,20 +353,22 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+
         try
         {
             using var serverManager = new ServerManager();
-            var site = serverManager.Sites[websiteName];
-            if (site?.State is not (ObjectState.Started or ObjectState.Starting))
+            var website = serverManager.Sites[websiteName];
+            if (website?.State is not (ObjectState.Started or ObjectState.Starting))
             {
                 return Task.FromResult(false);
             }
 
-            site.Stop();
+            website.Stop();
             serverManager.CommitChanges();
 
             var totalSecondsElapsed = 0;
-            while (site is not { State: ObjectState.Stopped } &&
+            while (website is not { State: ObjectState.Stopped } &&
                    totalSecondsElapsed < timeoutInSeconds &&
                    !cancellationToken.IsCancellationRequested)
             {
@@ -240,7 +376,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                 totalSecondsElapsed++;
             }
 
-            var result = site.State == ObjectState.Stopped;
+            var result = website.State == ObjectState.Stopped;
             return Task.FromResult(result);
         }
         catch
@@ -262,6 +398,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
+
         try
         {
             using var serverManager = new ServerManager();
@@ -297,20 +435,22 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+
         try
         {
             using var serverManager = new ServerManager();
-            var site = serverManager.Sites[websiteName];
-            if (site?.State is not (ObjectState.Stopped or ObjectState.Stopping))
+            var website = serverManager.Sites[websiteName];
+            if (website?.State is not (ObjectState.Stopped or ObjectState.Stopping))
             {
                 return Task.FromResult(false);
             }
 
-            site.Start();
+            website.Start();
             serverManager.CommitChanges();
 
             var totalSecondsElapsed = 0;
-            while (site is not { State: ObjectState.Started } &&
+            while (website is not { State: ObjectState.Started } &&
                    totalSecondsElapsed < timeoutInSeconds &&
                    !cancellationToken.IsCancellationRequested)
             {
@@ -318,7 +458,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                 totalSecondsElapsed++;
             }
 
-            var result = site.State == ObjectState.Started;
+            var result = website.State == ObjectState.Started;
             return Task.FromResult(result);
         }
         catch

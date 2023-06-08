@@ -7,9 +7,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public WindowsApplicationComponentProviderViewModel(
         string projectName,
+        IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             projectName,
+            defaultApplicationSettings,
             applicationOption)
     {
         ArgumentNullException.ThrowIfNull(applicationOption);

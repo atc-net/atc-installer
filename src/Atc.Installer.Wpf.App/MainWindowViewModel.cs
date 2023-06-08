@@ -13,6 +13,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             ComponentProviders.Add(
                 new WindowsApplicationComponentProviderViewModel(
                     ProjectName,
+                    new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
                     {
                         Name = "My-NT-Service",
@@ -22,6 +23,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             ComponentProviders.Add(
                 new InternetInformationServerComponentProviderViewModel(
                     ProjectName,
+                    new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
                     {
                         Name = "My-WebApi",
@@ -42,6 +44,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     public ApplicationOptions? ApplicationOptions { get; init; }
 
     public AzureOptions? AzureOptions { get; set; }
+
+    public IDictionary<string, object> DefaultApplicationSettings { get; private set; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
     public string? ProjectName
     {
@@ -94,6 +98,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     {
         ProjectName = installationOptions.Name;
         AzureOptions = installationOptions.Azure;
+        DefaultApplicationSettings = installationOptions.DefaultApplicationSettings;
 
         ComponentProviders.Clear();
 
@@ -105,6 +110,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 {
                     var vm = new WindowsApplicationComponentProviderViewModel(
                         ProjectName,
+                        DefaultApplicationSettings,
                         appInstallationOption);
                     ComponentProviders.Add(vm);
                     break;
@@ -114,6 +120,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 {
                     var vm = new InternetInformationServerComponentProviderViewModel(
                         ProjectName,
+                        DefaultApplicationSettings,
                         appInstallationOption);
                     ComponentProviders.Add(vm);
                     break;

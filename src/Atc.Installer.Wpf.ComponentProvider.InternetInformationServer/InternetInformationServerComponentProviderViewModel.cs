@@ -7,9 +7,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public InternetInformationServerComponentProviderViewModel(
         string projectName,
+        IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             projectName,
+            defaultApplicationSettings,
             applicationOption)
     {
         ArgumentNullException.ThrowIfNull(applicationOption);
@@ -31,9 +33,40 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
+
+        if (applicationOption.ApplicationSettings.TryGetValue("http", out var objValueHttp) &&
+            ushort.TryParse(
+                objValueHttp.ToString(),
+                NumberStyles.Number,
+                GlobalizationConstants.EnglishCultureInfo,
+                out var http))
+        {
+            Http = http;
+        }
+
+        if (applicationOption.ApplicationSettings.TryGetValue("https", out var objValueHttps) &&
+            ushort.TryParse(
+                objValueHttps.ToString(),
+                NumberStyles.Number,
+                GlobalizationConstants.EnglishCultureInfo,
+                out var https))
+        {
+            Https = https;
+        }
+
+        if (DefaultApplicationSettings.TryGetValue("HostName", out var objValueHostName))
+        {
+            HostName = objValueHostName.ToString();
+        }
     }
 
     public bool IsRequiredWebSockets { get; }
+
+    public ushort? Http { get; }
+
+    public ushort? Https { get; }
+
+    public string? HostName { get; }
 
     public override void CheckPrerequisites()
     {
@@ -148,27 +181,93 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceDeployCommandHandler()
     {
-        if (RunningState == ComponentRunningState.Stopped)
+        if (UnpackedZipPath is null)
         {
-            // TODO: Check installation data...
-            return true;
+            return false;
         }
 
-        return false;
+        return RunningState switch
+        {
+            ComponentRunningState.Stopped => true,
+            ComponentRunningState.Unknown when InstallationState == ComponentInstallationState.NotInstalled => true,
+            _ => false,
+        };
     }
 
-    public override Task ServiceDeployCommandHandler()
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK - for now.")]
+    public override async Task ServiceDeployCommandHandler()
     {
         if (!CanServiceDeployCommandHandler())
         {
-            return Task.CompletedTask;
+            return;
         }
+
+        IsBusy = true;
 
         LogItems.Add(LogItemFactory.CreateTrace("Deploy"));
 
-        // TODO:
-        ////LogItems.Add(LogItemFactory.CreateTrace("Deployed"));
-        return Task.CompletedTask;
+        var isDone = false;
+        if (InstallationState == ComponentInstallationState.NotInstalled &&
+            UnpackedZipPath is not null &&
+            InstallationPath is not null &&
+            Http.HasValue)
+        {
+            LogItems.Add(LogItemFactory.CreateTrace("Create Website"));
+
+            var isWebsiteCreated = await iisInstallerService
+                .CreateWebsite(
+                    Name,
+                    Name,
+                    new DirectoryInfo(InstallationPath),
+                    Http.Value,
+                    Https,
+                    HostName,
+                    requireServerNameIndication: true)
+                .ConfigureAwait(true);
+
+            if (isWebsiteCreated)
+            {
+                InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+                LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
+
+                LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+                CopyAll(UnpackedZipPath, InstallationPath);
+                LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+                RunningState = iisInstallerService.GetWebsiteState(Name);
+                if (RunningState == ComponentRunningState.Stopped)
+                {
+                    var isWebsiteStarted = await iisInstallerService.StartWebsite(Name);
+                    if (!isWebsiteStarted)
+                    {
+                        LogItems.Add(LogItemFactory.CreateWarning("Website have some problem with auto-start"));
+                    }
+
+                    RunningState = iisInstallerService.GetWebsiteState(Name);
+                }
+
+                isDone = true;
+            }
+            else
+            {
+                LogItems.Add(LogItemFactory.CreateError("Website is not created"));
+            }
+        }
+        else if (RunningState == ComponentRunningState.Stopped &&
+                 UnpackedZipPath is not null &&
+                 InstallationPath is not null)
+        {
+            LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+            CopyAll(UnpackedZipPath, InstallationPath);
+            LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+            isDone = true;
+        }
+
+        LogItems.Add(isDone
+            ? LogItemFactory.CreateInformation("Deployed")
+            : LogItemFactory.CreateError("Not deployed"));
+
+        IsBusy = false;
     }
 
     private void CheckPrerequisitesForInstalled()
@@ -254,5 +353,29 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 $"IIS_{key}",
                 categoryType,
                 message));
+    }
+
+    public static void CopyAll(
+        string sourcePath,
+        string destinationPath)
+    {
+        // Create the destination directory if it doesn't exist
+        Directory.CreateDirectory(destinationPath);
+
+        // Copy all files
+        foreach (var sourceFile in Directory.GetFiles(sourcePath))
+        {
+            var fileName = Path.GetFileName(sourceFile);
+            var destinationFile = Path.Combine(destinationPath, fileName);
+            File.Copy(sourceFile, destinationFile, overwrite: true);
+        }
+
+        // Recursively copy all subdirectories
+        foreach (var sourceSubDirectory in Directory.GetDirectories(sourcePath))
+        {
+            var subDirectoryName = Path.GetFileName(sourceSubDirectory);
+            var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName);
+            CopyAll(sourceSubDirectory, destinationSubDirectory);
+        }
     }
 }
