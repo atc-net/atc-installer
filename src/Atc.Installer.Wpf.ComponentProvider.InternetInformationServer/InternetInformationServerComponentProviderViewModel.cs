@@ -184,7 +184,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         };
     }
 
-    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK - for now.")]
     public override async Task ServiceDeployCommandHandler()
     {
         if (!CanServiceDeployCommandHandler())
@@ -202,55 +201,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             InstallationPath is not null &&
             Http.HasValue)
         {
-            LogItems.Add(LogItemFactory.CreateTrace("Create Website"));
-
-            var isWebsiteCreated = await iisInstallerService
-                .CreateWebsite(
-                    Name,
-                    Name,
-                    new DirectoryInfo(InstallationPath),
-                    Http.Value,
-                    Https,
-                    HostName,
-                    requireServerNameIndication: true)
-                .ConfigureAwait(true);
-
-            if (isWebsiteCreated)
-            {
-                InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
-                LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
-
-                LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-                CopyAll(UnpackedZipPath, InstallationPath);
-                LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
-
-                RunningState = iisInstallerService.GetWebsiteState(Name);
-                if (RunningState == ComponentRunningState.Stopped)
-                {
-                    var isWebsiteStarted = await iisInstallerService.StartWebsite(Name);
-                    if (!isWebsiteStarted)
-                    {
-                        LogItems.Add(LogItemFactory.CreateWarning("Website have some problem with auto-start"));
-                    }
-
-                    RunningState = iisInstallerService.GetWebsiteState(Name);
-                }
-
-                isDone = true;
-            }
-            else
-            {
-                LogItems.Add(LogItemFactory.CreateError("Website is not created"));
-            }
+            isDone = await ServiceDeployWebsiteCreate().ConfigureAwait(true);
         }
         else if (RunningState == ComponentRunningState.Stopped &&
                  UnpackedZipPath is not null &&
                  InstallationPath is not null)
         {
-            LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-            CopyAll(UnpackedZipPath, InstallationPath);
-            LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
-            isDone = true;
+            isDone = ServiceDeployWebsiteUpdate();
         }
 
         LogItems.Add(isDone
@@ -345,7 +302,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 message));
     }
 
-    public static void CopyAll(
+    private static void CopyAll(
         string sourcePath,
         string destinationPath)
     {
@@ -367,5 +324,90 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             var destinationSubDirectory = Path.Combine(destinationPath, subDirectoryName);
             CopyAll(sourceSubDirectory, destinationSubDirectory);
         }
+    }
+
+    private async Task<bool> ServiceDeployWebsiteCreate()
+    {
+        var isDone = false;
+        if (UnpackedZipPath is null ||
+            InstallationPath is null ||
+            Http is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Create Website"));
+
+        var isWebsiteCreated = await iisInstallerService
+            .CreateWebsite(
+                Name,
+                Name,
+                setApplicationPoolToUseDotNetClr: true,
+                new DirectoryInfo(InstallationPath),
+                Http.Value,
+                Https,
+                HostName,
+                requireServerNameIndication: true)
+            .ConfigureAwait(true);
+
+        if (isWebsiteCreated)
+        {
+            LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
+
+            LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+            CopyAll(UnpackedZipPath, InstallationPath);
+            LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+            InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+
+            await ServiceDeployWebsiteStart();
+
+            isDone = true;
+        }
+        else
+        {
+            LogItems.Add(LogItemFactory.CreateError("Website is not created"));
+        }
+
+        return isDone;
+    }
+
+    private async Task ServiceDeployWebsiteStart()
+    {
+        await Task
+            .Delay(100)
+            .ConfigureAwait(false);
+
+        RunningState = iisInstallerService.GetWebsiteState(Name);
+
+        if (RunningState == ComponentRunningState.Stopped)
+        {
+            var isWebsiteStarted = await iisInstallerService
+                .StartWebsite(Name)
+                .ConfigureAwait(true);
+
+            if (!isWebsiteStarted)
+            {
+                LogItems.Add(LogItemFactory.CreateWarning("Website have some problem with startup"));
+            }
+
+            RunningState = iisInstallerService.GetWebsiteState(Name);
+        }
+    }
+
+    private bool ServiceDeployWebsiteUpdate()
+    {
+        var isDone = false;
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return isDone;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        CopyAll(UnpackedZipPath, InstallationPath);
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+
+        return isDone;
     }
 }

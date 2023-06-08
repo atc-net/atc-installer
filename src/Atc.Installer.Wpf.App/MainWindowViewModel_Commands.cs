@@ -25,7 +25,7 @@ public partial class MainWindowViewModel
             return;
         }
 
-        await LoadConfigurationFile(openFileDialog.FileName);
+        await LoadConfigurationFile(openFileDialog.FileName).ConfigureAwait(true);
     }
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
@@ -54,11 +54,13 @@ public partial class MainWindowViewModel
 
         var downloadFolder = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
 
-        var files = await AzureStorageAccountInstallerService.Instance.DownloadLatestFilesByNames(
-            AzureOptions!.StorageConnectionString,
-            AzureOptions!.BlobContainerName,
-            downloadFolder,
-            componentNames);
+        var files = await AzureStorageAccountInstallerService.Instance
+            .DownloadLatestFilesByNames(
+                AzureOptions!.StorageConnectionString,
+                AzureOptions!.BlobContainerName,
+                downloadFolder,
+                componentNames)
+            .ConfigureAwait(true);
 
         foreach (var vm in ComponentProviders)
         {

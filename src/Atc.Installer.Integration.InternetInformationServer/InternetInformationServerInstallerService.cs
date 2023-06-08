@@ -185,6 +185,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
 
     public Task<bool> CreateApplicationPool(
         string applicationPoolName,
+        bool setApplicationPoolToUseDotNetClr,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
@@ -200,7 +201,9 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         {
             using var serverManager = new ServerManager();
             var applicationPool = serverManager.ApplicationPools.Add(applicationPoolName);
-            applicationPool.ManagedRuntimeVersion = "v4.0";
+            applicationPool.ManagedRuntimeVersion = setApplicationPoolToUseDotNetClr
+                ? "v4.0"
+                : "Classic";
             applicationPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
             applicationPool.StartMode = StartMode.AlwaysRunning;
             serverManager.CommitChanges();
@@ -215,6 +218,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
+        bool setApplicationPoolToUseDotNetClr,
         DirectoryInfo physicalPath,
         ushort port,
         string? hostName = null,
@@ -223,6 +227,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         => CreateWebsite(
             websiteName,
             applicationPoolName,
+            setApplicationPoolToUseDotNetClr,
             physicalPath,
             port,
             httpsPort: null,
@@ -235,6 +240,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public async Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
+        bool setApplicationPoolToUseDotNetClr,
         DirectoryInfo physicalPath,
         ushort httpPort,
         ushort? httpsPort,
@@ -258,6 +264,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         {
             var isApplicationPoolCreated = await CreateApplicationPool(
                 applicationPoolName,
+                setApplicationPoolToUseDotNetClr,
                 timeoutInSeconds,
                 cancellationToken).ConfigureAwait(false);
 
@@ -289,7 +296,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                 httpBindingInformation,
                 physicalPath.FullName);
             website.ApplicationDefaults.ApplicationPoolName = applicationPoolName;
-            website.ServerAutoStart = true;
+            website.ServerAutoStart = false;
 
             if (httpsPort is not null &&
                 !string.IsNullOrEmpty(hostName))

@@ -28,12 +28,14 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     Task<bool> CreateApplicationPool(
         string applicationPoolName,
+        bool setApplicationPoolToUseDotNetClr,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
 
     Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
+        bool setApplicationPoolToUseDotNetClr,
         DirectoryInfo physicalPath,
         ushort port,
         string? hostName = null,
@@ -43,6 +45,7 @@ public interface IInternetInformationServerInstallerService : IInstallerService
     Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
+        bool setApplicationPoolToUseDotNetClr,
         DirectoryInfo physicalPath,
         ushort httpPort,
         ushort? httpsPort,

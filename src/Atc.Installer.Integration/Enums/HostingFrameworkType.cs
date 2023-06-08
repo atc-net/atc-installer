@@ -4,7 +4,7 @@ namespace Atc.Installer.Integration;
 public enum HostingFrameworkType
 {
     None,
-    DotNet7,
     DonNetFramework48,
+    DotNet7,
     NodeJs,
 }

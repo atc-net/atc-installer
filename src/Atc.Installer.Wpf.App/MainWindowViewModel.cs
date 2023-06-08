@@ -74,16 +74,13 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     {
         try
         {
-            var json = await File.ReadAllTextAsync(file);
+            var json = await File
+                .ReadAllTextAsync(file)
+                .ConfigureAwait(true);
 
             var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
                 json,
-                Serialization.JsonSerializerOptionsFactory.Create());
-
-            if (installationOptions is null)
-            {
-                throw new IOException($"Invalid format in {file}");
-            }
+                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
 
             Populate(installationOptions);
         }
