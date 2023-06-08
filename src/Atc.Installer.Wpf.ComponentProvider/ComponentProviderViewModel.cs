@@ -206,7 +206,10 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         {
             IsBusy = true;
 
-            await Task.Delay(3000);
+            await Task
+                .CompletedTask
+                .ConfigureAwait(true);
+
             WorkOnAnalyzeAndUpdateStates();
 
             IsBusy = false;
