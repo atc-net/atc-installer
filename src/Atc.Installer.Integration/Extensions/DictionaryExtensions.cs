@@ -1,4 +1,5 @@
-namespace Atc.Installer.Integration.Extensions;
+// ReSharper disable CheckNamespace
+namespace System.Collections.Generic;
 
 public static class DictionaryExtensions
 {
