@@ -1,3 +1,4 @@
+// ReSharper disable LoopCanBeConvertedToQuery
 namespace Atc.Installer.Integration.WindowsApplication;
 
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
@@ -33,7 +34,8 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         try
         {
             var services = ServiceController.GetServices();
-            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            var service =
+                services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
             if (service is null)
             {
                 return ComponentRunningState.NotAvailable;
@@ -64,7 +66,8 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         try
         {
             var services = ServiceController.GetServices();
-            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            var service =
+                services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
             if (service is null ||
                 service.Status != ServiceControllerStatus.Running)
             {
@@ -96,7 +99,8 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         try
         {
             var services = ServiceController.GetServices();
-            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            var service =
+                services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
             if (service is null ||
                 service.Status != ServiceControllerStatus.Stopped)
             {
@@ -113,6 +117,93 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
                 })
                 .ConfigureAwait(false);
 
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public ComponentRunningState GetApplicationState(
+        string applicationName)
+    {
+        try
+        {
+            foreach (var process in Process.GetProcesses())
+            {
+                if (process.ProcessName.Equals(applicationName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ComponentRunningState.Running;
+                }
+            }
+
+            return ComponentRunningState.NotAvailable;
+        }
+        catch
+        {
+            return ComponentRunningState.Unknown;
+        }
+    }
+
+    public bool StopApplication(
+        string applicationName,
+        ushort timeoutInSeconds = 60)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(applicationName);
+
+        try
+        {
+            var result = false;
+            foreach (var process in Process.GetProcesses())
+            {
+                if (!process.ProcessName.Equals(applicationName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit(TimeSpan.FromSeconds(timeoutInSeconds));
+                process.Dispose();
+                result = true;
+            }
+
+            return result;
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    public bool StartApplication(
+        string applicationName,
+        ushort timeoutInSeconds = 60)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(applicationName);
+
+        try
+        {
+            Process.Start(applicationName);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool StartApplication(
+        FileInfo applicationFile,
+        ushort timeoutInSeconds = 60)
+    {
+        ArgumentNullException.ThrowIfNull(applicationFile);
+
+        try
+        {
+            Process.Start(applicationFile.FullName);
             return true;
         }
         catch
