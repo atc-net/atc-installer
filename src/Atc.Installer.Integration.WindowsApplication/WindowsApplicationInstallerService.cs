@@ -1,4 +1,5 @@
 // ReSharper disable LoopCanBeConvertedToQuery
+// ReSharper disable ReplaceSubstringWithRangeIndexer
 namespace Atc.Installer.Integration.WindowsApplication;
 
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
@@ -128,6 +129,8 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
     public ComponentRunningState GetApplicationState(
         string applicationName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(applicationName);
+
         try
         {
             foreach (var process in Process.GetProcesses())
@@ -146,11 +149,22 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         }
     }
 
+    public ComponentRunningState GetApplicationState(
+        FileInfo applicationFile)
+    {
+        ArgumentNullException.ThrowIfNull(applicationFile);
+
+        var applicationName = applicationFile.Name.Substring(
+            0,
+            applicationFile.Name.Length - applicationFile.Extension.Length);
+        return GetApplicationState(applicationName);
+    }
+
     public bool StopApplication(
         string applicationName,
         ushort timeoutInSeconds = 60)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(applicationName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationName);
 
         try
         {
@@ -174,15 +188,25 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         {
             return false;
         }
+    }
 
-        return false;
+    public bool StopApplication(
+        FileInfo applicationFile,
+        ushort timeoutInSeconds = 60)
+    {
+        ArgumentNullException.ThrowIfNull(applicationFile);
+
+        var applicationName = applicationFile.Name.Substring(
+            0,
+            applicationFile.Name.Length - applicationFile.Extension.Length);
+        return StopApplication(applicationName, timeoutInSeconds);
     }
 
     public bool StartApplication(
         string applicationName,
         ushort timeoutInSeconds = 60)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(applicationName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationName);
 
         try
         {

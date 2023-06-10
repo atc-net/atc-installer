@@ -1,6 +1,7 @@
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
+[SuppressMessage("Major Code Smell", "S4144:Methods should not have identical implementations", Justification = "OK.")]
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly WindowsApplicationInstallerService waInstallerService;
@@ -30,35 +31,24 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         base.CheckServiceState();
 
-        if (IsWindowsService)
+        if (RunningState != ComponentRunningState.Stopped &&
+            RunningState != ComponentRunningState.Running)
         {
             RunningState = ComponentRunningState.Checking;
-            RunningState = waInstallerService.GetServiceState(Name);
-            if (RunningState == ComponentRunningState.Checking)
-            {
-                RunningState = ComponentRunningState.NotAvailable;
-            }
         }
-        else
+
+        RunningState = IsWindowsService
+            ? waInstallerService.GetServiceState(Name)
+            : waInstallerService.GetApplicationState(Name);
+
+        if (RunningState == ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
     }
 
     public override bool CanServiceStopCommandHandler()
-    {
-        if (IsWindowsService)
-        {
-            return RunningState switch
-            {
-                ComponentRunningState.Running => true,
-                _ => false,
-            };
-        }
-
-        // TODO: Check application installation data / running process...
-        return true;
-    }
+        => RunningState == ComponentRunningState.Running;
 
     public override async Task ServiceStopCommandHandler()
     {
@@ -71,37 +61,43 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         LogItems.Add(LogItemFactory.CreateTrace("Stop"));
 
-        var isStopped = await waInstallerService
-            .StopService(Name)
-            .ConfigureAwait(true);
-
-        if (isStopped)
+        if (IsWindowsService)
         {
-            RunningState = ComponentRunningState.Stopped;
-            LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+            var isStopped = await waInstallerService
+                .StopService(Name)
+                .ConfigureAwait(true);
+
+            if (isStopped)
+            {
+                RunningState = ComponentRunningState.Stopped;
+                LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+            }
+            else
+            {
+                LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+            }
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+            var isStopped = waInstallerService
+                .StopApplication(InstalledMainFile!);
+
+            if (isStopped)
+            {
+                RunningState = ComponentRunningState.Stopped;
+                LogItems.Add(LogItemFactory.CreateInformation("Application is stopped"));
+            }
+            else
+            {
+                LogItems.Add(LogItemFactory.CreateError("Could not stop application"));
+            }
         }
 
         IsBusy = false;
     }
 
     public override bool CanServiceStartCommandHandler()
-    {
-        if (IsWindowsService)
-        {
-            return RunningState switch
-            {
-                ComponentRunningState.Stopped => true,
-                _ => false,
-            };
-        }
-
-        // TODO: Check application installation data / running process...
-        return true;
-    }
+        => RunningState == ComponentRunningState.Stopped;
 
     public override async Task ServiceStartCommandHandler()
     {
@@ -114,18 +110,36 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         LogItems.Add(LogItemFactory.CreateTrace("Start"));
 
-        var isStarted = await waInstallerService
-            .StartService(Name)
-            .ConfigureAwait(true);
-
-        if (isStarted)
+        if (IsWindowsService)
         {
-            RunningState = ComponentRunningState.Running;
-            LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+            var isStarted = await waInstallerService
+                .StartService(Name)
+                .ConfigureAwait(true);
+
+            if (isStarted)
+            {
+                RunningState = ComponentRunningState.Running;
+                LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+            }
+            else
+            {
+                LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+            }
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+            var isStarted = waInstallerService
+                .StartApplication(InstalledMainFile!);
+
+            if (isStarted)
+            {
+                RunningState = ComponentRunningState.Running;
+                LogItems.Add(LogItemFactory.CreateInformation("Application is started"));
+            }
+            else
+            {
+                LogItems.Add(LogItemFactory.CreateError("Could not start application"));
+            }
         }
 
         IsBusy = false;
@@ -133,18 +147,17 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public override bool CanServiceDeployCommandHandler()
     {
-        if (IsWindowsService)
+        if (UnpackedZipPath is null)
         {
-            return RunningState switch
-            {
-                ComponentRunningState.Stopped => true,
-                ComponentRunningState.Unknown when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
-                _ => false,
-            };
+            return false;
         }
 
-        // TODO: Check application installation data / running process...
-        return true;
+        return RunningState switch
+        {
+            ComponentRunningState.Stopped => true,
+            ComponentRunningState.Unknown when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
+            _ => false,
+        };
     }
 
     public override Task ServiceDeployCommandHandler()
@@ -327,14 +340,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
     }
 
-    private async Task<bool> ServiceDeployWindowApplicationCreate()
+    private Task<bool> ServiceDeployWindowApplicationCreate()
     {
         var isDone = false;
 
         if (UnpackedZipPath is null ||
             InstallationPath is null)
         {
-            return isDone;
+            return Task.FromResult(isDone);
         }
 
         LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
@@ -343,7 +356,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         isDone = true;
 
-        return isDone;
+        return Task.FromResult(isDone);
     }
 
     private bool ServiceDeployWindowApplicationUpdate()

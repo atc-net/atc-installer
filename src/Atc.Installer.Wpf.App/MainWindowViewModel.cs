@@ -4,6 +4,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 {
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
+    private CancellationTokenSource? cancellationTokenSource;
 
     public MainWindowViewModel()
     {
@@ -69,11 +70,42 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
     }
 
+    private void StartMonitoringServices()
+    {
+        cancellationTokenSource = new CancellationTokenSource();
+        Task.Run(
+            async () =>
+            {
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    await Task
+                        .Delay(3_000, CancellationToken.None)
+                        .ConfigureAwait(true);
+
+                    foreach (var vm in ComponentProviders)
+                    {
+                        if (!vm.IsBusy)
+                        {
+                            vm.CheckServiceState();
+                        }
+                    }
+                }
+            },
+            cancellationTokenSource.Token);
+    }
+
+    public void StopMonitoringServices()
+    {
+        cancellationTokenSource?.Cancel();
+    }
+
     private async Task LoadConfigurationFile(
         string file)
     {
         try
         {
+            StopMonitoringServices();
+
             var json = await File
                 .ReadAllTextAsync(file)
                 .ConfigureAwait(true);
@@ -83,6 +115,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
 
             Populate(installationOptions);
+
+            StartMonitoringServices();
         }
         catch (Exception ex)
         {

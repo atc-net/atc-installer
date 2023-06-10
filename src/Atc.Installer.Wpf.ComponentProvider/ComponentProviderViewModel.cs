@@ -108,6 +108,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         get => installationState;
         set
         {
+            if (installationState == value)
+            {
+                return;
+            }
+
             installationState = value;
             RaisePropertyChanged();
 
@@ -124,6 +129,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         get => runningState;
         set
         {
+            if (runningState == value)
+            {
+                return;
+            }
+
             runningState = value;
             RaisePropertyChanged();
 
@@ -198,6 +208,12 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         Directory.CreateDirectory(UnpackedZipPath);
 
         ZipFile.ExtractToDirectory(InstallationFile, UnpackedZipPath, overwriteFiles: true);
+
+        var filesToDelete = Directory.GetFiles(UnpackedZipPath, "appsettings.*.json");
+        foreach (var file in filesToDelete)
+        {
+            File.Delete(file);
+        }
     }
 
     public void AnalyzeAndUpdateStatesInBackgroundThread()

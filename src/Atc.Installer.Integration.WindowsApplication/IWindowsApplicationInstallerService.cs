@@ -16,4 +16,23 @@ public interface IWindowsApplicationInstallerService : IInstallerService
     Task<bool> StartService(
         string serviceName,
         ushort timeoutInSeconds = 60);
+
+    ComponentRunningState GetApplicationState(
+        string applicationName);
+
+    bool StopApplication(
+        string applicationName,
+        ushort timeoutInSeconds = 60);
+
+    bool StopApplication(
+        FileInfo applicationFile,
+        ushort timeoutInSeconds = 60);
+
+    bool StartApplication(
+        string applicationName,
+        ushort timeoutInSeconds = 60);
+
+    bool StartApplication(
+        FileInfo applicationFile,
+        ushort timeoutInSeconds = 60);
 }

@@ -25,6 +25,7 @@ public class ComponentRunningStateToBrushValueConverter : IValueConverter
             ComponentRunningState.Checking => Brushes.DarkViolet,
             ComponentRunningState.NotAvailable => Brushes.Chocolate,
             ComponentRunningState.Stopped => Brushes.Crimson,
+            ComponentRunningState.PartialRunning => Brushes.IndianRed,
             ComponentRunningState.Running => Brushes.Green,
             _ => throw new SwitchCaseDefaultException(state),
         };

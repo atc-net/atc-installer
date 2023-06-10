@@ -98,15 +98,23 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return;
         }
 
-        RunningState = ComponentRunningState.Checking;
+        if (RunningState != ComponentRunningState.Stopped &&
+            RunningState != ComponentRunningState.PartialRunning &&
+            RunningState != ComponentRunningState.Running)
+        {
+            RunningState = ComponentRunningState.Checking;
+        }
+
         var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
         var websiteState = iisInstallerService.GetWebsiteState(Name);
 
         RunningState = applicationPoolState switch
         {
-            ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
             ComponentRunningState.Stopped when websiteState == ComponentRunningState.Stopped => ComponentRunningState.Stopped,
-            _ => ComponentRunningState.Unknown,
+            ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
+            _ => applicationPoolState == ComponentRunningState.Running || websiteState == ComponentRunningState.Running
+                ? ComponentRunningState.PartialRunning
+                : ComponentRunningState.Unknown,
         };
 
         if (RunningState == ComponentRunningState.Checking)
