@@ -40,7 +40,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ApplicationSettings = applicationOption.ApplicationSettings;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
-        IsService = applicationOption.ComponentType is ComponentType.InternetInformationService or ComponentType.WindowsService;
+        IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
         InstallationPath = applicationOption.InstallationPath;
         ResolveInstalledMainFile(applicationOption);
 
@@ -152,25 +152,33 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
 
-    public bool TryGetStringFromDefaultApplicationSettings(
-        string key,
-        out string value)
-        => DefaultApplicationSettings.TryGetStringFromDictionary(key, out value);
-
-    public bool TryGetUshortFromDefaultApplicationSettings(
-        string key,
-        out ushort value)
-        => DefaultApplicationSettings.TryGetUshortFromDictionary(key, out value);
-
     public bool TryGetStringFromApplicationSettings(
         string key,
         out string value)
-        => ApplicationSettings.TryGetStringFromDictionary(key, out value);
+    {
+        if (ApplicationSettings.TryGetStringFromDictionary(key, out value) &&
+            !string.IsNullOrWhiteSpace(value))
+        {
+            return true;
+        }
+
+        return DefaultApplicationSettings.TryGetStringFromDictionary(key, out value) &&
+               !string.IsNullOrWhiteSpace(value);
+    }
 
     public bool TryGetUshortFromApplicationSettings(
         string key,
         out ushort value)
-        => ApplicationSettings.TryGetUshortFromDictionary(key, out value);
+    {
+        if (ApplicationSettings.TryGetUshortFromDictionary(key, out value) &&
+            value != default)
+        {
+            return true;
+        }
+
+        return DefaultApplicationSettings.TryGetUshortFromDictionary(key, out value) &&
+               value != default;
+    }
 
     public void PrepareInstallationFiles(
         bool unpackIfIfExist)

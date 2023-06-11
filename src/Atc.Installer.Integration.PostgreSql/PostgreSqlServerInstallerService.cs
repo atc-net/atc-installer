@@ -91,4 +91,30 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
                 ? result
                 : null;
     }
+
+    public Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
+        string hostName,
+        ushort hostPort,
+        string database,
+        string username,
+        string password)
+        => TestConnection($"Host={hostName}:{hostPort};Database={database};Username={username};Password={password};");
+
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
+        string connectionString)
+    {
+        try
+        {
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection
+                .OpenAsync()
+                .ConfigureAwait(false);
+
+            return (IsSucceeded: true, ErrorMessage: null);
+        }
+        catch (Exception ex)
+        {
+            return (IsSucceeded: false, ErrorMessage: ex.Message);
+        }
+    }
 }

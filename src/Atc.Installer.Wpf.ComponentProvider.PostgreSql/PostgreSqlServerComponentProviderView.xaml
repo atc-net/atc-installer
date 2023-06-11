@@ -5,16 +5,40 @@
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:postgreSql="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql"
-    d:DataContext="{d:DesignInstance Type=postgreSql:PostgreSqlServerComponentProviderViewModel}"
+    d:DataContext="{d:DesignInstance Type=local:PostgreSqlServerComponentProviderViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <StackPanel Orientation="Vertical">
-            <componentProvider:ComponentProviderPanelView />
+            <Label
+                Margin="0,0,0,30"
+                Content="{Binding Path=Name, FallbackValue='PostgreSQL Database'}"
+                FontSize="26" />
+            <atc:GridEx Columns="200,10,400" Rows="Auto">
+                <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="0" />
+                <GroupBox
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Header="Connection">
+                    <StackPanel Orientation="Vertical">
+                        <local:PostgreSqlConnectionView
+                            Margin="0,10,0,0"
+                            DataContext="{Binding Path=PostgreSqlConnectionViewModel}"
+                            IsEnabled="False" />
+                        <atc:UniformSpacingPanel
+                            Margin="10"
+                            Orientation="Vertical"
+                            Spacing="10">
+                            <Button Command="{Binding Path=TestConnectionCommand}" Content="Test Connection" />
+                            <atc:LabelTextInfo LabelText="Test result" Text="{Binding Path=TestConnectionResult}" />
+                        </atc:UniformSpacingPanel>
+                    </StackPanel>
+                </GroupBox>
+            </atc:GridEx>
         </StackPanel>
     </atc:BusyOverlay>
 

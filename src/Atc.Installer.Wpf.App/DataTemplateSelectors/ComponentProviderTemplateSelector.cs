@@ -10,7 +10,9 @@ public class ComponentProviderTemplateSelector : DataTemplateSelector
 
     public DataTemplate WindowsApplicationTemplate { get; set; } = new();
 
-    public override DataTemplate SelectTemplate(object item, DependencyObject container)
+    public override DataTemplate SelectTemplate(
+        object item,
+        DependencyObject container)
         => item switch
         {
             null => DefaultTemplate,

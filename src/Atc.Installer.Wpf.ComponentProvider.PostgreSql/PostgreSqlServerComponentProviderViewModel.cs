@@ -1,8 +1,9 @@
 namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql;
 
-public class PostgreSqlServerComponentProviderViewModel : ComponentProviderViewModel
+public partial class PostgreSqlServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly PostgreSqlServerInstallerService pgInstallerService;
+    private string? testConnectionResult;
 
     public PostgreSqlServerComponentProviderViewModel(
         string projectName,
@@ -16,56 +17,49 @@ public class PostgreSqlServerComponentProviderViewModel : ComponentProviderViewM
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         pgInstallerService = PostgreSqlServerInstallerService.Instance;
+        PostgreSqlConnectionViewModel = new PostgreSqlConnectionViewModel();
 
         InstalledMainFile = pgInstallerService.GetInstalledMainFile()?.FullName;
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
         {
-            HostName = hostNameValue;
-        }
-        else if (TryGetStringFromDefaultApplicationSettings("HostName", out var hostNameDefaultValue))
-        {
-            HostName = hostNameDefaultValue;
+            PostgreSqlConnectionViewModel.HostName = hostNameValue;
         }
 
         if (TryGetUshortFromApplicationSettings("HostPort", out var hostPortValue))
         {
-            HostPort = hostPortValue;
+            PostgreSqlConnectionViewModel.HostPort = hostPortValue;
         }
 
         if (TryGetStringFromApplicationSettings("Database", out var databaseValue))
         {
-            Database = databaseValue;
+            PostgreSqlConnectionViewModel.Database = databaseValue;
         }
 
         if (TryGetStringFromApplicationSettings("Username", out var usernameValue))
         {
-            Username = usernameValue;
-        }
-        else if (TryGetStringFromDefaultApplicationSettings("Username", out var usernameDefaultValue))
-        {
-            Username = usernameDefaultValue;
+            PostgreSqlConnectionViewModel.Username = usernameValue;
         }
 
         if (TryGetStringFromApplicationSettings("Password", out var passwordValue))
         {
-            Password = passwordValue;
+            PostgreSqlConnectionViewModel.Password = passwordValue;
         }
-        else if (TryGetStringFromDefaultApplicationSettings("Password", out var passwordDefaultValue))
-        {
-            Password = passwordDefaultValue;
-        }
+
+        TestConnectionResult = string.Empty;
     }
 
-    public string? HostName { get; }
+    public PostgreSqlConnectionViewModel PostgreSqlConnectionViewModel { get; set; }
 
-    public ushort? HostPort { get; }
-
-    public string? Database { get; }
-
-    public string? Username { get; }
-
-    public string? Password { get; }
+    public string? TestConnectionResult
+    {
+        get => testConnectionResult;
+        set
+        {
+            testConnectionResult = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public override void CheckPrerequisites()
     {

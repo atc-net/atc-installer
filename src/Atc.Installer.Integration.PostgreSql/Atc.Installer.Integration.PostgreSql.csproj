@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Npgsql" Version="7.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Atc.Installer.Integration.WindowsApplication\Atc.Installer.Integration.WindowsApplication.csproj" />
     <ProjectReference Include="..\Atc.Installer.Integration\Atc.Installer.Integration.csproj" />
   </ItemGroup>

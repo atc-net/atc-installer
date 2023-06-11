@@ -34,10 +34,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             HostName = hostNameValue;
         }
-        else if (TryGetStringFromDefaultApplicationSettings("HostName", out var hostNameDefaultValue))
-        {
-            HostName = hostNameDefaultValue;
-        }
 
         if (TryGetUshortFromApplicationSettings("http", out var httpValue))
         {

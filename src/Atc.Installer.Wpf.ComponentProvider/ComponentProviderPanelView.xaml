@@ -14,18 +14,12 @@
 
     <UserControl.Resources>
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
-        <atcValueConverters:BoolToVisibilityVisibleValueConverter x:Key="BoolToVisibilityVisibleValueConverter" />
     </UserControl.Resources>
 
     <atc:GridEx
         Margin="0,50,0,0"
         Columns="*"
         Rows="Auto,20,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-        <Label
-            Grid.Row="0"
-            Grid.Column="0"
-            Content="{Binding Path=Name, FallbackValue='HelloWorld.WebApi'}"
-            FontSize="26" />
         <atc:LabelTextInfo
             Grid.Row="2"
             Grid.Column="0"
@@ -62,28 +56,6 @@
             HideAreas="All"
             LabelText="Installed Main File"
             Text="{Binding Path=InstalledMainFile, Mode=OneWay, FallbackValue='C:\\\inetpub\\\wwwroot\\HelloWorld.WebApi\\HelloWorld.WebApi.dll'}" />
-        <atc:GridEx
-            Grid.Row="8"
-            Grid.Column="0"
-            Margin="0,10"
-            Columns="200,50,*"
-            Rows="300">
-            <GroupBox
-                Grid.Row="0"
-                Grid.Column="0"
-                Padding="10"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Header="Service actions"
-                Visibility="{Binding Path=IsService, Converter={StaticResource BoolToVisibilityVisibleValueConverter}}">
-                <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
-                    <Button Command="{Binding Path=ServiceStopCommand}" Content="Stop" />
-                    <Button Command="{Binding Path=ServiceStartCommand}" Content="Start" />
-                    <Button Command="{Binding Path=ServiceDeployCommand}" Content="Deploy" />
-                    <Button Command="{Binding Path=ServiceDeployAndStartCommand}" Content="Deploy and start" />
-                </atc:UniformSpacingPanel>
-            </GroupBox>
-        </atc:GridEx>
 
     </atc:GridEx>
 

@@ -14,7 +14,13 @@
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <StackPanel Orientation="Vertical">
-            <componentProvider:ComponentProviderPanelView />
+            <Label
+                Margin="0,0,0,30"
+                Content="{Binding Path=Name, FallbackValue='HelloWorld.WebApi'}"
+                FontSize="26" />
+            <atc:GridEx Columns="200,10,400" Rows="Auto">
+                <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="0" />
+            </atc:GridEx>
         </StackPanel>
     </atc:BusyOverlay>
 

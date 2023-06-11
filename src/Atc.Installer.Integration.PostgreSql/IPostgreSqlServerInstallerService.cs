@@ -9,4 +9,14 @@ public interface IPostgreSqlServerInstallerService : IInstallerService
     DirectoryInfo? GetRootPath();
 
     FileInfo? GetInstalledMainFile();
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
+        string hostName,
+        ushort hostPort,
+        string database,
+        string username,
+        string password);
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
+        string connectionString);
 }
