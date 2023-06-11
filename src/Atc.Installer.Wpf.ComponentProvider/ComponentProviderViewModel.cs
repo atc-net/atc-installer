@@ -1,3 +1,4 @@
+// ReSharper disable InvertIf
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
@@ -235,6 +236,68 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public virtual void CheckPrerequisites() { }
 
     public virtual void CheckServiceState() { }
+
+    protected void BackupConfigurationFilesAndLog()
+    {
+        if (InstallationPath is null)
+        {
+            return;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Backup files"));
+
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_hhmmss", GlobalizationConstants.EnglishCultureInfo);
+        var backupFolder = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Backup\{Name}");
+        if (!Directory.Exists(backupFolder))
+        {
+            Directory.CreateDirectory(backupFolder);
+        }
+
+        var sourceAppSettingsFile = Path.Combine(InstallationPath, "env.json");
+        if (File.Exists(sourceAppSettingsFile))
+        {
+            var destinationAppSettingsFile = Path.Combine(backupFolder, $"env_{timestamp}.json");
+            File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
+            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+        }
+
+        sourceAppSettingsFile = Path.Combine(InstallationPath, "appsettings.json");
+        if (File.Exists(sourceAppSettingsFile))
+        {
+            var destinationAppSettingsFile = Path.Combine(backupFolder, $"appsettings_{timestamp}.json");
+            File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
+            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+        }
+
+        sourceAppSettingsFile = Path.Combine(InstallationPath, "web.config");
+        if (File.Exists(sourceAppSettingsFile))
+        {
+            var destinationAppSettingsFile = Path.Combine(backupFolder, $"web_{timestamp}.config");
+            File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
+            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+        }
+
+        sourceAppSettingsFile = Path.Combine(InstallationPath, $"{Name}.exe.config");
+        if (File.Exists(sourceAppSettingsFile))
+        {
+            var destinationAppSettingsFile = Path.Combine(backupFolder, $"{Name}.exe_{timestamp}.config");
+            File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
+            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+        }
+    }
+
+    protected void CopyFilesAndLog()
+    {
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return;
+        }
+
+        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+    }
 
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";

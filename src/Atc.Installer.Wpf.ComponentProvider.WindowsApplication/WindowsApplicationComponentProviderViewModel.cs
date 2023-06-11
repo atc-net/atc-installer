@@ -297,9 +297,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return isDone;
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
-        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+        BackupConfigurationFilesAndLog();
+
+        CopyFilesAndLog();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -369,9 +369,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return isDone;
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
-        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+        BackupConfigurationFilesAndLog();
+
+        CopyFilesAndLog();
 
         isDone = true;
 
