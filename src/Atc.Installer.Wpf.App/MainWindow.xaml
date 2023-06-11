@@ -11,6 +11,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataTemplateSelectors="clr-namespace:Atc.Installer.Wpf.App.DataTemplateSelectors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:Atc.Data.Models;assembly=Atc"
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
     x:Name="MainWindowControl"
     Title="{Binding Path=ApplicationOptions.Title, FallbackValue='..:: Atc.Installer ::..'}"
@@ -88,47 +89,73 @@
                     Grid.Row="0"
                     Grid.Column="2"
                     Columns="*"
-                    Rows="*,Auto">
-                    <ContentControl Content="{Binding Path=SelectedComponentProvider}">
-                        <ContentControl.Resources>
-                            <DataTemplate x:Key="DefaultTemplate">
-                                <Label
-                                    Margin="0,-200,0,0"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Content="Please open a configuration file"
-                                    FontSize="26" />
-                            </DataTemplate>
+                    Rows="3*,10,2*">
 
-                            <DataTemplate x:Key="WindowsApplicationTemplate" DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                                <componentProviderWa:WindowsApplicationComponentProviderView />
-                            </DataTemplate>
+                    <ScrollViewer
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        VerticalScrollBarVisibility="Auto">
+                        <ContentControl Content="{Binding Path=SelectedComponentProvider}">
+                            <ContentControl.Resources>
+                                <DataTemplate x:Key="DefaultTemplate">
+                                    <Label
+                                        Margin="0,-200,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Content="Please open a configuration file"
+                                        FontSize="26" />
+                                </DataTemplate>
 
-                            <DataTemplate x:Key="InternetInformationServerTemplate" DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
-                                <componentProviderIis:InternetInformationServerComponentProviderView />
-                            </DataTemplate>
+                                <DataTemplate x:Key="WindowsApplicationTemplate" DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                                    <componentProviderWa:WindowsApplicationComponentProviderView />
+                                </DataTemplate>
 
-                            <dataTemplateSelectors:ComponentProviderTemplateSelector
-                                x:Key="ComponentProviderTemplateSelector"
-                                DefaultTemplate="{StaticResource DefaultTemplate}"
-                                InternetInformationServerTemplate="{StaticResource InternetInformationServerTemplate}"
-                                WindowsApplicationTemplate="{StaticResource WindowsApplicationTemplate}" />
-                        </ContentControl.Resources>
+                                <DataTemplate x:Key="InternetInformationServerTemplate" DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                                    <componentProviderIis:InternetInformationServerComponentProviderView />
+                                </DataTemplate>
 
-                        <ContentControl.ContentTemplateSelector>
-                            <StaticResource ResourceKey="ComponentProviderTemplateSelector" />
-                        </ContentControl.ContentTemplateSelector>
-                    </ContentControl>
+                                <dataTemplateSelectors:ComponentProviderTemplateSelector
+                                    x:Key="ComponentProviderTemplateSelector"
+                                    DefaultTemplate="{StaticResource DefaultTemplate}"
+                                    InternetInformationServerTemplate="{StaticResource InternetInformationServerTemplate}"
+                                    WindowsApplicationTemplate="{StaticResource WindowsApplicationTemplate}" />
+                            </ContentControl.Resources>
 
-                    <atc:GridEx
-                        Height="400"
-                        VerticalAlignment="Bottom"
-                        Columns="*"
-                        Rows="*,10,*">
-                        <GroupBox
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Header="Dependent Services">
+                            <ContentControl.ContentTemplateSelector>
+                                <StaticResource ResourceKey="ComponentProviderTemplateSelector" />
+                            </ContentControl.ContentTemplateSelector>
+                        </ContentControl>
+                    </ScrollViewer>
+
+                    <TabControl Grid.Row="2" Grid.Column="0">
+                        <TabItem Header="Logs">
+                            <ListView ItemsSource="{Binding Path=SelectedComponentProvider.LogItems}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn
+                                            Width="100"
+                                            DisplayMemberBinding="{Binding Path=TimeStamp, StringFormat='HH:mm:ss fff'}"
+                                            Header="Timestamp" />
+                                        <GridViewColumn Width="80" Header="Severity">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type models:LogItem}">
+                                                    <Ellipse
+                                                        Width="20"
+                                                        Height="20"
+                                                        Fill="{Binding Path=Severity, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}"
+                                                        ToolTip="{Binding Path=Severity}" />
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn
+                                            Width="500"
+                                            DisplayMemberBinding="{Binding Path=Message}"
+                                            Header="Message" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </TabItem>
+                        <TabItem Header="Prerequisites">
                             <ListView ItemsSource="{Binding Path=SelectedComponentProvider.InstallationPrerequisites}">
                                 <ListView.View>
                                     <GridView>
@@ -149,11 +176,8 @@
                                     </GridView>
                                 </ListView.View>
                             </ListView>
-                        </GroupBox>
-                        <GroupBox
-                            Grid.Row="2"
-                            Grid.Column="0"
-                            Header="Dependent Services">
+                        </TabItem>
+                        <TabItem Header="Dependent Services">
                             <ListView ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
                                 <ListView.View>
                                     <GridView>
@@ -172,11 +196,12 @@
                                     </GridView>
                                 </ListView.View>
                             </ListView>
-                        </GroupBox>
-                    </atc:GridEx>
-                </atc:GridEx>
+                        </TabItem>
+                    </TabControl>
 
+                </atc:GridEx>
             </atc:GridEx>
+
         </DockPanel>
     </atc:BusyOverlay>
     <!--  ReSharper restore Xaml.PossibleNullReferenceException  -->

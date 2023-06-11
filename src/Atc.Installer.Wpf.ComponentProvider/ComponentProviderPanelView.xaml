@@ -86,37 +86,6 @@
                     <Button Command="{Binding Path=ServiceDeployAndStartCommand}" Content="Deploy and start" />
                 </atc:UniformSpacingPanel>
             </GroupBox>
-
-            <GroupBox
-                Grid.Row="0"
-                Grid.Column="2"
-                Header="Log">
-                <ListView ItemsSource="{Binding Path=LogItems}">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn
-                                Width="100"
-                                DisplayMemberBinding="{Binding Path=TimeStamp, StringFormat='HH:mm:ss fff'}"
-                                Header="Timestamp" />
-                            <GridViewColumn Width="80" Header="Severity">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate DataType="{x:Type models:LogItem}">
-                                        <Ellipse
-                                            Width="20"
-                                            Height="20"
-                                            Fill="{Binding Path=Severity, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}"
-                                            ToolTip="{Binding Path=Severity}" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn
-                                Width="500"
-                                DisplayMemberBinding="{Binding Path=Message}"
-                                Header="Message" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </GroupBox>
         </atc:GridEx>
 
     </atc:GridEx>
