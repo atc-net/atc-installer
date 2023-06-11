@@ -156,6 +156,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                     ComponentProviders.Add(vm);
                     break;
                 }
+
+                case ComponentType.PostgreSqlServer:
+                {
+                    var vm = new PostgreSqlServerComponentProviderViewModel(
+                        ProjectName,
+                        DefaultApplicationSettings,
+                        appInstallationOption);
+                    ComponentProviders.Add(vm);
+                    break;
+                }
             }
 
             if (ComponentProviders.Count == 1)

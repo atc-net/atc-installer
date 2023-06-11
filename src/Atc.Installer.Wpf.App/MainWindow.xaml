@@ -7,6 +7,7 @@
     xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:componentProviderIis="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;assembly=Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
+    xmlns:componentProviderPgSql="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql;assembly=Atc.Installer.Wpf.ComponentProvider.PostgreSql"
     xmlns:componentProviderWa="clr-namespace:Atc.Installer.Wpf.ComponentProvider.WindowsApplication;assembly=Atc.Installer.Wpf.ComponentProvider.WindowsApplication"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataTemplateSelectors="clr-namespace:Atc.Installer.Wpf.App.DataTemplateSelectors"
@@ -72,11 +73,15 @@
                         Header="Components">
                         <ListBox ItemsSource="{Binding Path=ComponentProviders}" SelectedItem="{Binding Path=SelectedComponentProvider}">
                             <ListBox.Resources>
-                                <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                                <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
                                     <componentProvider:ComponentProviderMenuItemView />
                                 </DataTemplate>
 
-                                <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                                <DataTemplate DataType="{x:Type componentProviderPgSql:PostgreSqlServerComponentProviderViewModel}">
+                                    <componentProvider:ComponentProviderMenuItemView />
+                                </DataTemplate>
+
+                                <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
                                     <componentProvider:ComponentProviderMenuItemView />
                                 </DataTemplate>
                             </ListBox.Resources>
@@ -106,18 +111,23 @@
                                         FontSize="26" />
                                 </DataTemplate>
 
-                                <DataTemplate x:Key="WindowsApplicationTemplate" DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                                    <componentProviderWa:WindowsApplicationComponentProviderView />
-                                </DataTemplate>
-
                                 <DataTemplate x:Key="InternetInformationServerTemplate" DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
                                     <componentProviderIis:InternetInformationServerComponentProviderView />
+                                </DataTemplate>
+
+                                <DataTemplate x:Key="PostgreSqlServerTemplate" DataType="{x:Type componentProviderPgSql:PostgreSqlServerComponentProviderViewModel}">
+                                    <componentProviderPgSql:PostgreSqlServerComponentProviderView />
+                                </DataTemplate>
+
+                                <DataTemplate x:Key="WindowsApplicationTemplate" DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                                    <componentProviderWa:WindowsApplicationComponentProviderView />
                                 </DataTemplate>
 
                                 <dataTemplateSelectors:ComponentProviderTemplateSelector
                                     x:Key="ComponentProviderTemplateSelector"
                                     DefaultTemplate="{StaticResource DefaultTemplate}"
                                     InternetInformationServerTemplate="{StaticResource InternetInformationServerTemplate}"
+                                    PostgreSqlServerTemplate="{StaticResource PostgreSqlServerTemplate}"
                                     WindowsApplicationTemplate="{StaticResource WindowsApplicationTemplate}" />
                             </ContentControl.Resources>
 

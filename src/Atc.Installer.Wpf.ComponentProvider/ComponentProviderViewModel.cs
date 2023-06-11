@@ -165,7 +165,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public bool TryGetStringFromApplicationSettings(
         string key,
         out string value)
-        => DefaultApplicationSettings.TryGetStringFromDictionary(key, out value);
+        => ApplicationSettings.TryGetStringFromDictionary(key, out value);
 
     public bool TryGetUshortFromApplicationSettings(
         string key,

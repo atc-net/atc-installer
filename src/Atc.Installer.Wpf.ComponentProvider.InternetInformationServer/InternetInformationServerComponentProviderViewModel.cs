@@ -20,19 +20,24 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (InstallationPath is not null)
         {
-            InstallationPath = InternetInformationServerInstallerService
-                .Instance
-                .ResolvedVirtuelRootPath(InstallationPath);
+            InstallationPath = iisInstallerService.ResolvedVirtuelRootPath(InstallationPath);
         }
 
         if (InstalledMainFile is not null)
         {
-            InstalledMainFile = InternetInformationServerInstallerService
-                .Instance
-                .ResolvedVirtuelRootPath(InstalledMainFile);
+            InstalledMainFile = iisInstallerService.ResolvedVirtuelRootPath(InstalledMainFile);
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
+
+        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            HostName = hostNameValue;
+        }
+        else if (TryGetStringFromDefaultApplicationSettings("HostName", out var hostNameDefaultValue))
+        {
+            HostName = hostNameDefaultValue;
+        }
 
         if (TryGetUshortFromApplicationSettings("http", out var httpValue))
         {
@@ -43,20 +48,15 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             Https = httpsValue;
         }
-
-        if (TryGetStringFromDefaultApplicationSettings("HostName", out var hostnameValue))
-        {
-            HostName = hostnameValue;
-        }
     }
 
     public bool IsRequiredWebSockets { get; }
 
+    public string? HostName { get; }
+
     public ushort? Http { get; }
 
     public ushort? Https { get; }
-
-    public string? HostName { get; }
 
     public override void CheckPrerequisites()
     {

@@ -6,5 +6,6 @@ public enum ComponentType
     None,
     Application,
     InternetInformationService,
+    PostgreSqlServer,
     WindowsService,
 }
