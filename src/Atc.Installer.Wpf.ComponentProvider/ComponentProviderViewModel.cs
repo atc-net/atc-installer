@@ -38,6 +38,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ProjectName = projectName;
         DefaultApplicationSettings = defaultApplicationSettings;
         ApplicationSettings = applicationOption.ApplicationSettings;
+        ConfigurationSettings = applicationOption.ConfigurationSettings;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
@@ -57,6 +58,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public IDictionary<string, object> DefaultApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
     public IDictionary<string, object> ApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+
+    public IDictionary<string, object> ConfigurationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
     public string Name { get; }
 
@@ -103,6 +106,10 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             RaisePropertyChanged();
         }
     }
+
+    public IDictionary<FileInfo, DynamicJson> ConfigurationJsonFiles { get; } = new Dictionary<FileInfo, DynamicJson>();
+
+    public IDictionary<FileInfo, XmlDocument> ConfigurationXmlFiles { get; } = new Dictionary<FileInfo, XmlDocument>();
 
     public ComponentInstallationState InstallationState
     {
@@ -245,6 +252,12 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public virtual void CheckServiceState() { }
 
+    public virtual void UpdateConfigurationDynamicJson(
+        DynamicJson dynamicJson) { }
+
+    public virtual void UpdateConfigurationXmlDocument(
+        XmlDocument xmlDocument) { }
+
     protected void BackupConfigurationFilesAndLog()
     {
         if (InstallationPath is null)
@@ -305,6 +318,37 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
         new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
         LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+    }
+
+    protected void UpdateConfigurationFiles()
+    {
+        LogItems.Add(LogItemFactory.CreateTrace("Update configuration files"));
+
+        foreach (var configurationJsonFile in ConfigurationJsonFiles)
+        {
+            UpdateConfigurationDynamicJson(configurationJsonFile.Value);
+
+            var jsonSource = FileHelper.ReadAllText(configurationJsonFile.Key);
+            var jsonTarget = configurationJsonFile.Value.ToJson(orderByKey: true);
+            if (jsonSource != jsonTarget)
+            {
+                FileHelper.WriteAllText(configurationJsonFile.Key, jsonTarget);
+            }
+        }
+
+        foreach (var configurationXmlFile in ConfigurationXmlFiles)
+        {
+            UpdateConfigurationXmlDocument(configurationXmlFile.Value);
+
+            var xmlSource = FileHelper.ReadAllText(configurationXmlFile.Key);
+            var xmlTarget = configurationXmlFile.Value.ToIndentedXml();
+            if (xmlSource != xmlTarget)
+            {
+                FileHelper.WriteAllText(configurationXmlFile.Key, xmlTarget);
+            }
+        }
+
+        LogItems.Add(LogItemFactory.CreateInformation("Configuration files is updated copied"));
     }
 
     public override string ToString()

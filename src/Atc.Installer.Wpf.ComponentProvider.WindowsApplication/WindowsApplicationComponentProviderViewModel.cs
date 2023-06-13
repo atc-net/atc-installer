@@ -1,3 +1,4 @@
+// ReSharper disable InvertIf
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
@@ -22,6 +23,38 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (applicationOption.ComponentType == ComponentType.WindowsService)
         {
             IsWindowsService = true;
+        }
+
+        if (InstallationPath is not null)
+        {
+            var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
+            if (appSettingsFile.Exists)
+            {
+                var jsonText = FileHelper.ReadAllText(appSettingsFile);
+                var dynamicJson = new DynamicJson(jsonText);
+                ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
+            }
+
+            var appConfigFile = new FileInfo(Path.Combine(InstallationPath, "app.config"));
+            if (appConfigFile.Exists)
+            {
+                var xml = FileHelper.ReadAllText(appConfigFile);
+                var xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(xml);
+                ConfigurationXmlFiles.Add(appConfigFile, xmlDocument);
+            }
+
+            if (InstalledMainFile is not null)
+            {
+                var mainAppConfigFile = new FileInfo(InstalledMainFile + ".config");
+                if (mainAppConfigFile.Exists)
+                {
+                    var xml = FileHelper.ReadAllText(mainAppConfigFile);
+                    var xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(xml);
+                    ConfigurationXmlFiles.Add(mainAppConfigFile, xmlDocument);
+                }
+            }
         }
     }
 
@@ -173,6 +206,22 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         CheckPrerequisitesForHostingFramework();
     }
 
+    public override void UpdateConfigurationDynamicJson(
+        DynamicJson dynamicJson)
+    {
+        ArgumentNullException.ThrowIfNull(dynamicJson);
+
+        // TODO:
+    }
+
+    public override void UpdateConfigurationXmlDocument(
+        XmlDocument xmlDocument)
+    {
+        ArgumentNullException.ThrowIfNull(xmlDocument);
+
+        // TODO:
+    }
+
     private void CheckPrerequisitesForHostingFramework()
     {
         switch (HostingFramework)
@@ -266,9 +315,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return isDone;
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
-        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+        CopyFilesAndLog();
+
+        UpdateConfigurationFiles();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -300,6 +349,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         BackupConfigurationFilesAndLog();
 
         CopyFilesAndLog();
+
+        UpdateConfigurationFiles();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 

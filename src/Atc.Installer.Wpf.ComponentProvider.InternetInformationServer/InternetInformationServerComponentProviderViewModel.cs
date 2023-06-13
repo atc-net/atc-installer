@@ -20,7 +20,24 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (InstallationPath is not null)
         {
-            InstallationPath = iisInstallerService.ResolvedVirtuelRootPath(InstallationPath);
+            InstallationPath = iisInstallerService.ResolvedVirtuelRootPath(InstallationPath)!;
+
+            var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
+            if (appSettingsFile.Exists)
+            {
+                var jsonText = FileHelper.ReadAllText(appSettingsFile);
+                var dynamicJson = new DynamicJson(jsonText);
+                ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
+            }
+
+            var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
+            if (webConfigFile.Exists)
+            {
+                var xml = FileHelper.ReadAllText(webConfigFile);
+                var xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(xml);
+                ConfigurationXmlFiles.Add(webConfigFile, xmlDocument);
+            }
         }
 
         if (InstalledMainFile is not null)
@@ -29,11 +46,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
-
-        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
-        {
-            HostName = hostNameValue;
-        }
 
         if (TryGetUshortFromApplicationSettings("http", out var httpValue))
         {
@@ -44,15 +56,20 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             Https = httpsValue;
         }
+
+        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            HostName = hostNameValue;
+        }
     }
 
     public bool IsRequiredWebSockets { get; }
 
-    public string? HostName { get; }
-
     public ushort? Http { get; }
 
     public ushort? Https { get; }
+
+    public string? HostName { get; }
 
     public override void CheckPrerequisites()
     {
@@ -117,6 +134,43 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
+    }
+
+    public override void UpdateConfigurationDynamicJson(
+        DynamicJson dynamicJson)
+    {
+        ArgumentNullException.ThrowIfNull(dynamicJson);
+
+        foreach (var configurationSetting in ConfigurationSettings)
+        {
+            var value = configurationSetting.Value;
+            if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
+            {
+                var orgValue = jsonElement.GetString()!;
+                if (orgValue.Contains("[[", StringComparison.Ordinal) &&
+                    orgValue.Contains("]]", StringComparison.Ordinal))
+                {
+                    var keys = orgValue.GetTemplateKeys();
+                    foreach (var key in keys)
+                    {
+                        if (key.Equals(nameof(HostName), StringComparison.Ordinal))
+                        {
+                            value = orgValue.Replace($"[[{key}]]", HostName, StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+                }
+            }
+
+            dynamicJson.SetValue(configurationSetting.Key, value);
+        }
+    }
+
+    public override void UpdateConfigurationXmlDocument(
+        XmlDocument xmlDocument)
+    {
+        ArgumentNullException.ThrowIfNull(xmlDocument);
+
+        // TODO:
     }
 
     public override bool CanServiceStopCommandHandler()
@@ -361,9 +415,9 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
 
-            LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-            new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
-            LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+            CopyFilesAndLog();
+
+            UpdateConfigurationFiles();
 
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -400,6 +454,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         BackupConfigurationFilesAndLog();
 
         CopyFilesAndLog();
+
+        UpdateConfigurationFiles();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
