@@ -188,16 +188,39 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                value != default;
     }
 
-    public void LoadConfigurationFiles(
-        ApplicationOption applicationOption)
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+    public void LoadConfigurationFiles()
     {
-        ArgumentNullException.ThrowIfNull(applicationOption);
-        ArgumentNullException.ThrowIfNull(InstallationPath);
+        if (InstallationPath is null)
+        {
+            return;
+        }
 
-        switch (applicationOption.HostingFramework)
+        switch (HostingFramework)
         {
             case HostingFrameworkType.DonNetFramework48:
             {
+                if (InstalledMainFile is not null)
+                {
+                    var mainAppConfigFile = new FileInfo(InstalledMainFile + ".config");
+                    if (mainAppConfigFile.Exists)
+                    {
+                        var xml = FileHelper.ReadAllText(mainAppConfigFile);
+                        var xmlDocument = new XmlDocument();
+                        xmlDocument.LoadXml(xml);
+                        ConfigurationXmlFiles.Add(mainAppConfigFile, xmlDocument);
+                    }
+                }
+
+                var appConfigFile = new FileInfo(Path.Combine(InstallationPath, "app.config"));
+                if (appConfigFile.Exists)
+                {
+                    var xml = FileHelper.ReadAllText(appConfigFile);
+                    var xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(xml);
+                    ConfigurationXmlFiles.Add(appConfigFile, xmlDocument);
+                }
+
                 var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
                 if (webConfigFile.Exists)
                 {
@@ -220,6 +243,15 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                     ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
                 }
 
+                var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
+                if (webConfigFile.Exists)
+                {
+                    var xml = FileHelper.ReadAllText(webConfigFile);
+                    var xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(xml);
+                    ConfigurationXmlFiles.Add(webConfigFile, xmlDocument);
+                }
+
                 break;
             }
 
@@ -237,7 +269,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             }
 
             default:
-                throw new SwitchCaseDefaultException(applicationOption.HostingFramework);
+                throw new SwitchCaseDefaultException(HostingFramework);
         }
     }
 
@@ -379,6 +411,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     protected void UpdateConfigurationFiles()
     {
         LogItems.Add(LogItemFactory.CreateTrace("Update configuration files"));
+
+        LoadConfigurationFiles();
 
         foreach (var configurationJsonFile in ConfigurationJsonFiles)
         {

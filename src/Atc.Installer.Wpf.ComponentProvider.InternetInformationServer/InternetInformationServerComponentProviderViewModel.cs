@@ -22,8 +22,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (InstallationPath is not null)
         {
             InstallationPath = iisInstallerService.ResolvedVirtuelRootPath(InstallationPath)!;
-
-            LoadConfigurationFiles(applicationOption);
         }
 
         if (InstalledMainFile is not null)
@@ -428,6 +426,10 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (isWebsiteCreated)
         {
             LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
+
+            await iisInstallerService
+                .StopApplicationPool(Name)
+                .ConfigureAwait(true);
 
             CopyFilesAndLog();
 

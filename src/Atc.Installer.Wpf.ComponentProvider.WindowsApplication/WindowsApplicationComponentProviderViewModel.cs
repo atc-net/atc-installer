@@ -26,19 +26,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (InstallationPath is not null)
         {
-            LoadConfigurationFiles(applicationOption);
-
-            if (InstalledMainFile is not null)
-            {
-                var mainAppConfigFile = new FileInfo(InstalledMainFile + ".config");
-                if (mainAppConfigFile.Exists)
-                {
-                    var xml = FileHelper.ReadAllText(mainAppConfigFile);
-                    var xmlDocument = new XmlDocument();
-                    xmlDocument.LoadXml(xml);
-                    ConfigurationXmlFiles.Add(mainAppConfigFile, xmlDocument);
-                }
-            }
+            LoadConfigurationFiles();
         }
     }
 
