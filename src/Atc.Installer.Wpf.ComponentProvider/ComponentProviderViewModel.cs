@@ -1,4 +1,5 @@
 // ReSharper disable InvertIf
+// ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
@@ -185,6 +186,59 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         return DefaultApplicationSettings.TryGetUshortFromDictionary(key, out value) &&
                value != default;
+    }
+
+    public void LoadConfigurationFiles(
+        ApplicationOption applicationOption)
+    {
+        ArgumentNullException.ThrowIfNull(applicationOption);
+        ArgumentNullException.ThrowIfNull(InstallationPath);
+
+        switch (applicationOption.HostingFramework)
+        {
+            case HostingFrameworkType.DonNetFramework48:
+            {
+                var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
+                if (webConfigFile.Exists)
+                {
+                    var xml = FileHelper.ReadAllText(webConfigFile);
+                    var xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(xml);
+                    ConfigurationXmlFiles.Add(webConfigFile, xmlDocument);
+                }
+
+                break;
+            }
+
+            case HostingFrameworkType.DotNet7:
+            {
+                var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
+                if (appSettingsFile.Exists)
+                {
+                    var jsonText = FileHelper.ReadAllText(appSettingsFile);
+                    var dynamicJson = new DynamicJson(jsonText);
+                    ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
+                }
+
+                break;
+            }
+
+            case HostingFrameworkType.NodeJs:
+            {
+                var envFile = new FileInfo(Path.Combine(InstallationPath, "env.json"));
+                if (envFile.Exists)
+                {
+                    var jsonText = FileHelper.ReadAllText(envFile);
+                    var dynamicJson = new DynamicJson(jsonText);
+                    ConfigurationJsonFiles.Add(envFile, dynamicJson);
+                }
+
+                break;
+            }
+
+            default:
+                throw new SwitchCaseDefaultException(applicationOption.HostingFramework);
+        }
     }
 
     public void PrepareInstallationFiles(
@@ -415,7 +469,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         InstallationPrerequisites.Clear();
 
-        if (UnpackedZipPath is null) // TODO: check for setup.exe or .msi file
+        // TODO: check for setup.exe or .msi file
+        if (UnpackedZipPath is null)
         {
             InstallationState = ComponentInstallationState.NoInstallationsFiles;
             RunningState = ComponentRunningState.NotAvailable;
@@ -426,7 +481,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         {
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
-            if (UnpackedZipPath is not null) // TODO: Improve
+            // TODO: Improve
+            if (UnpackedZipPath is not null)
             {
                 var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
                 if (!File.Exists(installationMainFile))

@@ -26,22 +26,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (InstallationPath is not null)
         {
-            var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
-            if (appSettingsFile.Exists)
-            {
-                var jsonText = FileHelper.ReadAllText(appSettingsFile);
-                var dynamicJson = new DynamicJson(jsonText);
-                ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
-            }
-
-            var appConfigFile = new FileInfo(Path.Combine(InstallationPath, "app.config"));
-            if (appConfigFile.Exists)
-            {
-                var xml = FileHelper.ReadAllText(appConfigFile);
-                var xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(xml);
-                ConfigurationXmlFiles.Add(appConfigFile, xmlDocument);
-            }
+            LoadConfigurationFiles(applicationOption);
 
             if (InstalledMainFile is not null)
             {

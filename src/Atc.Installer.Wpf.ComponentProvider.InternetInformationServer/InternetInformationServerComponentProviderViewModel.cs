@@ -23,22 +23,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             InstallationPath = iisInstallerService.ResolvedVirtuelRootPath(InstallationPath)!;
 
-            var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
-            if (appSettingsFile.Exists)
-            {
-                var jsonText = FileHelper.ReadAllText(appSettingsFile);
-                var dynamicJson = new DynamicJson(jsonText);
-                ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
-            }
-
-            var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
-            if (webConfigFile.Exists)
-            {
-                var xml = FileHelper.ReadAllText(webConfigFile);
-                var xmlDocument = new XmlDocument();
-                xmlDocument.LoadXml(xml);
-                ConfigurationXmlFiles.Add(webConfigFile, xmlDocument);
-            }
+            LoadConfigurationFiles(applicationOption);
         }
 
         if (InstalledMainFile is not null)
