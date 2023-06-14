@@ -1,3 +1,5 @@
+using Atc.Installer.Wpf.ComponentProvider.PostgreSql.Controls;
+
 namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql;
 
 public partial class PostgreSqlServerComponentProviderViewModel : ComponentProviderViewModel

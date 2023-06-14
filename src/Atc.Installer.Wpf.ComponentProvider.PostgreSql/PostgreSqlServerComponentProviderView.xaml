@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
+    xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -25,7 +26,7 @@
                     Grid.Column="2"
                     Header="Connection">
                     <StackPanel Orientation="Vertical">
-                        <local:PostgreSqlConnectionView
+                        <controls:PostgreSqlConnectionView
                             Margin="0,10,0,0"
                             DataContext="{Binding Path=PostgreSqlConnectionViewModel}"
                             IsEnabled="False" />

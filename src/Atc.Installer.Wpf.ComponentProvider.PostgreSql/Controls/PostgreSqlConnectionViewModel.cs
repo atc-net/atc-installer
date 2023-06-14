@@ -1,4 +1,4 @@
-namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql;
+namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql.Controls;
 
 public class PostgreSqlConnectionViewModel : ViewModelBase
 {

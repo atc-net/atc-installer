@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
+    xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Controls;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,8 +19,30 @@
                 Margin="0,0,0,30"
                 Content="{Binding Path=Name, FallbackValue='HelloWorld.WebApi'}"
                 FontSize="26" />
-            <atc:GridEx Columns="200,10,400" Rows="Auto">
+            <atc:GridEx Columns="200,10,400" Rows="Auto,10,Auto">
                 <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="0" />
+                <GroupBox
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Header="Default-ApplicationSettings">
+                    <StackPanel Orientation="Vertical">
+                        <controls:ApplicationSettingsView
+                            Margin="0,10,0,0"
+                            DataContext="{Binding Path=DefaultApplicationSettingsViewModel}"
+                            IsEnabled="False" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Header="ApplicationSettings">
+                    <StackPanel Orientation="Vertical">
+                        <controls:ApplicationSettingsView
+                            Margin="0,10,0,0"
+                            DataContext="{Binding Path=ApplicationSettingsViewModel}"
+                            IsEnabled="False" />
+                    </StackPanel>
+                </GroupBox>
             </atc:GridEx>
         </StackPanel>
     </atc:BusyOverlay>

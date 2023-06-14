@@ -37,8 +37,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         ProjectName = projectName;
-        DefaultApplicationSettings = defaultApplicationSettings;
-        ApplicationSettings = applicationOption.ApplicationSettings;
+        DefaultApplicationSettingsViewModel.Populate(defaultApplicationSettings);
+        ApplicationSettingsViewModel.Populate(applicationOption.ApplicationSettings);
         ConfigurationSettingsFiles = applicationOption.ConfigurationSettingsFiles;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
@@ -56,9 +56,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public string ProjectName { get; }
 
-    public IDictionary<string, object> DefaultApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public ApplicationSettingsViewModel DefaultApplicationSettingsViewModel { get; } = new();
 
-    public IDictionary<string, object> ApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public ApplicationSettingsViewModel ApplicationSettingsViewModel { get; } = new();
 
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; } = new List<ConfigurationSettingsFileOption>();
 
@@ -164,13 +164,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         string key,
         out string value)
     {
-        if (ApplicationSettings.TryGetStringFromDictionary(key, out value) &&
+        if (ApplicationSettingsViewModel.TryGetString(key, out value) &&
             !string.IsNullOrWhiteSpace(value))
         {
             return true;
         }
 
-        return DefaultApplicationSettings.TryGetStringFromDictionary(key, out value) &&
+        return DefaultApplicationSettingsViewModel.TryGetString(key, out value) &&
                !string.IsNullOrWhiteSpace(value);
     }
 
@@ -178,13 +178,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         string key,
         out ushort value)
     {
-        if (ApplicationSettings.TryGetUshortFromDictionary(key, out value) &&
+        if (ApplicationSettingsViewModel.TryGetUshort(key, out value) &&
             value != default)
         {
             return true;
         }
 
-        return DefaultApplicationSettings.TryGetUshortFromDictionary(key, out value) &&
+        return DefaultApplicationSettingsViewModel.TryGetUshort(key, out value) &&
                value != default;
     }
 
@@ -340,11 +340,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public virtual void UpdateConfigurationDynamicJson(
         string fileName,
-        DynamicJson dynamicJson) { }
+        DynamicJson dynamicJson)
+    { }
 
     public virtual void UpdateConfigurationXmlDocument(
         string fileName,
-        XmlDocument xmlDocument) { }
+        XmlDocument xmlDocument)
+    { }
 
     protected void BackupConfigurationFilesAndLog()
     {
