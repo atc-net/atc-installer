@@ -207,6 +207,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     }
 
     public override void UpdateConfigurationDynamicJson(
+        string fileName,
         DynamicJson dynamicJson)
     {
         ArgumentNullException.ThrowIfNull(dynamicJson);
@@ -215,6 +216,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     }
 
     public override void UpdateConfigurationXmlDocument(
+        string fileName,
         XmlDocument xmlDocument)
     {
         ArgumentNullException.ThrowIfNull(xmlDocument);

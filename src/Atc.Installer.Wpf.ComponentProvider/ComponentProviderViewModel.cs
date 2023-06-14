@@ -38,7 +38,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ProjectName = projectName;
         DefaultApplicationSettings = defaultApplicationSettings;
         ApplicationSettings = applicationOption.ApplicationSettings;
-        ConfigurationSettings = applicationOption.ConfigurationSettings;
+        ConfigurationSettingsFiles = applicationOption.ConfigurationSettingsFiles;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
@@ -59,7 +59,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public IDictionary<string, object> ApplicationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
-    public IDictionary<string, object> ConfigurationSettings { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; } = new List<ConfigurationSettingsFileOption>();
 
     public string Name { get; }
 
@@ -253,9 +253,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public virtual void CheckServiceState() { }
 
     public virtual void UpdateConfigurationDynamicJson(
+        string fileName,
         DynamicJson dynamicJson) { }
 
     public virtual void UpdateConfigurationXmlDocument(
+        string fileName,
         XmlDocument xmlDocument) { }
 
     protected void BackupConfigurationFilesAndLog()
@@ -326,7 +328,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         foreach (var configurationJsonFile in ConfigurationJsonFiles)
         {
-            UpdateConfigurationDynamicJson(configurationJsonFile.Value);
+            UpdateConfigurationDynamicJson(configurationJsonFile.Key.Name, configurationJsonFile.Value);
 
             var jsonSource = FileHelper.ReadAllText(configurationJsonFile.Key);
             var jsonTarget = configurationJsonFile.Value.ToJson(orderByKey: true);
@@ -338,7 +340,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         foreach (var configurationXmlFile in ConfigurationXmlFiles)
         {
-            UpdateConfigurationXmlDocument(configurationXmlFile.Value);
+            UpdateConfigurationXmlDocument(configurationXmlFile.Key.Name, configurationXmlFile.Value);
 
             var xmlSource = FileHelper.ReadAllText(configurationXmlFile.Key);
             var xmlTarget = configurationXmlFile.Value.ToIndentedXml();

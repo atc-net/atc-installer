@@ -137,35 +137,45 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     }
 
     public override void UpdateConfigurationDynamicJson(
+        string fileName,
         DynamicJson dynamicJson)
     {
         ArgumentNullException.ThrowIfNull(dynamicJson);
 
-        foreach (var configurationSetting in ConfigurationSettings)
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
         {
-            var value = configurationSetting.Value;
-            if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
+            if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
             {
-                var orgValue = jsonElement.GetString()!;
-                if (orgValue.Contains("[[", StringComparison.Ordinal) &&
-                    orgValue.Contains("]]", StringComparison.Ordinal))
+                continue;
+            }
+
+            foreach (var setting in configurationSettingsFile.Settings)
+            {
+                var value = setting.Value;
+                if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
                 {
-                    var keys = orgValue.GetTemplateKeys();
-                    foreach (var key in keys)
+                    var orgValue = jsonElement.GetString()!;
+                    if (orgValue.Contains("[[", StringComparison.Ordinal) &&
+                        orgValue.Contains("]]", StringComparison.Ordinal))
                     {
-                        if (key.Equals(nameof(HostName), StringComparison.Ordinal))
+                        var keys = orgValue.GetTemplateKeys();
+                        foreach (var key in keys)
                         {
-                            value = orgValue.Replace($"[[{key}]]", HostName, StringComparison.OrdinalIgnoreCase);
+                            if (key.Equals(nameof(HostName), StringComparison.Ordinal))
+                            {
+                                value = orgValue.Replace($"[[{key}]]", HostName, StringComparison.OrdinalIgnoreCase);
+                            }
                         }
                     }
                 }
-            }
 
-            dynamicJson.SetValue(configurationSetting.Key, value);
+                dynamicJson.SetValue(setting.Key, value);
+            }
         }
     }
 
     public override void UpdateConfigurationXmlDocument(
+        string fileName,
         XmlDocument xmlDocument)
     {
         ArgumentNullException.ThrowIfNull(xmlDocument);

@@ -16,7 +16,7 @@ public class ApplicationOption
 
     public IDictionary<string, object> ApplicationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
-    public IDictionary<string, object> ConfigurationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; init; } = new List<ConfigurationSettingsFileOption>();
 
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(ComponentType)}: {ComponentType}, {nameof(HostingFramework)}: {HostingFramework}";
