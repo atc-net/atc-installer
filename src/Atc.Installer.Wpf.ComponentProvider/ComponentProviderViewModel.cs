@@ -353,6 +353,24 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         LogItems.Add(LogItemFactory.CreateInformation("Configuration files is updated copied"));
     }
 
+    protected string ResolveTemplateIfNeededByApplicationSettingsLookup(
+        string value)
+    {
+        if (value.ContainsTemplateKeyBrackets())
+        {
+            var keys = value.GetTemplateKeys();
+            foreach (var key in keys)
+            {
+                if (TryGetStringFromApplicationSettings(key, out var resultValue))
+                {
+                    value = value.ReplaceTemplateWithKey(key, resultValue);
+                }
+            }
+        }
+
+        return value;
+    }
+
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
 

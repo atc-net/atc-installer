@@ -2,7 +2,6 @@
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
-[SuppressMessage("Major Code Smell", "S4144:Methods should not have identical implementations", Justification = "OK.")]
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly WindowsApplicationInstallerService waInstallerService;
@@ -212,7 +211,24 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         ArgumentNullException.ThrowIfNull(dynamicJson);
 
-        // TODO:
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        {
+            if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            foreach (var setting in configurationSettingsFile.JsonSettings)
+            {
+                var value = setting.Value;
+                if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
+                {
+                    value = ResolveTemplateIfNeededByApplicationSettingsLookup(jsonElement.GetString()!);
+                }
+
+                dynamicJson.SetValue(setting.Key, value);
+            }
+        }
     }
 
     public override void UpdateConfigurationXmlDocument(
@@ -221,7 +237,37 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         ArgumentNullException.ThrowIfNull(xmlDocument);
 
-        // TODO:
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        {
+            if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            foreach (var setting in configurationSettingsFile.XmlSettings)
+            {
+                if (setting.Element.Equals("add", StringComparison.Ordinal) &&
+                    setting.Path.EndsWith("appSettings", StringComparison.Ordinal))
+                {
+                    var attributeKey = setting.Attributes.FirstOrDefault(x => x.Key == "key");
+                    var attributeValue = setting.Attributes.FirstOrDefault(x => x.Key == "value");
+                    if (!string.IsNullOrEmpty(attributeKey.Value) &&
+                        !string.IsNullOrEmpty(attributeValue.Value))
+                    {
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value);
+                        xmlDocument.SetAppSettings(attributeKey.Value, value);
+                    }
+                }
+                else
+                {
+                    foreach (var settingAttribute in setting.Attributes)
+                    {
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value);
+                        xmlDocument.SetValue(setting.Path, setting.Element, settingAttribute.Key, value);
+                    }
+                }
+            }
+        }
     }
 
     private void CheckPrerequisitesForHostingFramework()

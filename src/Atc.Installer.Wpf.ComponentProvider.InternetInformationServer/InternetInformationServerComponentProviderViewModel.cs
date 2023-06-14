@@ -1,3 +1,4 @@
+// ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 
@@ -149,24 +150,12 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 continue;
             }
 
-            foreach (var setting in configurationSettingsFile.Settings)
+            foreach (var setting in configurationSettingsFile.JsonSettings)
             {
                 var value = setting.Value;
                 if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
                 {
-                    var orgValue = jsonElement.GetString()!;
-                    if (orgValue.Contains("[[", StringComparison.Ordinal) &&
-                        orgValue.Contains("]]", StringComparison.Ordinal))
-                    {
-                        var keys = orgValue.GetTemplateKeys();
-                        foreach (var key in keys)
-                        {
-                            if (key.Equals(nameof(HostName), StringComparison.Ordinal))
-                            {
-                                value = orgValue.Replace($"[[{key}]]", HostName, StringComparison.OrdinalIgnoreCase);
-                            }
-                        }
-                    }
+                    value = ResolveTemplateIfNeededByApplicationSettingsLookup(jsonElement.GetString()!);
                 }
 
                 dynamicJson.SetValue(setting.Key, value);
@@ -180,7 +169,37 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         ArgumentNullException.ThrowIfNull(xmlDocument);
 
-        // TODO:
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        {
+            if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            foreach (var setting in configurationSettingsFile.XmlSettings)
+            {
+                if (setting.Element.Equals("add", StringComparison.Ordinal) &&
+                    setting.Path.EndsWith("appSettings", StringComparison.Ordinal))
+                {
+                    var attributeKey = setting.Attributes.FirstOrDefault(x => x.Key == "key");
+                    var attributeValue = setting.Attributes.FirstOrDefault(x => x.Key == "value");
+                    if (!string.IsNullOrEmpty(attributeKey.Value) &&
+                        !string.IsNullOrEmpty(attributeValue.Value))
+                    {
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value);
+                        xmlDocument.SetAppSettings(attributeKey.Value, value);
+                    }
+                }
+                else
+                {
+                    foreach (var settingAttribute in setting.Attributes)
+                    {
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value);
+                        xmlDocument.SetValue(setting.Path, setting.Element, settingAttribute.Key, value);
+                    }
+                }
+            }
+        }
     }
 
     public override bool CanServiceStopCommandHandler()
