@@ -3,17 +3,44 @@ namespace Atc.Installer.Integration.Json;
 
 public class DynamicJson
 {
-    public IDictionary<string, object?> JsonDictionary { get; }
+    public IDictionary<string, object?> JsonDictionary { get; private set; } = new Dictionary<string, object?>(StringComparer.Ordinal);
 
     public DynamicJson(
         string jsonString)
     {
         ArgumentException.ThrowIfNullOrEmpty(jsonString);
+        if (!jsonString.IsFormatJson())
+        {
+            throw new FormatException($"{nameof(jsonString)} is not valid json format.");
+        }
 
-        var jsonSerializerOptions = Serialization.JsonSerializerOptionsFactory.Create();
-        jsonSerializerOptions.Converters.Add(new JsonElementObjectConverter());
+        SerializableAndSetJsonDictionary(jsonString);
+    }
 
-        JsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object?>>(jsonString, jsonSerializerOptions)!;
+    public DynamicJson(
+        FileInfo jsonFile)
+    {
+        ArgumentNullException.ThrowIfNull(jsonFile);
+
+        var jsonString = FileHelper.ReadAllText(jsonFile);
+        if (!jsonString.IsFormatJson())
+        {
+            throw new FormatException($"{nameof(jsonString)} is not valid json format.");
+        }
+
+        SerializableAndSetJsonDictionary(jsonString);
+    }
+
+    public object? GetValue(
+        string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+
+        var segments = path.Split('.');
+        return GetValueRecursive(
+            JsonDictionary,
+            segments,
+            0);
     }
 
     public (bool IsSucceeded, string? ErrorMessage) SetValue(
@@ -45,16 +72,50 @@ public class DynamicJson
     public override string ToString()
         => ToJson();
 
+    private void SerializableAndSetJsonDictionary(
+        string jsonString)
+    {
+        var jsonSerializerOptions = Serialization.JsonSerializerOptionsFactory.Create();
+        jsonSerializerOptions.Converters.Add(new JsonElementObjectConverter());
+
+        JsonDictionary = JsonSerializer.Deserialize<Dictionary<string, object?>>(jsonString, jsonSerializerOptions)!;
+    }
+
+    private static object? GetValueRecursive(
+        IDictionary<string, object?> currentDict,
+        IReadOnlyList<string> segments,
+        int index)
+    {
+        var key = segments[index];
+
+        if (index == segments.Count - 1)
+        {
+            return currentDict.TryGetValue(key, out var value)
+                ? value
+                : null;
+        }
+
+        if (currentDict[key] is Dictionary<string, object?> nestedDict)
+        {
+            return GetValueRecursive(
+                nestedDict,
+                segments,
+                index + 1);
+        }
+
+        return null;
+    }
+
     private static (bool IsSucceeded, string? ErrorMessage) SetValueRecursive(
         IDictionary<string, object?> currentDict,
-        string[] segments,
+        IReadOnlyList<string> segments,
         int index,
         object? value,
         bool createKeyIfNotExist)
     {
         var key = segments[index];
 
-        if (index == segments.Length - 1)
+        if (index == segments.Count - 1)
         {
             currentDict[key] = value;
             return (

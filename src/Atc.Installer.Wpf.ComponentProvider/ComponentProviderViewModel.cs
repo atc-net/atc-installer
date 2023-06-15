@@ -42,6 +42,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         FolderPermissionsViewModel.Populate(applicationOption.FolderPermissions);
         ConfigurationSettingsFiles = applicationOption.ConfigurationSettingsFiles;
         Name = applicationOption.Name;
+        ComponentType = applicationOption.ComponentType;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
         InstallationPath = applicationOption.InstallationPath;
@@ -66,6 +67,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; } = new List<ConfigurationSettingsFileOption>();
 
     public string Name { get; }
+
+    public ComponentType ComponentType { get; }
 
     public HostingFrameworkType HostingFramework { get; }
 
@@ -241,8 +244,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                 var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
                 if (appSettingsFile.Exists)
                 {
-                    var jsonText = FileHelper.ReadAllText(appSettingsFile);
-                    var dynamicJson = new DynamicJson(jsonText);
+                    var dynamicJson = new DynamicJson(appSettingsFile);
                     ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
                 }
 
@@ -263,8 +265,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                 var envFile = new FileInfo(Path.Combine(InstallationPath, "env.json"));
                 if (envFile.Exists)
                 {
-                    var jsonText = FileHelper.ReadAllText(envFile);
-                    var dynamicJson = new DynamicJson(jsonText);
+                    var dynamicJson = new DynamicJson(envFile);
                     ConfigurationJsonFiles.Add(envFile, dynamicJson);
                 }
 
@@ -597,7 +598,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             RunningState = ComponentRunningState.NotAvailable;
         }
 
-        if (InstalledMainFile is not null &&
+        if (InstallationPath is not null &&
+            InstalledMainFile is not null &&
             File.Exists(InstalledMainFile))
         {
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
@@ -605,27 +607,14 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             // TODO: Improve
             if (UnpackedZipPath is not null)
             {
-                var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
-                if (!File.Exists(installationMainFile))
+                if (ComponentType == ComponentType.InternetInformationService &&
+                    HostingFramework == HostingFrameworkType.NodeJs)
                 {
-                    installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.dll");
+                    WorkOnAnalyzeAndUpdateStatesForNodeJsVersion();
                 }
-
-                if (File.Exists(installationMainFile))
+                else
                 {
-                    var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
-                    var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFile);
-                    if (installationMainFileVersion.FileVersion is not null &&
-                        installedMainFileVersion.FileVersion is not null)
-                    {
-                        var a = new Version(installationMainFileVersion.FileVersion);
-                        var b = new Version(installedMainFileVersion.FileVersion);
-
-                        if (a.IsNewerThan(b))
-                        {
-                            InstallationState = ComponentInstallationState.InstalledWithOldVersion;
-                        }
-                    }
+                    WorkOnAnalyzeAndUpdateStatesForDotNet();
                 }
             }
         }
@@ -637,5 +626,71 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         CheckPrerequisites();
         CheckServiceState();
+    }
+
+    private void WorkOnAnalyzeAndUpdateStatesForDotNet()
+    {
+        if (UnpackedZipPath is null ||
+            InstalledMainFile is null)
+        {
+            return;
+        }
+
+        var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
+        if (!File.Exists(installationMainFile))
+        {
+            installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.dll");
+        }
+
+        if (File.Exists(installationMainFile))
+        {
+            var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
+            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFile);
+            if (installationMainFileVersion.FileVersion is not null &&
+                installedMainFileVersion.FileVersion is not null)
+            {
+                var sourceVersion = new Version(installationMainFileVersion.FileVersion);
+                var destinationVersion = new Version(installedMainFileVersion.FileVersion);
+
+                if (sourceVersion.IsNewerThan(destinationVersion))
+                {
+                    InstallationState = ComponentInstallationState.InstalledWithOldVersion;
+                }
+            }
+        }
+    }
+
+    private void WorkOnAnalyzeAndUpdateStatesForNodeJsVersion()
+    {
+        if (UnpackedZipPath is null ||
+            InstallationPath is null)
+        {
+            return;
+        }
+
+        var installationVersionFile = Path.Combine(UnpackedZipPath, "version.json");
+        var installedVersionFile = Path.Combine(InstallationPath, "version.json");
+        if (File.Exists(installationVersionFile) &&
+            File.Exists(installedVersionFile))
+        {
+            var sourceDynamicJson = new DynamicJson(new FileInfo(installationVersionFile));
+            var sourceValue = sourceDynamicJson.GetValue("VERSION");
+            var destinationDynamicJson = new DynamicJson(new FileInfo(installedVersionFile));
+            var destinationValue = destinationDynamicJson.GetValue("VERSION");
+            if (sourceValue is not null &&
+                destinationValue is not null)
+            {
+                var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
+                {
+                    sourceValue.ToString()!,
+                    destinationValue.ToString()!,
+                };
+
+                if (sortedSet.Last() == sourceValue.ToString()!)
+                {
+                    InstallationState = ComponentInstallationState.InstalledWithOldVersion;
+                }
+            }
+        }
     }
 }

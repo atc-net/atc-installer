@@ -11,5 +11,6 @@ global using System.Text.RegularExpressions;
 global using System.Xml.Linq;
 
 global using Atc;
+global using Atc.Helpers;
 
 global using Microsoft.Win32;
