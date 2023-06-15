@@ -39,6 +39,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ProjectName = projectName;
         DefaultApplicationSettingsViewModel.Populate(defaultApplicationSettings);
         ApplicationSettingsViewModel.Populate(applicationOption.ApplicationSettings);
+        FolderPermissionsViewModel.Populate(applicationOption.FolderPermissions);
         ConfigurationSettingsFiles = applicationOption.ConfigurationSettingsFiles;
         Name = applicationOption.Name;
         HostingFramework = applicationOption.HostingFramework;
@@ -59,6 +60,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public ApplicationSettingsViewModel DefaultApplicationSettingsViewModel { get; } = new();
 
     public ApplicationSettingsViewModel ApplicationSettingsViewModel { get; } = new();
+
+    public FolderPermissionsViewModel FolderPermissionsViewModel { get; } = new();
 
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; } = new List<ConfigurationSettingsFileOption>();
 
@@ -343,6 +346,12 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         DynamicJson dynamicJson)
     { }
 
+    public virtual string ResolvedVirtuelRootFolder(
+        string folder)
+    {
+        return string.Empty;
+    }
+
     public virtual void UpdateConfigurationXmlDocument(
         string fileName,
         XmlDocument xmlDocument)
@@ -397,7 +406,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
     }
 
-    protected void CopyFilesAndLog()
+    protected void CopyUnpackedFiles()
     {
         if (UnpackedZipPath is null ||
             InstallationPath is null)
@@ -406,7 +415,35 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
 
         LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
+
+        ResolveDirectoriesForFolderPermissions();
+
+        var useDeleteBeforeCopy = !FolderPermissionsViewModel
+            .Items
+            .Any(x => x.Directory is not null &&
+                      x.Directory.FullName.StartsWith(InstallationPath, StringComparison.OrdinalIgnoreCase));
+
+        var directoryUnpackedZip = new DirectoryInfo(UnpackedZipPath);
+        var directoryInstallation = new DirectoryInfo(InstallationPath);
+
+        if (useDeleteBeforeCopy)
+        {
+            directoryUnpackedZip.CopyAll(directoryInstallation);
+        }
+        else
+        {
+            var excludeDirectories = FolderPermissionsViewModel
+                .Items
+                .Where(x => x.Directory is not null &&
+                            x.Directory.FullName.StartsWith(InstallationPath, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.Directory!.Name)
+                .ToList();
+
+            directoryInstallation.DeleteAllFiles();
+            directoryInstallation.DeleteAllDirectories("*", useRecursive: true, excludeDirectories);
+            directoryUnpackedZip.CopyAll(directoryInstallation, useRecursive: true, deleteAllFromDestinationBeforeCopy: false);
+        }
+
         LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
     }
 
@@ -441,6 +478,22 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
 
         LogItems.Add(LogItemFactory.CreateInformation("Configuration files is updated copied"));
+    }
+
+    protected void EnsureFolderPermissions()
+    {
+        LogItems.Add(LogItemFactory.CreateTrace("Ensure folder permissions"));
+
+        ResolveDirectoriesForFolderPermissions();
+
+        foreach (var vm in FolderPermissionsViewModel.Items)
+        {
+            vm.Directory?.SetPermissions(
+                vm.User,
+                vm.FileSystemRights);
+        }
+
+        LogItems.Add(LogItemFactory.CreateInformation("Folder permissions is ensured"));
     }
 
     protected string ResolveTemplateIfNeededByApplicationSettingsLookup(
@@ -497,6 +550,38 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationPath, $"{Name}.exe"),
             _ => InstalledMainFile,
         };
+    }
+
+    private void ResolveDirectoriesForFolderPermissions()
+    {
+        foreach (var vm in FolderPermissionsViewModel.Items)
+        {
+            if (vm.Directory is null)
+            {
+                continue;
+            }
+
+            var folder = vm.Folder;
+
+            if (folder.StartsWith(@".\", StringComparison.Ordinal))
+            {
+                folder = ResolvedVirtuelRootFolder(folder);
+            }
+
+            if (folder.ContainsTemplateKeyBrackets())
+            {
+                var keys = folder.GetTemplateKeys();
+                foreach (var key in keys)
+                {
+                    if (TryGetStringFromApplicationSettings(key, out var resultValue))
+                    {
+                        folder = folder.ReplaceTemplateWithKey(key, resultValue);
+                    }
+                }
+            }
+
+            vm.Directory = new DirectoryInfo(folder);
+        }
     }
 
     private void WorkOnAnalyzeAndUpdateStates()

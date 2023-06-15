@@ -23,11 +23,6 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         {
             IsWindowsService = true;
         }
-
-        if (InstallationPath is not null)
-        {
-            LoadConfigurationFiles();
-        }
     }
 
     public bool IsWindowsService { get; }
@@ -243,6 +238,19 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
     }
 
+    public override string ResolvedVirtuelRootFolder(
+        string folder)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(folder);
+
+        if (InstallationPath is not null)
+        {
+            folder = folder.Replace(".", InstallationPath, StringComparison.Ordinal);
+        }
+
+        return folder;
+    }
+
     private void CheckPrerequisitesForHostingFramework()
     {
         switch (HostingFramework)
@@ -336,9 +344,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return isDone;
         }
 
-        CopyFilesAndLog();
+        CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
+
+        EnsureFolderPermissions();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -369,9 +379,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         BackupConfigurationFilesAndLog();
 
-        CopyFilesAndLog();
+        CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
+
+        EnsureFolderPermissions();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -422,9 +434,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return Task.FromResult(isDone);
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
-        new DirectoryInfo(UnpackedZipPath).CopyAll(new DirectoryInfo(InstallationPath));
-        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+        CopyUnpackedFiles();
 
         isDone = true;
 
@@ -443,7 +453,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         BackupConfigurationFilesAndLog();
 
-        CopyFilesAndLog();
+        CopyUnpackedFiles();
 
         isDone = true;
 

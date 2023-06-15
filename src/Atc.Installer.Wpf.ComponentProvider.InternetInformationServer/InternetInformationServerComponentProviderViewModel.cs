@@ -21,39 +21,39 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (InstallationPath is not null)
         {
-            InstallationPath = iisInstallerService.ResolvedVirtuelRootPath(InstallationPath)!;
+            InstallationPath = iisInstallerService.ResolvedVirtuelRootFolder(InstallationPath)!;
         }
 
         if (InstalledMainFile is not null)
         {
-            InstalledMainFile = iisInstallerService.ResolvedVirtuelRootPath(InstalledMainFile);
+            InstalledMainFile = iisInstallerService.ResolvedVirtuelRootFolder(InstalledMainFile);
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
-
-        if (TryGetUshortFromApplicationSettings("http", out var httpValue))
-        {
-            Http = httpValue;
-        }
-
-        if (TryGetUshortFromApplicationSettings("https", out var httpsValue))
-        {
-            Https = httpsValue;
-        }
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
         {
             HostName = hostNameValue;
         }
+
+        if (TryGetUshortFromApplicationSettings("HttpPort", out var httpValue))
+        {
+            HttpPort = httpValue;
+        }
+
+        if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsValue))
+        {
+            HttpsPort = httpsValue;
+        }
     }
 
     public bool IsRequiredWebSockets { get; }
 
-    public ushort? Http { get; }
-
-    public ushort? Https { get; }
-
     public string? HostName { get; }
+
+    public ushort? HttpPort { get; }
+
+    public ushort? HttpsPort { get; }
 
     public override void CheckPrerequisites()
     {
@@ -185,6 +185,19 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
     }
 
+    public override string ResolvedVirtuelRootFolder(
+        string folder)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(folder);
+
+        if (InstallationPath is not null)
+        {
+            folder = folder.Replace(".", InstallationPath, StringComparison.Ordinal);
+        }
+
+        return folder;
+    }
+
     public override bool CanServiceStopCommandHandler()
         => RunningState == ComponentRunningState.Running;
 
@@ -285,7 +298,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (InstallationState == ComponentInstallationState.NotInstalled &&
             UnpackedZipPath is not null &&
             InstallationPath is not null &&
-            Http.HasValue)
+            HttpPort.HasValue)
         {
             isDone = await ServiceDeployWebsiteCreate(useAutoStart).ConfigureAwait(true);
         }
@@ -404,7 +417,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (UnpackedZipPath is null ||
             InstallationPath is null ||
-            Http is null)
+            HttpPort is null)
         {
             return isDone;
         }
@@ -417,8 +430,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 Name,
                 setApplicationPoolToUseDotNetClr: true,
                 new DirectoryInfo(InstallationPath),
-                Http.Value,
-                Https,
+                HttpPort.Value,
+                HttpsPort,
                 HostName,
                 requireServerNameIndication: true)
             .ConfigureAwait(true);
@@ -431,9 +444,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .StopApplicationPool(Name)
                 .ConfigureAwait(true);
 
-            CopyFilesAndLog();
+            CopyUnpackedFiles();
 
             UpdateConfigurationFiles();
+
+            EnsureFolderPermissions();
 
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -469,9 +484,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         BackupConfigurationFilesAndLog();
 
-        CopyFilesAndLog();
+        CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
+
+        EnsureFolderPermissions();
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 

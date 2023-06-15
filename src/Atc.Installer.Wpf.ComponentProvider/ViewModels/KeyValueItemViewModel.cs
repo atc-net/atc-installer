@@ -35,4 +35,7 @@ public class KeyValueItemViewModel : ViewModelBase
             RaisePropertyChanged();
         }
     }
+
+    public override string ToString()
+        => $"{nameof(Key)}: {Key}, {nameof(Value)}: {Value}";
 }

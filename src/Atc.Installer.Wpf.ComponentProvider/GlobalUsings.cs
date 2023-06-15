@@ -3,6 +3,7 @@ global using System.Diagnostics.CodeAnalysis;
 global using System.Globalization;
 global using System.IO;
 global using System.IO.Compression;
+global using System.Security.AccessControl;
 global using System.Windows.Data;
 global using System.Windows.Media;
 global using System.Xml;

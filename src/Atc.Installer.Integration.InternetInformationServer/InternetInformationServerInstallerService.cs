@@ -117,14 +117,14 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public bool IsComponentInstalledUrlRewriteModule2()
         => InstalledAppsInstallerService.Instance.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2");
 
-    public string? ResolvedVirtuelRootPath(
-        string path)
-        => path is not null &&
-           path.StartsWith(@".\", StringComparison.Ordinal) &&
+    public string? ResolvedVirtuelRootFolder(
+        string folder)
+        => folder is not null &&
+           folder.StartsWith(@".\", StringComparison.Ordinal) &&
            IsInstalled &&
            GetWwwRootPath() is not null
-            ? path.Replace(@".\", GetWwwRootPath()!.FullName + @"\", StringComparison.Ordinal)
-            : path;
+            ? folder.Replace(@".\", GetWwwRootPath()!.FullName + @"\", StringComparison.Ordinal)
+            : folder;
 
     public ComponentRunningState GetApplicationPoolState(
         string applicationPoolName)

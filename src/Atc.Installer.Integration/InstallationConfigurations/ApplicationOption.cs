@@ -16,6 +16,8 @@ public class ApplicationOption
 
     public IDictionary<string, object> ApplicationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
+    public IList<FolderPermissionOption> FolderPermissions { get; init; } = new List<FolderPermissionOption>();
+
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; init; } = new List<ConfigurationSettingsFileOption>();
 
     public override string ToString()
