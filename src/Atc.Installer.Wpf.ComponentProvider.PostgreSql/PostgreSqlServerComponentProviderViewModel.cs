@@ -1,13 +1,12 @@
-using Atc.Installer.Wpf.ComponentProvider.PostgreSql.Controls;
-
 namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql;
 
 public partial class PostgreSqlServerComponentProviderViewModel : ComponentProviderViewModel
 {
-    private readonly PostgreSqlServerInstallerService pgInstallerService;
+    private readonly IPostgreSqlServerInstallerService pgInstallerService;
     private string? testConnectionResult;
 
     public PostgreSqlServerComponentProviderViewModel(
+        IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
@@ -18,7 +17,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     {
         ArgumentNullException.ThrowIfNull(applicationOption);
 
-        pgInstallerService = PostgreSqlServerInstallerService.Instance;
+        pgInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         PostgreSqlConnectionViewModel = new PostgreSqlConnectionViewModel();
 
         InstalledMainFile = pgInstallerService.GetInstalledMainFile()?.FullName;

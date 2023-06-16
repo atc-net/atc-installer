@@ -4,10 +4,12 @@ namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
-    private readonly WindowsApplicationInstallerService waInstallerService;
+    private readonly IWindowsApplicationInstallerService waInstallerService;
     private readonly INetworkShellService networkShellService;
 
     public WindowsApplicationComponentProviderViewModel(
+        IWindowsApplicationInstallerService windowsApplicationInstallerService,
+        INetworkShellService networkShellService,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
@@ -18,8 +20,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         ArgumentNullException.ThrowIfNull(applicationOption);
 
-        waInstallerService = WindowsApplicationInstallerService.Instance;
-        networkShellService = new NetworkShellService();
+        this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
+        this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
         if (applicationOption.ComponentType == ComponentType.WindowsService)
         {

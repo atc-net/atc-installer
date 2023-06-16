@@ -10,4 +10,7 @@ public interface IInstalledAppsInstallerService : IInstallerService
 
     bool IsAppInstalledByDisplayName(
         string appDisplayName);
+
+    Version? GetAppInstalledVersionByDisplayName(
+        string appDisplayName);
 }

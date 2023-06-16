@@ -4,10 +4,12 @@ namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
 {
-    private readonly InternetInformationServerInstallerService iisInstallerService;
+    private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly INetworkShellService networkShellService;
 
     public InternetInformationServerComponentProviderViewModel(
+        IInternetInformationServerInstallerService internetInformationServerInstallerService,
+        INetworkShellService networkShellService,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
@@ -18,8 +20,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         ArgumentNullException.ThrowIfNull(applicationOption);
 
-        iisInstallerService = InternetInformationServerInstallerService.Instance;
-        networkShellService = new NetworkShellService();
+        this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
+        this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
         if (InstallationPath is not null)
         {

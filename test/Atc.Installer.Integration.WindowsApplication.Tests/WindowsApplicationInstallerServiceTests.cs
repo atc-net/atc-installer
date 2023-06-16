@@ -5,42 +5,46 @@ public class WindowsApplicationInstallerServiceTests
     [Fact]
     public void StopAndStartApplicationFlow_ApplicationName()
     {
-        var applicationName = "notepad";
-        var wsInstallerService = WindowsApplicationInstallerService.Instance;
+        var iaInstallerService = new InstalledAppsInstallerService();
+        var sut = new WindowsApplicationInstallerService(iaInstallerService);
 
-        var runningState = wsInstallerService.GetApplicationState(applicationName);
+        var applicationName = "notepad";
+
+        var runningState = sut.GetApplicationState(applicationName);
         Assert.Equal(ComponentRunningState.NotAvailable, runningState);
 
-        var isStarted = wsInstallerService.StartApplication(applicationName);
+        var isStarted = sut.StartApplication(applicationName);
         Assert.True(isStarted);
 
         Thread.Sleep(1_000);
 
-        runningState = wsInstallerService.GetApplicationState(applicationName);
+        runningState = sut.GetApplicationState(applicationName);
         Assert.Equal(ComponentRunningState.Running, runningState);
 
-        var isStopped = wsInstallerService.StopApplication(applicationName);
+        var isStopped = sut.StopApplication(applicationName);
         Assert.True(isStopped);
     }
 
     [Fact]
     public void StopAndStartApplicationFlow_ApplicationFile()
     {
-        var applicationFile = new FileInfo(@"C:\Windows\notepad.exe");
-        var wsInstallerService = WindowsApplicationInstallerService.Instance;
+        var iaInstallerService = new InstalledAppsInstallerService();
+        var sut = new WindowsApplicationInstallerService(iaInstallerService);
 
-        var runningState = wsInstallerService.GetApplicationState(applicationFile);
+        var applicationFile = new FileInfo(@"C:\Windows\notepad.exe");
+
+        var runningState = sut.GetApplicationState(applicationFile);
         Assert.Equal(ComponentRunningState.NotAvailable, runningState);
 
-        var isStarted = wsInstallerService.StartApplication(applicationFile);
+        var isStarted = sut.StartApplication(applicationFile);
         Assert.True(isStarted);
 
         Thread.Sleep(1_000);
 
-        runningState = wsInstallerService.GetApplicationState(applicationFile);
+        runningState = sut.GetApplicationState(applicationFile);
         Assert.Equal(ComponentRunningState.Running, runningState);
 
-        var isStopped = wsInstallerService.StopApplication(applicationFile);
+        var isStopped = sut.StopApplication(applicationFile);
         Assert.True(isStopped);
     }
 }

@@ -12,22 +12,13 @@ namespace Atc.Installer.Integration.InternetInformationServer;
 public sealed class InternetInformationServerInstallerService : IInternetInformationServerInstallerService
 {
     private const string IisComponentsRegistryPath = @"SOFTWARE\Microsoft\InetStp\Components";
-    private static readonly object InstanceLock = new();
-    private static InternetInformationServerInstallerService? instance;
 
-    private InternetInformationServerInstallerService()
-    {
-    }
+    private readonly IInstalledAppsInstallerService iaInstallerService;
 
-    public static InternetInformationServerInstallerService Instance
+    public InternetInformationServerInstallerService(
+        IInstalledAppsInstallerService installedAppsInstallerService)
     {
-        get
-        {
-            lock (InstanceLock)
-            {
-                return instance ??= new InternetInformationServerInstallerService();
-            }
-        }
+        this.iaInstallerService = installedAppsInstallerService ?? throw new ArgumentNullException(nameof(installedAppsInstallerService));
     }
 
     public bool IsInstalled
@@ -73,13 +64,13 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     }
 
     public bool IsMicrosoftDonNetFramework48()
-        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNetFramework48();
+        => iaInstallerService.IsMicrosoftDonNetFramework48();
 
     public bool IsMicrosoftDonNet7()
-        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNet7();
+        => iaInstallerService.IsMicrosoftDonNet7();
 
     public bool IsNodeJs18()
-        => InstalledAppsInstallerService.Instance.IsNodeJs18();
+        => iaInstallerService.IsNodeJs18();
 
     public bool IsInstalledManagementConsole()
     {
@@ -112,10 +103,10 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     }
 
     public bool IsComponentInstalledMicrosoftNetAppHostPack7()
-        => InstalledAppsInstallerService.Instance.IsAppInstalledByDisplayName("Microsoft .NET AppHost Pack - 7.");
+        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET AppHost Pack - 7.");
 
     public bool IsComponentInstalledUrlRewriteModule2()
-        => InstalledAppsInstallerService.Instance.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2");
+        => iaInstallerService.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2");
 
     public string? ResolvedVirtuelRootFolder(
         string folder)

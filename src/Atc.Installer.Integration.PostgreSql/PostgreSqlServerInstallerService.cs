@@ -4,26 +4,15 @@ namespace Atc.Installer.Integration.PostgreSql;
 [SuppressMessage("Major Code Smell", "S3010:Static fields should not be updated in constructors", Justification = "OK.")]
 public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstallerService
 {
-    private static readonly object InstanceLock = new();
-    private static PostgreSqlServerInstallerService? instance;
-    private static WindowsApplicationInstallerService? waInstanceService;
-    private static InstalledAppsInstallerService? iaInstanceService;
+    private static IWindowsApplicationInstallerService? waInstanceService;
+    private static IInstalledAppsInstallerService? iaInstanceService;
 
-    private PostgreSqlServerInstallerService()
+    public PostgreSqlServerInstallerService(
+        IWindowsApplicationInstallerService windowsApplicationInstallerService,
+        IInstalledAppsInstallerService installedAppsInstallerService)
     {
-        waInstanceService = WindowsApplicationInstallerService.Instance;
-        iaInstanceService = InstalledAppsInstallerService.Instance;
-    }
-
-    public static PostgreSqlServerInstallerService Instance
-    {
-        get
-        {
-            lock (InstanceLock)
-            {
-                return instance ??= new PostgreSqlServerInstallerService();
-            }
-        }
+        waInstanceService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
+        iaInstanceService = installedAppsInstallerService ?? throw new ArgumentNullException(nameof(installedAppsInstallerService));
     }
 
     public bool IsInstalled
@@ -97,6 +86,8 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
         string password)
         => TestConnection($"Host={hostName}:{hostPort};Database={database};Username={username};Password={password};");
 
+    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "OK - not possible to do properly.")]
+    [SuppressMessage("Usage", "MA0004:Use Task.ConfigureAwait(false)", Justification = "OK - not possible to do properly.")]
     public async Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
         string connectionString)
     {

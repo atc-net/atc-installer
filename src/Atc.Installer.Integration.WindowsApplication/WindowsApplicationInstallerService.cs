@@ -5,29 +5,19 @@ namespace Atc.Installer.Integration.WindowsApplication;
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
 public sealed class WindowsApplicationInstallerService : IWindowsApplicationInstallerService
 {
-    private static readonly object InstanceLock = new();
-    private static WindowsApplicationInstallerService? instance;
+    private readonly IInstalledAppsInstallerService iaInstallerService;
 
-    private WindowsApplicationInstallerService()
+    public WindowsApplicationInstallerService(
+        IInstalledAppsInstallerService installedAppsInstallerService)
     {
-    }
-
-    public static WindowsApplicationInstallerService Instance
-    {
-        get
-        {
-            lock (InstanceLock)
-            {
-                return instance ??= new WindowsApplicationInstallerService();
-            }
-        }
+        this.iaInstallerService = installedAppsInstallerService ?? throw new ArgumentNullException(nameof(installedAppsInstallerService));
     }
 
     public bool IsMicrosoftDonNetFramework48()
-        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNetFramework48();
+        => iaInstallerService.IsMicrosoftDonNetFramework48();
 
     public bool IsMicrosoftDonNet7()
-        => InstalledAppsInstallerService.Instance.IsMicrosoftDonNet7();
+        => iaInstallerService.IsMicrosoftDonNet7();
 
     public ComponentRunningState GetServiceState(
         string serviceName)

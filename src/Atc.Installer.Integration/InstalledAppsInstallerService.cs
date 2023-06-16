@@ -15,23 +15,6 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     private const string InstalledAppsRegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
     private const string DotNetFrameworkRegistryPath = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
     private const int DonNetFramework480Value = 528040;
-    private static readonly object InstanceLock = new();
-    private static InstalledAppsInstallerService? instance;
-
-    private InstalledAppsInstallerService()
-    {
-    }
-
-    public static InstalledAppsInstallerService Instance
-    {
-        get
-        {
-            lock (InstanceLock)
-            {
-                return instance ??= new InstalledAppsInstallerService();
-            }
-        }
-    }
 
     public bool IsMicrosoftDonNetFramework48()
         => IsMicrosoftDonNetFramework(DonNetFramework480Value);

@@ -1,4 +1,5 @@
 // ReSharper disable NotAccessedField.Local
+
 namespace Atc.Installer.Wpf.App;
 
 /// <summary>
@@ -36,6 +37,13 @@ public partial class App
         services
             .AddOptions<ApplicationOptions>()
             .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName));
+
+        services.AddSingleton<INetworkShellService, NetworkShellService>();
+        services.AddSingleton<IInstalledAppsInstallerService, InstalledAppsInstallerService>();
+
+        services.AddSingleton<IInternetInformationServerInstallerService, InternetInformationServerInstallerService>();
+        services.AddSingleton<IPostgreSqlServerInstallerService, PostgreSqlServerInstallerService>();
+        services.AddSingleton<IWindowsApplicationInstallerService, WindowsApplicationInstallerService>();
 
         services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();
         services.AddSingleton<MainWindow>();

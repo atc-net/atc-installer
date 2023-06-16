@@ -22,6 +22,9 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     bool IsComponentInstalledUrlRewriteModule2();
 
+    string? ResolvedVirtuelRootFolder(
+        string folder);
+
     ComponentRunningState GetApplicationPoolState(
         string applicationPoolName);
 

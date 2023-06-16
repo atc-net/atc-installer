@@ -2,17 +2,30 @@ namespace Atc.Installer.Wpf.App;
 
 public partial class MainWindowViewModel : MainWindowViewModelBase
 {
+    private readonly INetworkShellService networkShellService;
+    private readonly IInternetInformationServerInstallerService iisInstallerService;
+    private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
+    private readonly IWindowsApplicationInstallerService waInstallerService;
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
 
     public MainWindowViewModel()
     {
+        var installedAppsInstallerService = new InstalledAppsInstallerService();
+        this.networkShellService = new NetworkShellService();
+
+        this.iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
+        this.waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
+        this.pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
+
         if (IsInDesignMode)
         {
             ProjectName = "MyProject";
             ComponentProviders.Add(
                 new WindowsApplicationComponentProviderViewModel(
+                    waInstallerService,
+                    networkShellService,
                     ProjectName,
                     new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
@@ -23,6 +36,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
             ComponentProviders.Add(
                 new InternetInformationServerComponentProviderViewModel(
+                    iisInstallerService,
+                    networkShellService,
                     ProjectName,
                     new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
@@ -34,9 +49,18 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     }
 
     public MainWindowViewModel(
+        INetworkShellService networkShellService,
+        IInternetInformationServerInstallerService internetInformationServerInstallerService,
+        IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
+        IWindowsApplicationInstallerService windowsApplicationInstallerService,
         IOptions<ApplicationOptions> applicationOptions)
     {
         ArgumentNullException.ThrowIfNull(applicationOptions);
+
+        this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
+        this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
+        this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
+        this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
 
         ApplicationOptions = applicationOptions.Value;
         AzureOptions = new AzureOptions();
@@ -140,6 +164,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 case ComponentType.Application or ComponentType.WindowsService:
                 {
                     var vm = new WindowsApplicationComponentProviderViewModel(
+                        waInstallerService,
+                        networkShellService,
                         ProjectName,
                         DefaultApplicationSettings,
                         appInstallationOption);
@@ -150,6 +176,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 case ComponentType.InternetInformationService:
                 {
                     var vm = new InternetInformationServerComponentProviderViewModel(
+                        iisInstallerService,
+                        networkShellService,
                         ProjectName,
                         DefaultApplicationSettings,
                         appInstallationOption);
@@ -160,6 +188,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 case ComponentType.PostgreSqlServer:
                 {
                     var vm = new PostgreSqlServerComponentProviderViewModel(
+                        pgSqlInstallerService,
                         ProjectName,
                         DefaultApplicationSettings,
                         appInstallationOption);

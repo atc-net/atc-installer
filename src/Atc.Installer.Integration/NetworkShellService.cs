@@ -14,6 +14,8 @@ public class NetworkShellService : INetworkShellService
         ushort port)
         => OpenPort($"netsh http add urlacl url=https://+:{port}/ user=Everyone");
 
+    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "OK - not possible for process.StandardInput.")]
+    [SuppressMessage("Usage", "MA0004:Use Task.ConfigureAwait(false)", Justification = "OK - not possible for process.StandardInput.")]
     private static async Task<bool> OpenPort(
         string command)
     {
