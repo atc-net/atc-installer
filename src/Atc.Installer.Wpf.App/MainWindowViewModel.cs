@@ -157,6 +157,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         ComponentProviders.Clear();
 
+        ComponentProviders.SuppressOnChangedNotification = true;
         foreach (var appInstallationOption in installationOptions.Applications)
         {
             switch (appInstallationOption.ComponentType)
@@ -196,11 +197,13 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                     break;
                 }
             }
+        }
 
-            if (ComponentProviders.Count == 1)
-            {
-                SelectedComponentProvider = ComponentProviders[0];
-            }
+        ComponentProviders.SuppressOnChangedNotification = false;
+
+        if (ComponentProviders.Count > 0)
+        {
+            SelectedComponentProvider = ComponentProviders[0];
         }
 
         foreach (var vm in ComponentProviders)
