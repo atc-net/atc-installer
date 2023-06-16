@@ -7,10 +7,12 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
     private static readonly object InstanceLock = new();
     private static PostgreSqlServerInstallerService? instance;
     private static WindowsApplicationInstallerService? waInstanceService;
+    private static InstalledAppsInstallerService? iaInstanceService;
 
     private PostgreSqlServerInstallerService()
     {
         waInstanceService = WindowsApplicationInstallerService.Instance;
+        iaInstanceService = InstalledAppsInstallerService.Instance;
     }
 
     public static PostgreSqlServerInstallerService Instance
@@ -75,7 +77,7 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
         }
     }
 
-    private ushort? GetMainVersion()
+    private int? GetMainVersion()
     {
         var root = GetRootPath();
         if (root is null)
@@ -83,13 +85,8 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
             return null;
         }
 
-        return ushort.TryParse(
-            root.Name,
-            NumberStyles.Any,
-            GlobalizationConstants.EnglishCultureInfo,
-            out var result)
-                ? result
-                : null;
+        var version = iaInstanceService!.GetAppInstalledVersionByDisplayName("PostgreSQL");
+        return version?.Major;
     }
 
     public Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(

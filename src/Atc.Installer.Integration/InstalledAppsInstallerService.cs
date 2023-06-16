@@ -78,6 +78,57 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
         }
     }
 
+    public Version? GetAppInstalledVersionByDisplayName(
+        string appDisplayName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(appDisplayName);
+
+        if (!IsAppInstalledByDisplayName(appDisplayName))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var registryKey = Registry.LocalMachine.OpenSubKey(InstalledAppsRegistryPath);
+            if (registryKey is null)
+            {
+                return null;
+            }
+
+            foreach (var subKeyName in registryKey.GetSubKeyNames())
+            {
+                var registrySubKey = registryKey.OpenSubKey(subKeyName);
+                var displayName = (string?)registrySubKey?.GetValue("DisplayName");
+                if (displayName is null || !displayName.StartsWith(appDisplayName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var displayVersion = (string?)registrySubKey?.GetValue("DisplayVersion");
+                if (displayVersion is not null && displayVersion.Contains('.', StringComparison.Ordinal))
+                {
+                    return new Version(displayVersion);
+                }
+
+                var majorVersion = (int?)registrySubKey?.GetValue("MajorVersion");
+                var minorVersion = (int?)registrySubKey?.GetValue("MinorVersion");
+                if (majorVersion.HasValue && minorVersion.HasValue)
+                {
+                    return new Version(majorVersion.Value, minorVersion.Value);
+                }
+
+                return null;
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static bool IsMicrosoftDonNetFramework(
         int versionValue)
     {
