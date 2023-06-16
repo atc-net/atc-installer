@@ -5,6 +5,7 @@ namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly InternetInformationServerInstallerService iisInstallerService;
+    private readonly INetworkShellService networkShellService;
 
     public InternetInformationServerComponentProviderViewModel(
         string projectName,
@@ -18,6 +19,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         iisInstallerService = InternetInformationServerInstallerService.Instance;
+        networkShellService = new NetworkShellService();
 
         if (InstallationPath is not null)
         {
@@ -447,8 +449,21 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             CopyUnpackedFiles();
 
             UpdateConfigurationFiles();
-
             EnsureFolderPermissions();
+
+            if (HttpPort.HasValue)
+            {
+                await networkShellService
+                    .OpenHttpPortForEveryone(HttpPort.Value)
+                    .ConfigureAwait(false);
+            }
+
+            if (HttpsPort.HasValue)
+            {
+                await networkShellService
+                    .OpenHttpsPortForEveryone(HttpsPort.Value)
+                    .ConfigureAwait(false);
+            }
 
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
@@ -489,6 +504,20 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         UpdateConfigurationFiles();
 
         EnsureFolderPermissions();
+
+        if (HttpPort.HasValue)
+        {
+            await networkShellService
+                .OpenHttpPortForEveryone(HttpPort.Value)
+                .ConfigureAwait(false);
+        }
+
+        if (HttpsPort.HasValue)
+        {
+            await networkShellService
+                .OpenHttpsPortForEveryone(HttpsPort.Value)
+                .ConfigureAwait(false);
+        }
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 

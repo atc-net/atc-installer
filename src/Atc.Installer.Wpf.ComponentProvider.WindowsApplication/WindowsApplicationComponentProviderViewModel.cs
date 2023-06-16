@@ -5,6 +5,7 @@ namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly WindowsApplicationInstallerService waInstallerService;
+    private readonly INetworkShellService networkShellService;
 
     public WindowsApplicationComponentProviderViewModel(
         string projectName,
@@ -18,6 +19,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         waInstallerService = WindowsApplicationInstallerService.Instance;
+        networkShellService = new NetworkShellService();
 
         if (applicationOption.ComponentType == ComponentType.WindowsService)
         {
@@ -350,6 +352,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         EnsureFolderPermissions();
 
+        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
+            TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
+        {
+            await networkShellService
+                .OpenHttpPortForEveryone(httpPortValue)
+                .ConfigureAwait(false);
+        }
+
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
         if (useAutoStart)
@@ -384,6 +394,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         UpdateConfigurationFiles();
 
         EnsureFolderPermissions();
+
+        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
+            TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
+        {
+            await networkShellService
+                .OpenHttpPortForEveryone(httpPortValue)
+                .ConfigureAwait(false);
+        }
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
