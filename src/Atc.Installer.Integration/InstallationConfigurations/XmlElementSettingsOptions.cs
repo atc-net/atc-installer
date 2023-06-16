@@ -1,3 +1,4 @@
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 namespace Atc.Installer.Integration.InstallationConfigurations;
 
 public class XmlElementSettingsOptions
@@ -6,7 +7,7 @@ public class XmlElementSettingsOptions
 
     public string Element { get; set; } = string.Empty;
 
-    public IDictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public IDictionary<string, string> Attributes { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     public override string ToString()
         => $"{nameof(Path)}: {Path}, {nameof(Element)}: {Element}, {nameof(Attributes)}.Count: {Attributes?.Count}";

@@ -37,7 +37,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
             PostgreSqlConnectionViewModel.Database = databaseValue;
         }
 
-        if (TryGetStringFromApplicationSettings("Username", out var usernameValue))
+        if (TryGetStringFromApplicationSettings("UserName", out var usernameValue))
         {
             PostgreSqlConnectionViewModel.Username = usernameValue;
         }
