@@ -28,7 +28,7 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
     {
         get
         {
-            var runningState = waInstanceService!.GetServiceState($"postgresql-x64-{GetMainVersion()}");
+            var runningState = waInstanceService!.GetServiceState(GetServiceName());
             return runningState == ComponentRunningState.Running;
         }
     }
@@ -65,6 +65,9 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
             return null;
         }
     }
+
+    public string GetServiceName()
+        => $"postgresql-x64-{GetMainVersion()}";
 
     private int? GetMainVersion()
     {

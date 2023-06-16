@@ -3,10 +3,12 @@ namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql;
 public partial class PostgreSqlServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IPostgreSqlServerInstallerService pgInstallerService;
+    private readonly IWindowsApplicationInstallerService waInstallerService;
     private string? testConnectionResult;
 
     public PostgreSqlServerComponentProviderViewModel(
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
+        IWindowsApplicationInstallerService windowsApplicationInstallerService,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
@@ -18,9 +20,11 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         pgInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
+        waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         PostgreSqlConnectionViewModel = new PostgreSqlConnectionViewModel();
 
         InstalledMainFile = pgInstallerService.GetInstalledMainFile()?.FullName;
+        ServiceName = pgInstallerService.GetServiceName();
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
         {
@@ -109,6 +113,68 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         RunningState = isRunning
             ? ComponentRunningState.Running
             : ComponentRunningState.Stopped;
+    }
+
+    public override bool CanServiceStopCommandHandler()
+        => RunningState == ComponentRunningState.Running;
+
+    public override async Task ServiceStopCommandHandler()
+    {
+        if (!CanServiceStopCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        LogItems.Add(LogItemFactory.CreateTrace("Stop"));
+
+        var isStopped = await waInstallerService
+            .StopService(ServiceName!)
+            .ConfigureAwait(true);
+
+        if (isStopped)
+        {
+            RunningState = ComponentRunningState.Stopped;
+            LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+        }
+        else
+        {
+            LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+        }
+
+        IsBusy = false;
+    }
+
+    public override bool CanServiceStartCommandHandler()
+        => RunningState == ComponentRunningState.Stopped;
+
+    public override async Task ServiceStartCommandHandler()
+    {
+        if (!CanServiceStartCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+
+        var isStarted = await waInstallerService
+            .StartService(ServiceName!)
+            .ConfigureAwait(true);
+
+        if (isStarted)
+        {
+            RunningState = ComponentRunningState.Running;
+            LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+        }
+        else
+        {
+            LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+        }
+
+        IsBusy = false;
     }
 
     private void AddToInstallationPrerequisites(

@@ -10,6 +10,8 @@ public interface IPostgreSqlServerInstallerService : IInstallerService
 
     FileInfo? GetInstalledMainFile();
 
+    string GetServiceName();
+
     Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
         string hostName,
         ushort hostPort,

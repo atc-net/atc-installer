@@ -26,10 +26,19 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (applicationOption.ComponentType == ComponentType.WindowsService)
         {
             IsWindowsService = true;
+            ServiceName = Name;
+            if (applicationOption.DependentComponents.Count > 0)
+            {
+                ServiceName = applicationOption.DependentComponents[0];
+            }
+
+            DependentComponents = applicationOption.DependentComponents;
         }
     }
 
     public bool IsWindowsService { get; }
+
+    public IList<string> DependentComponents { get; init; } = new List<string>();
 
     public override void CheckServiceState()
     {
@@ -42,7 +51,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
 
         RunningState = IsWindowsService
-            ? waInstallerService.GetServiceState(Name)
+            ? waInstallerService.GetServiceState(ServiceName!)
             : waInstallerService.GetApplicationState(Name);
 
         if (RunningState == ComponentRunningState.Checking)
@@ -68,7 +77,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (IsWindowsService)
         {
             var isStopped = await waInstallerService
-                .StopService(Name)
+                .StopService(ServiceName!)
                 .ConfigureAwait(true);
 
             if (isStopped)
@@ -117,7 +126,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (IsWindowsService)
         {
             var isStarted = await waInstallerService
-                .StartService(Name)
+                .StartService(ServiceName!)
                 .ConfigureAwait(true);
 
             if (isStarted)
@@ -270,6 +279,41 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 break;
             case HostingFrameworkType.DonNetFramework48:
                 AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
+                break;
+            case HostingFrameworkType.Native:
+                if (IsWindowsService)
+                {
+                    var runningState = waInstallerService.GetServiceState(ServiceName!);
+                    if (runningState == ComponentRunningState.Unknown)
+                    {
+                        AddToInstallationPrerequisites($"Is{ServiceName}", LogCategoryType.Warning, $"{ServiceName} is not installed");
+                    }
+                    else
+                    {
+                        AddToInstallationPrerequisites($"Is{ServiceName}", LogCategoryType.Information, $"{ServiceName} is installed");
+                        InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+                        RunningState = runningState;
+                    }
+
+                    foreach (var dependentComponent in DependentComponents)
+                    {
+                        if (dependentComponent.Equals(ServiceName!, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        runningState = waInstallerService.GetServiceState(dependentComponent);
+                        if (runningState != ComponentRunningState.Unknown)
+                        {
+                            AddToInstallationPrerequisites($"Is{dependentComponent}", LogCategoryType.Information, $"{dependentComponent} is installed");
+                        }
+                        else
+                        {
+                            AddToInstallationPrerequisites($"Is{dependentComponent}", LogCategoryType.Warning, $"{dependentComponent} is not installed");
+                        }
+                    }
+                }
+
                 break;
         }
     }

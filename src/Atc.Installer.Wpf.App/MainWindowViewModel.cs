@@ -148,6 +148,42 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
     }
 
+    private void AddComponentProviderWindowsApplication(
+        ApplicationOption appInstallationOption)
+    {
+        var vm = new WindowsApplicationComponentProviderViewModel(
+            waInstallerService,
+            networkShellService,
+            ProjectName!,
+            DefaultApplicationSettings,
+            appInstallationOption);
+        ComponentProviders.Add(vm);
+    }
+
+    private void AddComponentProviderInternetInformationServer(
+        ApplicationOption appInstallationOption)
+    {
+        var vm = new InternetInformationServerComponentProviderViewModel(
+            iisInstallerService,
+            networkShellService,
+            ProjectName!,
+            DefaultApplicationSettings,
+            appInstallationOption);
+        ComponentProviders.Add(vm);
+    }
+
+    private void AddComponentProviderPostgreSql(
+        ApplicationOption appInstallationOption)
+    {
+        var vm = new PostgreSqlServerComponentProviderViewModel(
+            pgSqlInstallerService,
+            waInstallerService,
+            ProjectName!,
+            DefaultApplicationSettings,
+            appInstallationOption);
+        ComponentProviders.Add(vm);
+    }
+
     private void Populate(
         InstallationOption installationOptions)
     {
@@ -164,36 +200,19 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             {
                 case ComponentType.Application or ComponentType.WindowsService:
                 {
-                    var vm = new WindowsApplicationComponentProviderViewModel(
-                        waInstallerService,
-                        networkShellService,
-                        ProjectName,
-                        DefaultApplicationSettings,
-                        appInstallationOption);
-                    ComponentProviders.Add(vm);
+                    AddComponentProviderWindowsApplication(appInstallationOption);
                     break;
                 }
 
                 case ComponentType.InternetInformationService:
                 {
-                    var vm = new InternetInformationServerComponentProviderViewModel(
-                        iisInstallerService,
-                        networkShellService,
-                        ProjectName,
-                        DefaultApplicationSettings,
-                        appInstallationOption);
-                    ComponentProviders.Add(vm);
+                    AddComponentProviderInternetInformationServer(appInstallationOption);
                     break;
                 }
 
                 case ComponentType.PostgreSqlServer:
                 {
-                    var vm = new PostgreSqlServerComponentProviderViewModel(
-                        pgSqlInstallerService,
-                        ProjectName,
-                        DefaultApplicationSettings,
-                        appInstallationOption);
-                    ComponentProviders.Add(vm);
+                    AddComponentProviderPostgreSql(appInstallationOption);
                     break;
                 }
             }

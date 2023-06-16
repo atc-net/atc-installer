@@ -27,7 +27,7 @@
                     Orientation="Vertical"
                     Spacing="10">
                     <GroupBox Header="Connection">
-                        <Expander>
+                        <Expander IsExpanded="True">
                             <StackPanel Orientation="Vertical">
                                 <controls:PostgreSqlConnectionView
                                     Margin="0,10,0,0"

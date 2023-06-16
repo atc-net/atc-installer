@@ -68,6 +68,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public string Name { get; }
 
+    public string? ServiceName { get; set; }
+
     public ComponentType ComponentType { get; }
 
     public HostingFrameworkType HostingFramework { get; }
