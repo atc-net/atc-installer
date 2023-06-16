@@ -448,35 +448,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .StopApplicationPool(Name)
                 .ConfigureAwait(true);
 
-            CopyUnpackedFiles();
-
-            UpdateConfigurationFiles();
-            EnsureFolderPermissions();
-
-            if (HttpPort.HasValue)
-            {
-                await networkShellService
-                    .OpenHttpPortForEveryone(HttpPort.Value)
-                    .ConfigureAwait(false);
-            }
-
-            if (HttpsPort.HasValue)
-            {
-                await networkShellService
-                    .OpenHttpsPortForEveryone(HttpsPort.Value)
-                    .ConfigureAwait(false);
-            }
-
-            InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
-
-            if (useAutoStart)
-            {
-                LogItems.Add(LogItemFactory.CreateTrace("Auto starting website"));
-                await ServiceDeployWebsiteStart().ConfigureAwait(true);
-                LogItems.Add(RunningState == ComponentRunningState.Running
-                    ? LogItemFactory.CreateInformation("Website is started")
-                    : LogItemFactory.CreateWarning("Website is not started"));
-            }
+            await ServiceDeployWebsitePostProcessing(useAutoStart).ConfigureAwait(true);
 
             isDone = true;
         }
@@ -501,6 +473,16 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         BackupConfigurationFilesAndLog();
 
+        await ServiceDeployWebsitePostProcessing(useAutoStart).ConfigureAwait(true);
+
+        isDone = true;
+
+        return isDone;
+    }
+
+    private async Task ServiceDeployWebsitePostProcessing(
+        bool useAutoStart)
+    {
         CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
@@ -531,10 +513,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 ? LogItemFactory.CreateInformation("Website is started")
                 : LogItemFactory.CreateWarning("Website is not started"));
         }
-
-        isDone = true;
-
-        return isDone;
     }
 
     private async Task ServiceDeployWebsiteStart()

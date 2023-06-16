@@ -348,30 +348,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return isDone;
         }
 
-        CopyUnpackedFiles();
-
-        UpdateConfigurationFiles();
-
-        EnsureFolderPermissions();
-
-        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
-            TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
-        {
-            await networkShellService
-                .OpenHttpPortForEveryone(httpPortValue)
-                .ConfigureAwait(false);
-        }
-
-        InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
-
-        if (useAutoStart)
-        {
-            LogItems.Add(LogItemFactory.CreateTrace("Auto starting service"));
-            await ServiceDeployWindowServiceStart().ConfigureAwait(true);
-            LogItems.Add(RunningState == ComponentRunningState.Running
-                ? LogItemFactory.CreateInformation("Service is started")
-                : LogItemFactory.CreateWarning("Service is not started"));
-        }
+        await ServiceDeployWindowServicePostProcessing(useAutoStart).ConfigureAwait(true);
 
         isDone = true;
 
@@ -391,6 +368,16 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         BackupConfigurationFilesAndLog();
 
+        await ServiceDeployWindowServicePostProcessing(useAutoStart).ConfigureAwait(true);
+
+        isDone = true;
+
+        return isDone;
+    }
+
+    private async Task ServiceDeployWindowServicePostProcessing(
+        bool useAutoStart)
+    {
         CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
@@ -415,10 +402,6 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 ? LogItemFactory.CreateInformation("Service is started")
                 : LogItemFactory.CreateWarning("Service is not started"));
         }
-
-        isDone = true;
-
-        return isDone;
     }
 
     private async Task ServiceDeployWindowServiceStart()
