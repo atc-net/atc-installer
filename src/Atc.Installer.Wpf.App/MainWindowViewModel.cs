@@ -6,6 +6,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
     private readonly IWindowsApplicationInstallerService waInstallerService;
+    private readonly ToastNotificationManager notificationManager = new();
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
@@ -64,6 +65,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         ApplicationOptions = applicationOptions.Value;
         AzureOptions = new AzureOptions();
+
+        Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
     }
 
     public ApplicationOptions? ApplicationOptions { get; init; }
@@ -92,6 +95,18 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             selectedComponentProvider = value;
             RaisePropertyChanged();
         }
+    }
+
+    private void HandleToastNotificationMessage(
+        ToastNotificationMessage obj)
+    {
+        notificationManager.Show(
+            useDesktop: false,
+            new ToastNotificationContent(
+                obj.ToastNotificationType,
+                obj.Title,
+                obj.Message),
+            areaName: "ToastNotificationArea");
     }
 
     private void StartMonitoringServices()

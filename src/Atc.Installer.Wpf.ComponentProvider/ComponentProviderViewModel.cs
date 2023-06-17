@@ -202,6 +202,34 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                value != default;
     }
 
+    public void LogAndSendToastNotificationMessage(
+        ToastNotificationType toastNotificationType,
+        string title,
+        string message)
+    {
+        switch (toastNotificationType)
+        {
+            case ToastNotificationType.Success:
+            case ToastNotificationType.Information:
+                LogItems.Add(LogItemFactory.CreateInformation(message));
+                break;
+            case ToastNotificationType.Warning:
+                LogItems.Add(LogItemFactory.CreateWarning(message));
+                break;
+            case ToastNotificationType.Error:
+                LogItems.Add(LogItemFactory.CreateError(message));
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(toastNotificationType), toastNotificationType, null);
+        }
+
+        Messenger.Default.Send(
+            new ToastNotificationMessage(
+                ToastNotificationType.Information,
+                title,
+                message));
+    }
+
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     public void LoadConfigurationFiles()
     {

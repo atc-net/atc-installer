@@ -21,6 +21,7 @@
     MinWidth="1024"
     MinHeight="758"
     d:DataContext="{d:DesignInstance Type=app:MainWindowViewModel}"
+    FontFamily="Arial"
     ResizeMode="CanResizeWithGrip"
     WindowStartupLocation="CenterScreen"
     WindowState="{Binding Path=WindowState}"
@@ -71,6 +72,7 @@
                     <GroupBox
                         Grid.Row="1"
                         Grid.Column="0"
+                        Padding="0"
                         Header="Components">
                         <ListBox ItemsSource="{Binding Path=ComponentProviders}" SelectedItem="{Binding Path=SelectedComponentProvider}">
                             <ListBox.Resources>
@@ -95,10 +97,26 @@
                     Grid.Row="0"
                     Grid.Column="2"
                     Columns="*"
-                    Rows="3*,10,2*">
+                    Rows="100,3*,10,2*">
+
+                    <atc:GridEx
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Columns="*,10,350">
+                        <Label
+                            Grid.Column="0"
+                            Margin="0,10"
+                            Content="{Binding Path=SelectedComponentProvider.Name, FallbackValue='HelloWorld.Service'}"
+                            FontSize="26" />
+                        <atc:ToastNotificationArea
+                            x:Name="ToastNotificationArea"
+                            Grid.Column="2"
+                            MaxItems="1"
+                            Position="TopRight" />
+                    </atc:GridEx>
 
                     <ScrollViewer
-                        Grid.Row="0"
+                        Grid.Row="1"
                         Grid.Column="0"
                         VerticalScrollBarVisibility="Auto">
                         <ContentControl Content="{Binding Path=SelectedComponentProvider}">
@@ -138,9 +156,13 @@
                         </ContentControl>
                     </ScrollViewer>
 
-                    <TabControl Grid.Row="2" Grid.Column="0">
+                    <TabControl
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        atc:TabControlHelper.Underlined="SelectedTabItem"
+                        BorderThickness="0">
                         <TabItem Header="Logs">
-                            <ListView ItemsSource="{Binding Path=SelectedComponentProvider.LogItems}">
+                            <ListView Margin="0,10,0,0" ItemsSource="{Binding Path=SelectedComponentProvider.LogItems}">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn
@@ -189,7 +211,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </TabItem.HeaderTemplate>
-                            <ListView ItemsSource="{Binding Path=SelectedComponentProvider.InstallationPrerequisites}">
+                            <ListView Margin="0,10,0,0" ItemsSource="{Binding Path=SelectedComponentProvider.InstallationPrerequisites}">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn Width="80" Header="State">
@@ -233,7 +255,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </TabItem.HeaderTemplate>
-                            <ListView ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
+                            <ListView Margin="0,10,0,0" ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
                                 <ListView.View>
                                     <GridView>
                                         <GridViewColumn

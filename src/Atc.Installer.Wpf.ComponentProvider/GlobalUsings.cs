@@ -20,5 +20,6 @@ global using Atc.Installer.Wpf.ComponentProvider.Messages;
 global using Atc.Installer.Wpf.ComponentProvider.ViewModels;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;
+global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;

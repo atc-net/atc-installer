@@ -83,11 +83,17 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             if (isStopped)
             {
                 RunningState = ComponentRunningState.Stopped;
-                LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Information,
+                    Name,
+                    "Service is stopped");
             }
             else
             {
-                LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Error,
+                    Name,
+                    "Could not stop service");
             }
         }
         else
@@ -98,11 +104,17 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             if (isStopped)
             {
                 RunningState = ComponentRunningState.Stopped;
-                LogItems.Add(LogItemFactory.CreateInformation("Application is stopped"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Information,
+                    Name,
+                    "Application is stopped");
             }
             else
             {
-                LogItems.Add(LogItemFactory.CreateError("Could not stop application"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Error,
+                    Name,
+                    "Could not stop application");
             }
         }
 
@@ -132,11 +144,17 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             if (isStarted)
             {
                 RunningState = ComponentRunningState.Running;
-                LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Information,
+                    Name,
+                    "Service is started");
             }
             else
             {
-                LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Error,
+                    Name,
+                    "Could not start service");
             }
         }
         else
@@ -147,11 +165,17 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             if (isStarted)
             {
                 RunningState = ComponentRunningState.Running;
-                LogItems.Add(LogItemFactory.CreateInformation("Application is started"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Information,
+                    Name,
+                    "Application is started");
             }
             else
             {
-                LogItems.Add(LogItemFactory.CreateError("Could not start application"));
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Error,
+                    Name,
+                    "Could not start application");
             }
         }
 
@@ -374,9 +398,20 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             }
         }
 
-        LogItems.Add(isDone
-            ? LogItemFactory.CreateInformation("Deployed")
-            : LogItemFactory.CreateError("Not deployed"));
+        if (isDone)
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Deployed");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Not Deployed");
+        }
 
         IsBusy = false;
     }

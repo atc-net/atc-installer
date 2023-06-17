@@ -2,7 +2,7 @@ namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
 public class ApplicationSettingsViewModel : ViewModelBase
 {
-    public ObservableCollectionEx<KeyValueItemViewModel> Items { get; set; } = new();
+    public ObservableCollectionEx<KeyValueItemViewModel> Items { get; init; } = new();
 
     public void Populate(
         IDictionary<string, object> applicationSettings)

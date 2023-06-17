@@ -285,6 +285,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_FD9E96A93F1847568F4A7F4B668DD8EC"
+            {
+            "Name" = "8:Atc.Installer"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
+            "Folder" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
+            "WorkingFolder" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {

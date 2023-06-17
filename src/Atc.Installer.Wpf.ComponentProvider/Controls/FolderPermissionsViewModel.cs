@@ -2,7 +2,7 @@ namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
 public class FolderPermissionsViewModel : ViewModelBase
 {
-    public ObservableCollectionEx<FolderPermissionViewModel> Items { get; set; } = new();
+    public ObservableCollectionEx<FolderPermissionViewModel> Items { get; init; } = new();
 
     public void Populate(
         IList<FolderPermissionOption> folderPermissions)

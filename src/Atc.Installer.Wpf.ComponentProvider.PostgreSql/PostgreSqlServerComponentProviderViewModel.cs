@@ -136,11 +136,17 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         if (isStopped)
         {
             RunningState = ComponentRunningState.Stopped;
-            LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is stopped");
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not stop service");
         }
 
         IsBusy = false;
@@ -167,11 +173,17 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         if (isStarted)
         {
             RunningState = ComponentRunningState.Running;
-            LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is started");
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not start service");
         }
 
         IsBusy = false;

@@ -14,36 +14,30 @@
     mc:Ignorable="d">
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
-        <StackPanel Orientation="Vertical">
-            <Label
-                Height="60"
-                Content="{Binding Path=Name, FallbackValue='HelloWorld.WebApi'}"
-                FontSize="26" />
-            <atc:GridEx Columns="50,200,50,600" Rows="Auto">
-                <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="1" />
-                <atc:UniformSpacingPanel
-                    Grid.Row="0"
-                    Grid.Column="3"
-                    Orientation="Vertical"
-                    Spacing="10">
-                    <GroupBox Header="Default Application Settings">
-                        <Expander>
-                            <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettingsViewModel}" IsEnabled="False" />
-                        </Expander>
-                    </GroupBox>
-                    <GroupBox Header="Application Settings">
-                        <Expander>
-                            <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettingsViewModel}" IsEnabled="False" />
-                        </Expander>
-                    </GroupBox>
-                    <GroupBox Header="Folder Permissions">
-                        <Expander>
-                            <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissionsViewModel}" IsEnabled="False" />
-                        </Expander>
-                    </GroupBox>
-                </atc:UniformSpacingPanel>
-            </atc:GridEx>
-        </StackPanel>
+        <atc:GridEx Columns="50,200,50,600" Rows="Auto">
+            <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="1" />
+            <atc:UniformSpacingPanel
+                Grid.Row="0"
+                Grid.Column="3"
+                Orientation="Vertical"
+                Spacing="10">
+                <GroupBox Header="Default Application Settings">
+                    <Expander>
+                        <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettingsViewModel}" IsEnabled="False" />
+                    </Expander>
+                </GroupBox>
+                <GroupBox Header="Application Settings">
+                    <Expander>
+                        <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettingsViewModel}" IsEnabled="False" />
+                    </Expander>
+                </GroupBox>
+                <GroupBox Header="Folder Permissions">
+                    <Expander>
+                        <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissionsViewModel}" IsEnabled="False" />
+                    </Expander>
+                </GroupBox>
+            </atc:UniformSpacingPanel>
+        </atc:GridEx>
     </atc:BusyOverlay>
 
 </UserControl>

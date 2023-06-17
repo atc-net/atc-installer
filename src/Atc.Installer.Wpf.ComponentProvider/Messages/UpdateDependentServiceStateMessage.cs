@@ -12,11 +12,11 @@ public class UpdateDependentServiceStateMessage : MessageBase
         RunningState = runningState;
     }
 
-    public string Name { get; set; }
+    public string Name { get; }
 
-    public ComponentInstallationState InstallationState { get; set; }
+    public ComponentInstallationState InstallationState { get; }
 
-    public ComponentRunningState RunningState { get; set; }
+    public ComponentRunningState RunningState { get; }
 
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(InstallationState)}: {InstallationState}";

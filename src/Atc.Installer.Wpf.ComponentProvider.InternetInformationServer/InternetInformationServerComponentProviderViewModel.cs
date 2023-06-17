@@ -223,11 +223,17 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (isStopped)
         {
             RunningState = ComponentRunningState.Stopped;
-            LogItems.Add(LogItemFactory.CreateInformation("Service is stopped"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is stopped");
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Could not stop service"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not stop service");
         }
 
         IsBusy = false;
@@ -254,11 +260,17 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (isStarted)
         {
             RunningState = ComponentRunningState.Running;
-            LogItems.Add(LogItemFactory.CreateInformation("Service is started"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is started");
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Could not start service"));
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not start service");
         }
 
         IsBusy = false;
@@ -313,9 +325,20 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             isDone = await ServiceDeployWebsiteUpdate(useAutoStart).ConfigureAwait(true);
         }
 
-        LogItems.Add(isDone
-            ? LogItemFactory.CreateInformation("Deployed")
-            : LogItemFactory.CreateError("Not deployed"));
+        if (isDone)
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Deployed");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Not Deployed");
+        }
 
         IsBusy = false;
     }
