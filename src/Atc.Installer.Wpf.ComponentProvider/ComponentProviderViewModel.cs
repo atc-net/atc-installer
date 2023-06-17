@@ -166,7 +166,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public ObservableCollectionEx<InstallationPrerequisiteViewModel> InstallationPrerequisites { get; } = new();
 
+    public int InstallationPrerequisiteIssueCount
+        => InstallationPrerequisites.Count(x => x.CategoryType == LogCategoryType.Error);
+
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
+
+    public int DependentServicesIssueCount
+        => DependentServices.Count(x => x.RunningState != ComponentRunningState.Running);
 
     public bool TryGetStringFromApplicationSettings(
         string key,
@@ -531,6 +537,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         vm.InstallationState = obj.InstallationState;
         vm.RunningState = obj.RunningState;
+
+        RaisePropertyChanged(nameof(DependentServicesIssueCount));
     }
 
     private void ResolveInstalledMainFile(

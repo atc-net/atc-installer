@@ -29,6 +29,7 @@
     <atc:NiceWindow.Resources>
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
         <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
+        <valueConverters:IntGreaterThenZeroToVisibilityVisibleValueConverter x:Key="IntGreaterThenZeroToVisibilityVisibleValueConverter" />
     </atc:NiceWindow.Resources>
 
     <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
@@ -165,7 +166,29 @@
                                 </ListView.View>
                             </ListView>
                         </TabItem>
-                        <TabItem Header="Prerequisites">
+                        <TabItem x:Name="NamePrerequisites">
+                            <TabItem.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Prerequisites" />
+                                        <Grid
+                                            Width="20"
+                                            Height="20"
+                                            Margin="5,0,0,0"
+                                            Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.InstallationPrerequisiteIssueCount, Converter={StaticResource IntGreaterThenZeroToVisibilityVisibleValueConverter}}">
+                                            <Ellipse Fill="Red" />
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontFamily="Arial"
+                                                FontSize="14"
+                                                Foreground="White"
+                                                Text="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.InstallationPrerequisiteIssueCount, FallbackValue=33}"
+                                                TextAlignment="Center" />
+                                        </Grid>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </TabItem.HeaderTemplate>
                             <ListView ItemsSource="{Binding Path=SelectedComponentProvider.InstallationPrerequisites}">
                                 <ListView.View>
                                     <GridView>
@@ -187,7 +210,29 @@
                                 </ListView.View>
                             </ListView>
                         </TabItem>
-                        <TabItem Header="Dependent Services">
+                        <TabItem x:Name="NameDependentServices">
+                            <TabItem.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Dependent Services" />
+                                        <Grid
+                                            Width="20"
+                                            Height="20"
+                                            Margin="5,0,0,0"
+                                            Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.DependentServicesIssueCount, Converter={StaticResource IntGreaterThenZeroToVisibilityVisibleValueConverter}}">
+                                            <Ellipse Fill="Red" />
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontFamily="Arial"
+                                                FontSize="14"
+                                                Foreground="White"
+                                                Text="{Binding ElementName=NameDependentServices, Path=DataContext.SelectedComponentProvider.DependentServicesIssueCount, FallbackValue=3}"
+                                                TextAlignment="Center" />
+                                        </Grid>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </TabItem.HeaderTemplate>
                             <ListView ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
                                 <ListView.View>
                                     <GridView>
