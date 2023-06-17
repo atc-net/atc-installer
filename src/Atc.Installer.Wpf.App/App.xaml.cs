@@ -57,7 +57,16 @@ public partial class App
             .StartAsync()
             .ConfigureAwait(false);
 
-        ThemeManager.Current.ChangeTheme(Current, "Light.Steel");
+        var applicationOptions = new ApplicationOptions();
+        configuration!
+            .GetRequiredSection(ApplicationOptions.SectionName)
+            .Bind(applicationOptions);
+
+        var theme = string.IsNullOrEmpty(applicationOptions.Theme)
+            ? "Light.Steel"
+            : applicationOptions.Theme;
+
+        ThemeManager.Current.ChangeTheme(Current, theme);
 
         var mainWindow = host
             .Services

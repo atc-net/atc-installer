@@ -6,6 +6,8 @@ public sealed class ApplicationOptions
 
     public string Title { get; set; } = string.Empty;
 
+    public string Theme { get; set; } = string.Empty;
+
     public override string ToString()
-        => $"{nameof(Title)}: {Title}";
+        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}";
 }
