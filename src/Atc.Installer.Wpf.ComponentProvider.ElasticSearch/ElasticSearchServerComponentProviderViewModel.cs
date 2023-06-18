@@ -1,13 +1,12 @@
 namespace Atc.Installer.Wpf.ComponentProvider.ElasticSearch;
 
-public class ElasticSearchServerComponentProviderViewModel : ComponentProviderViewModel
+public partial class ElasticSearchServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IElasticSearchServerInstallerService esInstallerService;
-    private readonly IWindowsApplicationInstallerService waInstallerService;
+    private string? testConnectionResult;
 
     public ElasticSearchServerComponentProviderViewModel(
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
-        IWindowsApplicationInstallerService windowsApplicationInstallerService,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
@@ -23,15 +22,54 @@ public class ElasticSearchServerComponentProviderViewModel : ComponentProviderVi
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
-        waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
+        ElasticSearchConnectionViewModel = new ElasticSearchConnectionViewModel();
 
         InstalledMainFilePath = esInstallerService.GetInstalledMainFile()?.FullName;
         ServiceName = esInstallerService.GetServiceName();
 
         IsRequiredJava = applicationOption.DependentComponents.Contains("Java", StringComparer.Ordinal);
+
+        if (TryGetStringFromApplicationSettings("WebProtocol", out var webProtocolValue))
+        {
+            ElasticSearchConnectionViewModel.WebProtocol = ResolveTemplateIfNeededByApplicationSettingsLookup(webProtocolValue);
+        }
+
+        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            ElasticSearchConnectionViewModel.HostName = ResolveTemplateIfNeededByApplicationSettingsLookup(hostNameValue);
+        }
+
+        if (TryGetUshortFromApplicationSettings("HostPort", out var hostPortValue))
+        {
+            ElasticSearchConnectionViewModel.HostPort = hostPortValue;
+        }
+
+        if (TryGetStringFromApplicationSettings("UserName", out var usernameValue))
+        {
+            ElasticSearchConnectionViewModel.Username = ResolveTemplateIfNeededByApplicationSettingsLookup(usernameValue);
+        }
+
+        if (TryGetStringFromApplicationSettings("Password", out var passwordValue))
+        {
+            ElasticSearchConnectionViewModel.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
+        }
+
+        TestConnectionResult = string.Empty;
     }
 
     public bool IsRequiredJava { get; }
+
+    public ElasticSearchConnectionViewModel ElasticSearchConnectionViewModel { get; set; }
+
+    public string? TestConnectionResult
+    {
+        get => testConnectionResult;
+        set
+        {
+            testConnectionResult = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public override void CheckPrerequisites()
     {

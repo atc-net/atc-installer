@@ -13,4 +13,11 @@ public interface IElasticSearchServerInstallerService : IInstallerService
     string GetServiceName();
 
     bool IsComponentInstalledJava();
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
+        string webProtocol,
+        string hostName,
+        ushort hostPort,
+        string username,
+        string password);
 }

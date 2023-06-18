@@ -69,6 +69,24 @@ public class ElasticSearchServerInstallerService : IElasticSearchServerInstaller
     public bool IsComponentInstalledJava()
         => iaInstanceService!.IsJavaRuntime8();
 
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
+        string webProtocol,
+        string hostName,
+        ushort hostPort,
+        string username,
+        string password)
+    {
+        try
+        {
+            // TODO: Imp. this.
+            return (IsSucceeded: false, ErrorMessage: "Not implemented yet");
+        }
+        catch (Exception ex)
+        {
+            return (IsSucceeded: false, ErrorMessage: ex.Message);
+        }
+    }
+
     [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "OK.")]
     private static DirectoryInfo? LocateRootFolder()
     {

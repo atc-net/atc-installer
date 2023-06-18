@@ -76,6 +76,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -285,17 +293,17 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_FD9E96A93F1847568F4A7F4B668DD8EC"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_8ED534E0266B495D9588D99C68497D14"
             {
-            "Name" = "8:Atc.Installer"
+            "Name" = "8:Shortcut to Publish Items from Atc.Installer.Wpf.App (Active)"
             "Arguments" = "8:"
-            "Description" = "8:"
+            "Description" = "8:Atc.Installer"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
+            "Target" = "8:_B80DFB6270524AC7B2F3C294312B6821"
             "Folder" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
-            "WorkingFolder" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
+            "WorkingFolder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"
             "Icon" = "8:"
             "Feature" = "8:"
             }

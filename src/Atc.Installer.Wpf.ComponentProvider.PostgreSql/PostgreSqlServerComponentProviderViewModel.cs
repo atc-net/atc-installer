@@ -32,7 +32,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
         {
-            PostgreSqlConnectionViewModel.HostName = hostNameValue;
+            PostgreSqlConnectionViewModel.HostName = ResolveTemplateIfNeededByApplicationSettingsLookup(hostNameValue);
         }
 
         if (TryGetUshortFromApplicationSettings("HostPort", out var hostPortValue))
@@ -42,17 +42,17 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
         if (TryGetStringFromApplicationSettings("Database", out var databaseValue))
         {
-            PostgreSqlConnectionViewModel.Database = databaseValue;
+            PostgreSqlConnectionViewModel.Database = ResolveTemplateIfNeededByApplicationSettingsLookup(databaseValue);
         }
 
         if (TryGetStringFromApplicationSettings("UserName", out var usernameValue))
         {
-            PostgreSqlConnectionViewModel.Username = usernameValue;
+            PostgreSqlConnectionViewModel.Username = ResolveTemplateIfNeededByApplicationSettingsLookup(usernameValue);
         }
 
         if (TryGetStringFromApplicationSettings("Password", out var passwordValue))
         {
-            PostgreSqlConnectionViewModel.Password = passwordValue;
+            PostgreSqlConnectionViewModel.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
         }
 
         TestConnectionResult = string.Empty;
