@@ -8,6 +8,8 @@ public class ApplicationOption
 
     public HostingFrameworkType HostingFramework { get; set; }
 
+    public string InstallationFile { get; set; } = string.Empty;
+
     public string InstallationPath { get; set; } = string.Empty;
 
     public IList<string> DependentComponents { get; init; } = new List<string>();

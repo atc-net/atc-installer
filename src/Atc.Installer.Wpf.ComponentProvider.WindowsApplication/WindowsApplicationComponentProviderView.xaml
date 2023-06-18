@@ -20,7 +20,8 @@
                 Grid.Row="0"
                 Grid.Column="3"
                 Orientation="Vertical"
-                Spacing="10">
+                Spacing="10"
+                Visibility="{Binding Path=SettingsVisibility}">
                 <GroupBox Header="Default Application Settings">
                     <Expander>
                         <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettingsViewModel}" IsEnabled="False" />

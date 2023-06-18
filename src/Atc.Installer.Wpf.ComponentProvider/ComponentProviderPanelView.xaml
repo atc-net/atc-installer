@@ -43,19 +43,19 @@
             Grid.Column="0"
             HideAreas="All"
             LabelText="Unpacked path"
-            Text="{Binding Path=UnpackedZipPath, Mode=OneWay, FallbackValue='C:\Users\\MyProfile\\AppData\\Local\\Temp\\AtcInstaller\\HelloWorld.WebApi'}" />
+            Text="{Binding Path=UnpackedZipFolderPath, Mode=OneWay, FallbackValue='C:\Users\\MyProfile\\AppData\\Local\\Temp\\AtcInstaller\\HelloWorld.WebApi'}" />
         <atc:LabelTextInfo
             Grid.Row="6"
             Grid.Column="0"
             HideAreas="All"
             LabelText="Installation path"
-            Text="{Binding Path=InstallationPath, Mode=OneWay, FallbackValue='C:\\Temp\\HelloWorld.WebApi'}" />
+            Text="{Binding Path=InstallationFolderPath, Mode=OneWay, FallbackValue='C:\\Temp\\HelloWorld.WebApi'}" />
         <atc:LabelTextInfo
             Grid.Row="7"
             Grid.Column="0"
             HideAreas="All"
             LabelText="Installed Main File"
-            Text="{Binding Path=InstalledMainFile, Mode=OneWay, FallbackValue='C:\\\inetpub\\\wwwroot\\HelloWorld.WebApi\\HelloWorld.WebApi.dll'}" />
+            Text="{Binding Path=InstalledMainFilePath, Mode=OneWay, FallbackValue='C:\\\inetpub\\\wwwroot\\HelloWorld.WebApi\\HelloWorld.WebApi.dll'}" />
 
     </atc:GridEx>
 

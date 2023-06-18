@@ -1,3 +1,4 @@
+// ReSharper disable SuggestBaseTypeForParameter
 namespace Atc.Installer.Wpf.App;
 
 public partial class MainWindowViewModel : MainWindowViewModelBase
@@ -7,7 +8,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
     private readonly IWindowsApplicationInstallerService waInstallerService;
     private readonly ToastNotificationManager notificationManager = new();
-    private readonly string installerTempFolder = Path.Combine(Path.GetTempPath(), "atc-installer");
+    private readonly DirectoryInfo installerTempDirectory = new(Path.Combine(Path.GetTempPath(), "atc-installer"));
+    private DirectoryInfo? installationDirectory;
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
@@ -21,6 +23,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
         this.pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
 
+        this.installationDirectory = new DirectoryInfo(Path.Combine(installerTempDirectory.FullName, "InstallationFiles"));
+
         if (IsInDesignMode)
         {
             ProjectName = "MyProject";
@@ -28,7 +32,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 new WindowsApplicationComponentProviderViewModel(
                     waInstallerService,
                     networkShellService,
-                    installerTempFolder,
+                    installerTempDirectory,
+                    installationDirectory,
                     ProjectName,
                     new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
@@ -41,7 +46,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 new InternetInformationServerComponentProviderViewModel(
                     iisInstallerService,
                     networkShellService,
-                    installerTempFolder,
+                    installerTempDirectory,
+                    installationDirectory,
                     ProjectName,
                     new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
@@ -147,7 +153,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
     private void LoadRecentOpenFiles()
     {
-        var recentOpenFilesFile = Path.Combine(installerTempFolder, "RecentOpenFiles.json");
+        var recentOpenFilesFile = Path.Combine(installerTempDirectory.FullName, "RecentOpenFiles.json");
         if (!File.Exists(recentOpenFilesFile))
         {
             return;
@@ -166,12 +172,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             RecentOpenFiles.SuppressOnChangedNotification = true;
             foreach (var recentOpenFile in recentOpenFilesOption.RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
             {
-                if (!File.Exists(recentOpenFile.File))
+                if (!File.Exists(recentOpenFile.FilePath))
                 {
                     continue;
                 }
 
-                RecentOpenFiles.Add(new RecentOpenFileViewModel(recentOpenFile.TimeStamp, recentOpenFile.File));
+                RecentOpenFiles.Add(new RecentOpenFileViewModel(recentOpenFile.TimeStamp, recentOpenFile.FilePath));
             }
 
             RecentOpenFiles.SuppressOnChangedNotification = false;
@@ -183,9 +189,9 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     }
 
     private void AddLoadedFileToRecentOpenFiles(
-        string file)
+        FileInfo file)
     {
-        RecentOpenFiles.Add(new RecentOpenFileViewModel(DateTime.Now, file));
+        RecentOpenFiles.Add(new RecentOpenFileViewModel(DateTime.Now, file.FullName));
 
         var recentOpenFilesOption = new RecentOpenFilesOption();
         foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
@@ -193,15 +199,15 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             var item = new RecentOpenFileOption
             {
                 TimeStamp = vm.TimeStamp,
-                File = vm.File,
+                FilePath = vm.File,
             };
 
-            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.File == item.File) is not null)
+            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.FilePath == item.FilePath) is not null)
             {
                 continue;
             }
 
-            if (!File.Exists(item.File))
+            if (!File.Exists(item.FilePath))
             {
                 continue;
             }
@@ -209,22 +215,22 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             recentOpenFilesOption.RecentOpenFiles.Add(item);
         }
 
-        var recentOpenFilesFile = Path.Combine(installerTempFolder, "RecentOpenFiles.json");
-        if (!Directory.Exists(installerTempFolder))
+        var recentOpenFilesFilePath = Path.Combine(installerTempDirectory.FullName, "RecentOpenFiles.json");
+        if (!Directory.Exists(installerTempDirectory.FullName))
         {
-            Directory.CreateDirectory(installerTempFolder);
+            Directory.CreateDirectory(installerTempDirectory.FullName);
         }
 
         var json = JsonSerializer.Serialize(
             recentOpenFilesOption,
             Serialization.JsonSerializerOptionsFactory.Create());
-        File.WriteAllText(recentOpenFilesFile, json);
+        File.WriteAllText(recentOpenFilesFilePath, json);
 
         LoadRecentOpenFiles();
     }
 
     private async Task LoadConfigurationFile(
-        string file,
+        FileInfo file,
         CancellationToken cancellationToken)
     {
         try
@@ -232,12 +238,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             StopMonitoringServices();
 
             var json = await File
-                .ReadAllTextAsync(file, cancellationToken)
+                .ReadAllTextAsync(file.FullName, cancellationToken)
                 .ConfigureAwait(true);
 
             var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
                 json,
                 Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
+
+            installationDirectory = new DirectoryInfo(file.Directory!.FullName);
+
+            ValidateConfigurationFile(installationOptions);
 
             Populate(installationOptions);
 
@@ -251,13 +261,47 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
     }
 
+    private static void ValidateConfigurationFile(
+        InstallationOption installationOptions)
+    {
+        var errors = new List<string>();
+        foreach (var applicationOption in installationOptions.Applications)
+        {
+            if (string.IsNullOrEmpty(applicationOption.Name))
+            {
+                errors.Add($"{nameof(applicationOption.Name)} is missing");
+            }
+
+            if (string.IsNullOrEmpty(applicationOption.InstallationFile))
+            {
+                errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationFile)} is invalid");
+            }
+
+            if (string.IsNullOrEmpty(applicationOption.InstallationPath))
+            {
+                errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationPath)} is invalid");
+            }
+        }
+
+        if (errors.Any())
+        {
+            throw new ValidationException(string.Join(Environment.NewLine, errors));
+        }
+    }
+
     private void AddComponentProviderWindowsApplication(
         ApplicationOption appInstallationOption)
     {
+        if (installationDirectory is null)
+        {
+            return;
+        }
+
         var vm = new WindowsApplicationComponentProviderViewModel(
             waInstallerService,
             networkShellService,
-            installerTempFolder,
+            installerTempDirectory,
+            installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,
             appInstallationOption);
@@ -267,10 +311,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private void AddComponentProviderInternetInformationServer(
         ApplicationOption appInstallationOption)
     {
+        if (installationDirectory is null)
+        {
+            return;
+        }
+
         var vm = new InternetInformationServerComponentProviderViewModel(
             iisInstallerService,
             networkShellService,
-            installerTempFolder,
+            installerTempDirectory,
+            installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,
             appInstallationOption);
@@ -280,10 +330,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private void AddComponentProviderPostgreSql(
         ApplicationOption appInstallationOption)
     {
+        if (installationDirectory is null)
+        {
+            return;
+        }
+
         var vm = new PostgreSqlServerComponentProviderViewModel(
             pgSqlInstallerService,
             waInstallerService,
-            installerTempFolder,
+            installerTempDirectory,
+            installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,
             appInstallationOption);
@@ -336,5 +392,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             vm.PrepareInstallationFiles(unpackIfIfExist: false);
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
         }
+
+        RaisePropertyChanged(nameof(ComponentProviders));
     }
 }

@@ -10,12 +10,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public InternetInformationServerComponentProviderViewModel(
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         INetworkShellService networkShellService,
-        string installerTempFolder,
+        DirectoryInfo installerTempDirectory,
+        DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            installerTempFolder,
+            installerTempDirectory,
+            installationDirectory,
             projectName,
             defaultApplicationSettings,
             applicationOption)
@@ -25,14 +27,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
-        if (InstallationPath is not null)
+        if (InstallationFolderPath is not null)
         {
-            InstallationPath = iisInstallerService.ResolvedVirtuelRootFolder(InstallationPath)!;
+            InstallationFolderPath = iisInstallerService.ResolvedVirtuelRootFolder(InstallationFolderPath)!;
         }
 
-        if (InstalledMainFile is not null)
+        if (InstalledMainFilePath is not null)
         {
-            InstalledMainFile = iisInstallerService.ResolvedVirtuelRootFolder(InstalledMainFile);
+            InstalledMainFilePath = iisInstallerService.ResolvedVirtuelRootFolder(InstalledMainFilePath);
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
@@ -196,9 +198,9 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
 
-        if (InstallationPath is not null)
+        if (InstallationFolderPath is not null)
         {
-            folder = folder.Replace(".", InstallationPath, StringComparison.Ordinal);
+            folder = folder.Replace(".", InstallationFolderPath, StringComparison.Ordinal);
         }
 
         return folder;
@@ -280,7 +282,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceDeployCommandHandler()
     {
-        if (UnpackedZipPath is null)
+        if (UnpackedZipFolderPath is null)
         {
             return false;
         }
@@ -314,15 +316,15 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         var isDone = false;
 
         if (InstallationState == ComponentInstallationState.NotInstalled &&
-            UnpackedZipPath is not null &&
-            InstallationPath is not null &&
+            UnpackedZipFolderPath is not null &&
+            InstallationFolderPath is not null &&
             HttpPort.HasValue)
         {
             isDone = await ServiceDeployWebsiteCreate(useAutoStart).ConfigureAwait(true);
         }
         else if (RunningState == ComponentRunningState.Stopped &&
-                 UnpackedZipPath is not null &&
-                 InstallationPath is not null)
+                 UnpackedZipFolderPath is not null &&
+                 InstallationFolderPath is not null)
         {
             isDone = await ServiceDeployWebsiteUpdate(useAutoStart).ConfigureAwait(true);
         }
@@ -444,8 +446,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         var isDone = false;
 
-        if (UnpackedZipPath is null ||
-            InstallationPath is null ||
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null ||
             HttpPort is null)
         {
             return isDone;
@@ -458,7 +460,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 Name,
                 Name,
                 setApplicationPoolToUseDotNetClr: true,
-                new DirectoryInfo(InstallationPath),
+                new DirectoryInfo(InstallationFolderPath),
                 HttpPort.Value,
                 HttpsPort,
                 HostName,
@@ -490,8 +492,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         var isDone = false;
 
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return isDone;
         }

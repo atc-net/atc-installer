@@ -9,12 +9,14 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     public PostgreSqlServerComponentProviderViewModel(
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
-        string installerTempFolder,
+        DirectoryInfo installerTempDirectory,
+        DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            installerTempFolder,
+            installerTempDirectory,
+            installationDirectory,
             projectName,
             defaultApplicationSettings,
             applicationOption)
@@ -25,7 +27,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         PostgreSqlConnectionViewModel = new PostgreSqlConnectionViewModel();
 
-        InstalledMainFile = pgInstallerService.GetInstalledMainFile()?.FullName;
+        InstalledMainFilePath = pgInstallerService.GetInstalledMainFile()?.FullName;
         ServiceName = pgInstallerService.GetServiceName();
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))

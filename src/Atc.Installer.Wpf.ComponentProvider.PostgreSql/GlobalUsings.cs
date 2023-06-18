@@ -1,4 +1,5 @@
 global using System.Diagnostics.CodeAnalysis;
+global using System.IO;
 
 global using Atc.Data;
 global using Atc.Installer.Integration;

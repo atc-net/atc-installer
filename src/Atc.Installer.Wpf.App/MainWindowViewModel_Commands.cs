@@ -27,12 +27,14 @@ public partial class MainWindowViewModel
             return;
         }
 
-        await LoadConfigurationFile(openFileDialog.FileName, CancellationToken.None).ConfigureAwait(true);
+        await LoadConfigurationFile(
+            new FileInfo(openFileDialog.FileName),
+            CancellationToken.None).ConfigureAwait(true);
     }
 
     private Task OpenRecentConfigurationFileCommandHandler(
-        string file)
-        => LoadConfigurationFile(file, CancellationToken.None);
+        string filePath)
+        => LoadConfigurationFile(new FileInfo(filePath), CancellationToken.None);
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
         => AzureOptions is not null &&
@@ -58,7 +60,8 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
-        var downloadFolder = Path.Combine(installerTempFolder, @$"{ProjectName}\Download");
+        // TODO:
+        var downloadFolder = Path.Combine(installerTempDirectory.FullName, @$"{ProjectName}\Download");
 
         var files = await AzureStorageAccountInstallerService.Instance
             .DownloadLatestFilesByNames(

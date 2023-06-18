@@ -8,19 +8,20 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
     private string? installationFile;
-    private string? unpackedZipPath;
-    private string? installationPath;
-    private string? installedMainFile;
+    private string? unpackedZipFolderPath;
+    private string? installationFolderPath;
+    private string? installedMainFilePath;
 
     public ComponentProviderViewModel()
     {
         if (IsInDesignMode)
         {
             InstallationState = ComponentInstallationState.Checking;
-            InstallerTempFolder = Path.Combine(Path.GetTempPath(), "atc-installer");
+            InstallerTempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "atc-installer"));
+            InstallationDirectory = new DirectoryInfo(Path.Combine(InstallerTempDirectory.FullName, "InstallationFiles"));
             ProjectName = "MyProject";
             Name = "MyApp";
-            InstallationPath = @"C:\ProgramFiles\MyApp";
+            InstallationFolderPath = @"C:\ProgramFiles\MyApp";
         }
         else
         {
@@ -29,7 +30,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public ComponentProviderViewModel(
-        string installerTempFolder,
+        DirectoryInfo installerTempDirectory,
+        DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
@@ -38,7 +40,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationOption);
 
-        InstallerTempFolder = installerTempFolder;
+        InstallerTempDirectory = installerTempDirectory;
+        InstallationDirectory = installationDirectory;
         ProjectName = projectName;
         DefaultApplicationSettingsViewModel.Populate(defaultApplicationSettings);
         ApplicationSettingsViewModel.Populate(applicationOption.ApplicationSettings);
@@ -48,7 +51,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ComponentType = applicationOption.ComponentType;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
-        InstallationPath = applicationOption.InstallationPath;
+        InstallationFile = applicationOption.InstallationFile;
+        InstallationFolderPath = applicationOption.InstallationPath;
         ResolveInstalledMainFile(applicationOption);
 
         foreach (var dependentServiceName in applicationOption.DependentServices)
@@ -59,7 +63,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         Messenger.Default.Register<UpdateDependentServiceStateMessage>(this, HandleDependentServiceState);
     }
 
-    public string InstallerTempFolder { get; }
+    public DirectoryInfo InstallerTempDirectory { get; }
+
+    public DirectoryInfo InstallationDirectory { get; }
 
     public string ProjectName { get; }
 
@@ -84,39 +90,39 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public string? InstallationFile
     {
         get => installationFile;
-        private set
+        protected set
         {
             installationFile = value;
             RaisePropertyChanged();
         }
     }
 
-    public string? UnpackedZipPath
+    public string? UnpackedZipFolderPath
     {
-        get => unpackedZipPath;
+        get => unpackedZipFolderPath;
         protected set
         {
-            unpackedZipPath = value;
+            unpackedZipFolderPath = value;
             RaisePropertyChanged();
         }
     }
 
-    public string? InstallationPath
+    public string? InstallationFolderPath
     {
-        get => installationPath;
+        get => installationFolderPath;
         protected set
         {
-            installationPath = value;
+            installationFolderPath = value;
             RaisePropertyChanged();
         }
     }
 
-    public string? InstalledMainFile
+    public string? InstalledMainFilePath
     {
-        get => installedMainFile;
+        get => installedMainFilePath;
         protected set
         {
-            installedMainFile = value;
+            installedMainFilePath = value;
             RaisePropertyChanged();
         }
     }
@@ -238,7 +244,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     public void LoadConfigurationFiles()
     {
-        if (InstallationPath is null)
+        if (InstallationFolderPath is null)
         {
             return;
         }
@@ -247,9 +253,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         {
             case HostingFrameworkType.DonNetFramework48:
             {
-                if (InstalledMainFile is not null)
+                if (InstalledMainFilePath is not null)
                 {
-                    var mainAppConfigFile = new FileInfo(InstalledMainFile + ".config");
+                    var mainAppConfigFile = new FileInfo(InstalledMainFilePath + ".config");
                     if (mainAppConfigFile.Exists)
                     {
                         var xml = FileHelper.ReadAllText(mainAppConfigFile);
@@ -259,7 +265,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                     }
                 }
 
-                var appConfigFile = new FileInfo(Path.Combine(InstallationPath, "app.config"));
+                var appConfigFile = new FileInfo(Path.Combine(InstallationFolderPath, "app.config"));
                 if (appConfigFile.Exists)
                 {
                     var xml = FileHelper.ReadAllText(appConfigFile);
@@ -268,7 +274,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                     ConfigurationXmlFiles.Add(appConfigFile, xmlDocument);
                 }
 
-                var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
+                var webConfigFile = new FileInfo(Path.Combine(InstallationFolderPath, "web.config"));
                 if (webConfigFile.Exists)
                 {
                     var xml = FileHelper.ReadAllText(webConfigFile);
@@ -282,14 +288,14 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
             case HostingFrameworkType.DotNet7:
             {
-                var appSettingsFile = new FileInfo(Path.Combine(InstallationPath, "appsettings.json"));
+                var appSettingsFile = new FileInfo(Path.Combine(InstallationFolderPath, "appsettings.json"));
                 if (appSettingsFile.Exists)
                 {
                     var dynamicJson = new DynamicJson(appSettingsFile);
                     ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
                 }
 
-                var webConfigFile = new FileInfo(Path.Combine(InstallationPath, "web.config"));
+                var webConfigFile = new FileInfo(Path.Combine(InstallationFolderPath, "web.config"));
                 if (webConfigFile.Exists)
                 {
                     var xml = FileHelper.ReadAllText(webConfigFile);
@@ -303,7 +309,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
             case HostingFrameworkType.NodeJs:
             {
-                var envFile = new FileInfo(Path.Combine(InstallationPath, "env.json"));
+                var envFile = new FileInfo(Path.Combine(InstallationFolderPath, "env.json"));
                 if (envFile.Exists)
                 {
                     var dynamicJson = new DynamicJson(envFile);
@@ -321,42 +327,36 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public void PrepareInstallationFiles(
         bool unpackIfIfExist)
     {
-        // TODO: Improve installationsPath
-        var installationsPath = Path.Combine(InstallerTempFolder, @$"\{ProjectName}\Download");
-        if (!Directory.Exists(installationsPath))
-        {
-            Directory.CreateDirectory(installationsPath);
-        }
-
-        var files = Directory.EnumerateFiles(installationsPath).ToArray();
-
-        // TODO: Improve
-        InstallationFile = files.FirstOrDefault(x => x.Contains($"{Name}.zip", StringComparison.OrdinalIgnoreCase));
-
         if (InstallationFile is null ||
             !InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        UnpackedZipPath = Path.Combine(InstallerTempFolder, @$"{ProjectName}\Unpacked\{Name}");
-
-        if (!unpackIfIfExist &&
-            Directory.Exists(UnpackedZipPath))
+        var installationFilePath = Path.Combine(InstallationDirectory.FullName, InstallationFile);
+        if (!File.Exists(installationFilePath))
         {
             return;
         }
 
-        if (Directory.Exists(UnpackedZipPath))
+        UnpackedZipFolderPath = Path.Combine(InstallerTempDirectory.FullName, @$"{ProjectName}\Unpacked\{Name}");
+
+        if (!unpackIfIfExist &&
+            Directory.Exists(UnpackedZipFolderPath))
         {
-            Directory.Delete(UnpackedZipPath, recursive: true);
+            return;
         }
 
-        Directory.CreateDirectory(UnpackedZipPath);
+        if (Directory.Exists(UnpackedZipFolderPath))
+        {
+            Directory.Delete(UnpackedZipFolderPath, recursive: true);
+        }
 
-        ZipFile.ExtractToDirectory(InstallationFile, UnpackedZipPath, overwriteFiles: true);
+        Directory.CreateDirectory(UnpackedZipFolderPath);
 
-        var filesToDelete = Directory.GetFiles(UnpackedZipPath, "appsettings.*.json");
+        ZipFile.ExtractToDirectory(installationFilePath, UnpackedZipFolderPath, overwriteFiles: true);
+
+        var filesToDelete = Directory.GetFiles(UnpackedZipFolderPath, "appsettings.*.json");
         foreach (var file in filesToDelete)
         {
             File.Delete(file);
@@ -401,7 +401,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     protected void BackupConfigurationFilesAndLog()
     {
-        if (InstallationPath is null)
+        if (InstallationFolderPath is null)
         {
             return;
         }
@@ -409,13 +409,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         LogItems.Add(LogItemFactory.CreateTrace("Backup files"));
 
         var timestamp = DateTime.Now.ToString("yyyyMMdd_hhmmss", GlobalizationConstants.EnglishCultureInfo);
-        var backupFolder = Path.Combine(InstallerTempFolder, @$"\{ProjectName}\Backup\{Name}");
+        var backupFolder = Path.Combine(InstallerTempDirectory.FullName, @$"\{ProjectName}\Backup\{Name}");
         if (!Directory.Exists(backupFolder))
         {
             Directory.CreateDirectory(backupFolder);
         }
 
-        var sourceAppSettingsFile = Path.Combine(InstallationPath, "env.json");
+        var sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "env.json");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"env_{timestamp}.json");
@@ -423,7 +423,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationPath, "appsettings.json");
+        sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "appsettings.json");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"appsettings_{timestamp}.json");
@@ -431,7 +431,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationPath, "web.config");
+        sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "web.config");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"web_{timestamp}.config");
@@ -439,7 +439,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationPath, $"{Name}.exe.config");
+        sourceAppSettingsFile = Path.Combine(InstallationFolderPath, $"{Name}.exe.config");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"{Name}.exe_{timestamp}.config");
@@ -450,8 +450,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     protected void CopyUnpackedFiles()
     {
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return;
         }
@@ -463,10 +463,10 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         var useDeleteBeforeCopy = !FolderPermissionsViewModel
             .Items
             .Any(x => x.Directory is not null &&
-                      x.Directory.FullName.StartsWith(InstallationPath, StringComparison.OrdinalIgnoreCase));
+                      x.Directory.FullName.StartsWith(InstallationFolderPath, StringComparison.OrdinalIgnoreCase));
 
-        var directoryUnpackedZip = new DirectoryInfo(UnpackedZipPath);
-        var directoryInstallation = new DirectoryInfo(InstallationPath);
+        var directoryUnpackedZip = new DirectoryInfo(UnpackedZipFolderPath);
+        var directoryInstallation = new DirectoryInfo(InstallationFolderPath);
 
         if (useDeleteBeforeCopy)
         {
@@ -477,7 +477,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             var excludeDirectories = FolderPermissionsViewModel
                 .Items
                 .Where(x => x.Directory is not null &&
-                            x.Directory.FullName.StartsWith(InstallationPath, StringComparison.OrdinalIgnoreCase))
+                            x.Directory.FullName.StartsWith(InstallationFolderPath, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x.Directory!.Name)
                 .ToList();
 
@@ -577,22 +577,22 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     private void ResolveInstalledMainFile(
         ApplicationOption applicationOption)
     {
-        if (InstallationPath is null)
+        if (InstallationFolderPath is null)
         {
             return;
         }
 
-        InstalledMainFile = applicationOption switch
+        InstalledMainFilePath = applicationOption switch
         {
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationPath, "index.html"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.dll"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationPath, $"{Name}.dll"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationPath, "index.html"),
-            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationPath, $"{Name}.exe"),
-            _ => InstalledMainFile,
+            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
+            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
+            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationFolderPath, "index.html"),
+            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationFolderPath, $"{Name}.dll"),
+            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationFolderPath, $"{Name}.dll"),
+            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationFolderPath, "index.html"),
+            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
+            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
+            _ => InstalledMainFilePath,
         };
     }
 
@@ -634,21 +634,19 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         InstallationPrerequisites.Clear();
 
-        // TODO: check for setup.exe or .msi file
-        if (UnpackedZipPath is null)
+        if (UnpackedZipFolderPath is null)
         {
             InstallationState = ComponentInstallationState.NoInstallationsFiles;
             RunningState = ComponentRunningState.NotAvailable;
         }
 
-        if (InstallationPath is not null &&
-            InstalledMainFile is not null &&
-            File.Exists(InstalledMainFile))
+        if (InstallationFolderPath is not null &&
+            InstalledMainFilePath is not null &&
+            File.Exists(InstalledMainFilePath))
         {
             InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
-            // TODO: Improve
-            if (UnpackedZipPath is not null)
+            if (UnpackedZipFolderPath is not null)
             {
                 if (ComponentType == ComponentType.InternetInformationService &&
                     HostingFramework == HostingFrameworkType.NodeJs)
@@ -673,22 +671,22 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     private void WorkOnAnalyzeAndUpdateStatesForDotNet()
     {
-        if (UnpackedZipPath is null ||
-            InstalledMainFile is null)
+        if (UnpackedZipFolderPath is null ||
+            InstalledMainFilePath is null)
         {
             return;
         }
 
-        var installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.exe");
+        var installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.exe");
         if (!File.Exists(installationMainFile))
         {
-            installationMainFile = Path.Combine(UnpackedZipPath, $"{Name}.dll");
+            installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.dll");
         }
 
         if (File.Exists(installationMainFile))
         {
             var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
-            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFile);
+            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath);
             if (installationMainFileVersion.FileVersion is not null &&
                 installedMainFileVersion.FileVersion is not null)
             {
@@ -705,14 +703,14 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     private void WorkOnAnalyzeAndUpdateStatesForNodeJsVersion()
     {
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return;
         }
 
-        var installationVersionFile = Path.Combine(UnpackedZipPath, "version.json");
-        var installedVersionFile = Path.Combine(InstallationPath, "version.json");
+        var installationVersionFile = Path.Combine(UnpackedZipFolderPath, "version.json");
+        var installedVersionFile = Path.Combine(InstallationFolderPath, "version.json");
         if (File.Exists(installationVersionFile) &&
             File.Exists(installedVersionFile))
         {
@@ -723,15 +721,21 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             if (sourceValue is not null &&
                 destinationValue is not null)
             {
-                var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
+                if (sourceValue.ToString()! == destinationValue.ToString()!)
                 {
-                    sourceValue.ToString()!,
-                    destinationValue.ToString()!,
-                };
+                    InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+                }
+                else
+                {
+                    var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
+                    {
+                        sourceValue.ToString()!,
+                        destinationValue.ToString()!,
+                    };
 
-                if (sortedSet.Last() == sourceValue.ToString()!)
-                {
-                    InstallationState = ComponentInstallationState.InstalledWithOldVersion;
+                    InstallationState = destinationValue.ToString()! == sortedSet.First()
+                        ? ComponentInstallationState.InstalledWithOldVersion
+                        : ComponentInstallationState.InstalledWithNewestVersion;
                 }
             }
         }

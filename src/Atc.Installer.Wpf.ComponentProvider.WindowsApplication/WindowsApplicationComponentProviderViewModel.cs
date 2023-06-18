@@ -10,12 +10,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     public WindowsApplicationComponentProviderViewModel(
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
-        string installerTempFolder,
+        DirectoryInfo installerTempDirectory,
+        DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            installerTempFolder,
+            installerTempDirectory,
+            installationDirectory,
             projectName,
             defaultApplicationSettings,
             applicationOption)
@@ -36,9 +38,15 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
             DependentComponents = applicationOption.DependentComponents;
         }
+
+        SettingsVisibility = HostingFramework == HostingFrameworkType.NativeNoSettings
+            ? Visibility.Collapsed
+            : Visibility.Visible;
     }
 
     public bool IsWindowsService { get; }
+
+    public Visibility SettingsVisibility { get; }
 
     public IList<string> DependentComponents { get; init; } = new List<string>();
 
@@ -101,7 +109,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         else
         {
             var isStopped = waInstallerService
-                .StopApplication(InstalledMainFile!);
+                .StopApplication(InstalledMainFilePath!);
 
             if (isStopped)
             {
@@ -162,7 +170,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         else
         {
             var isStarted = waInstallerService
-                .StartApplication(InstalledMainFile!);
+                .StartApplication(InstalledMainFilePath!);
 
             if (isStarted)
             {
@@ -186,7 +194,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public override bool CanServiceDeployCommandHandler()
     {
-        if (UnpackedZipPath is null)
+        if (UnpackedZipFolderPath is null)
         {
             return false;
         }
@@ -282,9 +290,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
 
-        if (InstallationPath is not null)
+        if (InstallationFolderPath is not null)
         {
-            folder = folder.Replace(".", InstallationPath, StringComparison.Ordinal);
+            folder = folder.Replace(".", InstallationFolderPath, StringComparison.Ordinal);
         }
 
         return folder;
@@ -307,6 +315,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
                 break;
             case HostingFrameworkType.Native:
+            case HostingFrameworkType.NativeNoSettings:
                 if (IsWindowsService)
                 {
                     var runningState = waInstallerService.GetServiceState(ServiceName!);
@@ -373,14 +382,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (IsWindowsService)
         {
             if (InstallationState == ComponentInstallationState.NotInstalled &&
-                UnpackedZipPath is not null &&
-                InstallationPath is not null)
+                UnpackedZipFolderPath is not null &&
+                InstallationFolderPath is not null)
             {
                 isDone = await ServiceDeployWindowServiceCreate(useAutoStart).ConfigureAwait(true);
             }
             else if (RunningState == ComponentRunningState.Stopped &&
-                     UnpackedZipPath is not null &&
-                     InstallationPath is not null)
+                     UnpackedZipFolderPath is not null &&
+                     InstallationFolderPath is not null)
             {
                 isDone = await ServiceDeployWindowServiceUpdate(useAutoStart).ConfigureAwait(true);
             }
@@ -388,13 +397,13 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         else
         {
             if (InstallationState == ComponentInstallationState.NotInstalled &&
-                UnpackedZipPath is not null &&
-                InstallationPath is not null)
+                UnpackedZipFolderPath is not null &&
+                InstallationFolderPath is not null)
             {
                 isDone = await ServiceDeployWindowApplicationCreate().ConfigureAwait(true);
             }
-            else if (UnpackedZipPath is not null &&
-                     InstallationPath is not null)
+            else if (UnpackedZipFolderPath is not null &&
+                     InstallationFolderPath is not null)
             {
                 isDone = ServiceDeployWindowApplicationUpdate();
             }
@@ -423,8 +432,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         var isDone = false;
 
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return isDone;
         }
@@ -441,8 +450,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         var isDone = false;
 
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return isDone;
         }
@@ -512,8 +521,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         var isDone = false;
 
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return Task.FromResult(isDone);
         }
@@ -529,8 +538,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         var isDone = false;
 
-        if (UnpackedZipPath is null ||
-            InstallationPath is null)
+        if (UnpackedZipFolderPath is null ||
+            InstallationFolderPath is null)
         {
             return isDone;
         }
