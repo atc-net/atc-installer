@@ -1,5 +1,4 @@
 // ReSharper disable NotAccessedField.Local
-
 namespace Atc.Installer.Wpf.App;
 
 /// <summary>
@@ -62,6 +61,8 @@ public partial class App
         configuration!
             .GetRequiredSection(ApplicationOptions.SectionName)
             .Bind(applicationOptions);
+
+        Thread.CurrentThread.CurrentUICulture = GlobalizationConstants.EnglishCultureInfo;
 
         var theme = string.IsNullOrEmpty(applicationOptions.Theme)
             ? "Light.Steel"

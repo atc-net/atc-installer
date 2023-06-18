@@ -52,7 +52,21 @@
                                 <MenuItem
                                     Command="{Binding Path=DataContext.OpenRecentConfigurationFileCommand, RelativeSource={RelativeSource AncestorType={x:Type Menu}}}"
                                     CommandParameter="{Binding Path=File}"
-                                    Header="{Binding Path=File}" />
+                                    Header="{Binding Path=File}">
+                                    <MenuItem.Style>
+                                        <Style TargetType="{x:Type MenuItem}">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type MenuItem}">
+                                                        <Border Background="{TemplateBinding Background}">
+                                                            <ContentPresenter ContentSource="Header" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </MenuItem.Style>
+                                </MenuItem>
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
@@ -79,12 +93,12 @@
                     Grid.Column="0"
                     Columns="*"
                     Rows="Auto,*">
-                    <Label
+                    <TextBlock
                         Grid.Row="0"
                         Grid.Column="0"
                         Margin="0,10"
-                        Content="{Binding Path=ProjectName, FallbackValue='- Project Name -'}"
-                        FontSize="24" />
+                        FontSize="24"
+                        Text="{Binding Path=ProjectName, FallbackValue='- Project Name -'}" />
                     <GroupBox
                         Grid.Row="1"
                         Grid.Column="0"
@@ -123,11 +137,11 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         Columns="*,10,350">
-                        <Label
+                        <TextBlock
                             Grid.Column="0"
                             Margin="0,10"
-                            Content="{Binding Path=SelectedComponentProvider.Name}"
-                            FontSize="26" />
+                            FontSize="26"
+                            Text="{Binding Path=SelectedComponentProvider.Name}" />
                         <atc:ToastNotificationArea
                             x:Name="ToastNotificationArea"
                             Grid.Column="2"
@@ -142,12 +156,12 @@
                         <ContentControl Content="{Binding Path=SelectedComponentProvider}">
                             <ContentControl.Resources>
                                 <DataTemplate x:Key="DefaultTemplate">
-                                    <Label
+                                    <TextBlock
                                         Margin="0,-200,0,0"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Content="Please open a configuration file"
-                                        FontSize="26" />
+                                        FontSize="26"
+                                        Text="Please open a configuration file" />
                                 </DataTemplate>
 
                                 <DataTemplate x:Key="ElasticSearchServerTemplate" DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">

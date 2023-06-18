@@ -12,7 +12,7 @@ public partial class MainWindowViewModel
 
     public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand => new RelayCommandAsync(DownloadInstallationFilesFromAzureStorageAccountCommandHandler, CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
-    public IRelayCommandAsync ApplicationAboutCommand => new RelayCommandAsync(ApplicationAboutCommandHandler);
+    public static IRelayCommand ApplicationAboutCommand => new RelayCommand(ApplicationAboutCommandHandler);
 
     private async Task OpenConfigurationFileCommandHandler()
     {
@@ -83,9 +83,6 @@ public partial class MainWindowViewModel
         IsBusy = false;
     }
 
-    private Task ApplicationAboutCommandHandler()
-    {
-        // TODO: Imp. this. -> Open about box with assembly versions
-        return Task.CompletedTask;
-    }
+    private static void ApplicationAboutCommandHandler()
+        => new AboutBoxDialog().ShowDialog();
 }

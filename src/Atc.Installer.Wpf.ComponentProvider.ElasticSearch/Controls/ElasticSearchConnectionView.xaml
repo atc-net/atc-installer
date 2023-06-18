@@ -11,7 +11,7 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <StackPanel IsEnabled="False" Orientation="Vertical">
+    <StackPanel Orientation="Vertical">
         <atc:LabelTextBox LabelText="WebProtocol" Text="{Binding Path=WebProtocol}" />
         <atc:LabelTextBox LabelText="Host name" Text="{Binding Path=HostName}" />
         <atc:LabelIntegerBox LabelText="Host port" Value="{Binding Path=HostPort}" />
