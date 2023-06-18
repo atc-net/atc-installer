@@ -190,7 +190,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         out string value)
     {
         if (ApplicationSettingsViewModel.TryGetString(key, out value) &&
-            !string.IsNullOrWhiteSpace(value))
+            !string.IsNullOrWhiteSpace(value) &&
+            !value.Equals($"[[{key}]]", StringComparison.Ordinal))
         {
             return true;
         }
