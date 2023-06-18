@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_212A195A69224FB38464859874499544"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_B80DFB6270524AC7B2F3C294312B6821"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -116,6 +122,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_212A195A69224FB38464859874499544"
+            {
+            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\bin\\Debug\\net7.0-windows\\Atc.Installer.Wpf.App.deps.json"
+            "TargetName" = "8:Atc.Installer.Wpf.App.deps.json"
+            "Tag" = "8:"
+            "Folder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -125,7 +151,7 @@
             "{1525181F-901A-416C-8A58-119130FE478E}:_07FB788DEEB0413D8664EFF8C9FC293F"
             {
             "Name" = "8:#1916"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:DesktopFolder"
@@ -137,7 +163,7 @@
             {
             "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:TARGETDIR"
@@ -173,7 +199,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Atc.Installer"
         "ProductCode" = "8:{3F307C9D-74FA-4720-A46B-9BE093C3A265}"
-        "PackageCode" = "8:{BE0D10DF-37B7-42AF-9090-209D25A29D52}"
+        "PackageCode" = "8:{93937C48-D568-4997-A6D2-5564D5653779}"
         "UpgradeCode" = "8:{F7F3665E-9FEB-4AE3-B0EA-F3791208A1A8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
