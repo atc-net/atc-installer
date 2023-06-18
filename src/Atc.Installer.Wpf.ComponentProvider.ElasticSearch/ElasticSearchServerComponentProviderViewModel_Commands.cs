@@ -1,7 +1,3 @@
-using Atc.Data;
-using Atc.Installer.Integration;
-using Atc.Wpf.Command;
-
 namespace Atc.Installer.Wpf.ComponentProvider.ElasticSearch;
 
 [SuppressMessage("Design", "MA0048:File name must match type name", Justification = "OK - partial class")]

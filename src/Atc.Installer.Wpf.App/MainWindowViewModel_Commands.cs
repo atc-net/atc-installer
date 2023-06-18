@@ -60,14 +60,11 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
-        // TODO:
-        var downloadFolder = Path.Combine(installerTempDirectory.FullName, @$"{ProjectName}\Download");
-
         var files = await AzureStorageAccountInstallerService.Instance
             .DownloadLatestFilesByNames(
                 AzureOptions!.StorageConnectionString,
                 AzureOptions!.BlobContainerName,
-                downloadFolder,
+                installationDirectory!.FullName,
                 componentNames)
             .ConfigureAwait(true);
 

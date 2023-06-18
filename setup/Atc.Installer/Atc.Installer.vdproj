@@ -173,7 +173,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Atc.Installer"
         "ProductCode" = "8:{3F307C9D-74FA-4720-A46B-9BE093C3A265}"
-        "PackageCode" = "8:{A60AB524-96AC-48B0-A856-C1BA413E4A07}"
+        "PackageCode" = "8:{BE0D10DF-37B7-42AF-9090-209D25A29D52}"
         "UpgradeCode" = "8:{F7F3665E-9FEB-4AE3-B0EA-F3791208A1A8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -295,7 +295,7 @@
         {
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_8ED534E0266B495D9588D99C68497D14"
             {
-            "Name" = "8:Shortcut to Publish Items from Atc.Installer.Wpf.App (Active)"
+            "Name" = "8:Atc.Installer"
             "Arguments" = "8:"
             "Description" = "8:Atc.Installer"
             "ShowCmd" = "3:1"
