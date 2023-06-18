@@ -8,6 +8,8 @@ public interface IInstalledAppsInstallerService : IInstallerService
 
     bool IsNodeJs18();
 
+    bool IsJavaRuntime8();
+
     bool IsAppInstalledByDisplayName(
         string appDisplayName);
 

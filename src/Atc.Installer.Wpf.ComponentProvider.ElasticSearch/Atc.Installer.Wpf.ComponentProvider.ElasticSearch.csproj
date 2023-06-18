@@ -15,6 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Atc.Installer.Integration.ElasticSearch\Atc.Installer.Integration.ElasticSearch.csproj" />
+    <ProjectReference Include="..\Atc.Installer.Integration.WindowsApplication\Atc.Installer.Integration.WindowsApplication.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider\Atc.Installer.Wpf.ComponentProvider.csproj" />
   </ItemGroup>
 

@@ -70,33 +70,6 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         }
     }
 
-    public override void CheckPrerequisites()
-    {
-        base.CheckPrerequisites();
-
-        InstallationPrerequisites.SuppressOnChangedNotification = true;
-
-        if (pgInstallerService.IsInstalled)
-        {
-            AddToInstallationPrerequisites("IsInstalled", LogCategoryType.Information, "PostgreSQL is installed");
-            if (pgInstallerService.IsRunning)
-            {
-                AddToInstallationPrerequisites("IsRunning", LogCategoryType.Information, "PostgreSQL is running");
-            }
-            else
-            {
-                AddToInstallationPrerequisites("IsRunning", LogCategoryType.Error, "PostgreSQL is not running");
-            }
-        }
-        else
-        {
-            AddToInstallationPrerequisites("IsInstalled", LogCategoryType.Error, "PostgreSQL is not installed");
-        }
-
-        InstallationPrerequisites.SuppressOnChangedNotification = false;
-        RaisePropertyChanged(nameof(InstallationPrerequisites));
-    }
-
     public override void CheckServiceState()
     {
         base.CheckServiceState();
@@ -191,17 +164,5 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         }
 
         IsBusy = false;
-    }
-
-    private void AddToInstallationPrerequisites(
-        string key,
-        LogCategoryType categoryType,
-        string message)
-    {
-        InstallationPrerequisites.Add(
-            new InstallationPrerequisiteViewModel(
-                $"PGSQL_{key}",
-                categoryType,
-                message));
     }
 }

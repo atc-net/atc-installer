@@ -1,14 +1,15 @@
+// ReSharper disable StringLiteralTypo
 // ReSharper disable ConvertIfStatementToReturnStatement
-namespace Atc.Installer.Integration.PostgreSql;
+namespace Atc.Installer.Integration.ElasticSearch;
 
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
 [SuppressMessage("Major Code Smell", "S3010:Static fields should not be updated in constructors", Justification = "OK.")]
-public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstallerService
+public class ElasticSearchServerInstallerService : IElasticSearchServerInstallerService
 {
     private static IWindowsApplicationInstallerService? waInstanceService;
     private static IInstalledAppsInstallerService? iaInstanceService;
 
-    public PostgreSqlServerInstallerService(
+    public ElasticSearchServerInstallerService(
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         IInstalledAppsInstallerService installedAppsInstallerService)
     {
@@ -48,7 +49,14 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
         {
             var directoryRoot = LocateRootFolder();
 
-            return directoryRoot?.SearchForFile("pg_ctl.exe");
+            return directoryRoot?.SearchForFile(
+                searchPattern: "elasticsearch-service-x64.exe",
+                useRecursive: true,
+                excludeDirectories: new List<string>
+                {
+                    "Users",
+                    "Windows",
+                });
         }
         catch
         {
@@ -56,58 +64,39 @@ public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstalle
         }
     }
 
-    public string GetServiceName()
-        => $"postgresql-x64-{GetMainVersion()}";
+    public string GetServiceName() => "elasticsearch-service-x64";
 
-    private int? GetMainVersion()
-    {
-        var root = GetRootPath();
-        if (root is null)
-        {
-            return null;
-        }
+    public bool IsComponentInstalledJava()
+        => iaInstanceService!.IsJavaRuntime8();
 
-        var version = iaInstanceService!.GetAppInstalledVersionByDisplayName("PostgreSQL");
-        return version?.Major;
-    }
-
-    public Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
-        string hostName,
-        ushort hostPort,
-        string database,
-        string username,
-        string password)
-        => TestConnection($"Host={hostName}:{hostPort};Database={database};Username={username};Password={password};");
-
-    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "OK - not possible to do properly.")]
-    [SuppressMessage("Usage", "MA0004:Use Task.ConfigureAwait(false)", Justification = "OK - not possible to do properly.")]
-    public async Task<(bool IsSucceeded, string? ErrorMessage)> TestConnection(
-        string connectionString)
-    {
-        try
-        {
-            await using var connection = new NpgsqlConnection(connectionString);
-            await connection
-                .OpenAsync()
-                .ConfigureAwait(false);
-
-            return (IsSucceeded: true, ErrorMessage: null);
-        }
-        catch (Exception ex)
-        {
-            return (IsSucceeded: false, ErrorMessage: ex.Message);
-        }
-    }
-
+    [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "OK.")]
     private static DirectoryInfo? LocateRootFolder()
     {
-        var directoryRoot = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "PostgreSQL"));
+        var directoryRoot = new DirectoryInfo(@"C:\ELK");
         if (directoryRoot.Exists)
         {
             return directoryRoot;
         }
 
-        directoryRoot = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "PostgreSQL"));
+        directoryRoot = new DirectoryInfo(@"C:\ElasticSearch");
+        if (directoryRoot.Exists)
+        {
+            return directoryRoot;
+        }
+
+        directoryRoot = new DirectoryInfo(@"C:\Elastic");
+        if (directoryRoot.Exists)
+        {
+            return directoryRoot;
+        }
+
+        directoryRoot = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ElasticSearch"));
+        if (directoryRoot.Exists)
+        {
+            return directoryRoot;
+        }
+
+        directoryRoot = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "ElasticSearch"));
         if (directoryRoot.Exists)
         {
             return directoryRoot;

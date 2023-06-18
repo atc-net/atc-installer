@@ -6,6 +6,7 @@
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
+    xmlns:componentProviderEs="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ElasticSearch;assembly=Atc.Installer.Wpf.ComponentProvider.ElasticSearch"
     xmlns:componentProviderIis="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;assembly=Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
     xmlns:componentProviderPgSql="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql;assembly=Atc.Installer.Wpf.ComponentProvider.PostgreSql"
     xmlns:componentProviderWa="clr-namespace:Atc.Installer.Wpf.ComponentProvider.WindowsApplication;assembly=Atc.Installer.Wpf.ComponentProvider.WindowsApplication"
@@ -91,6 +92,10 @@
                         Header="Components">
                         <ListBox ItemsSource="{Binding Path=ComponentProviders}" SelectedItem="{Binding Path=SelectedComponentProvider}">
                             <ListBox.Resources>
+                                <DataTemplate DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">
+                                    <componentProvider:ComponentProviderMenuItemView />
+                                </DataTemplate>
+
                                 <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
                                     <componentProvider:ComponentProviderMenuItemView />
                                 </DataTemplate>
@@ -145,6 +150,10 @@
                                         FontSize="26" />
                                 </DataTemplate>
 
+                                <DataTemplate x:Key="ElasticSearchServerTemplate" DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">
+                                    <componentProviderEs:ElasticSearchServerComponentProviderView />
+                                </DataTemplate>
+
                                 <DataTemplate x:Key="InternetInformationServerTemplate" DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
                                     <componentProviderIis:InternetInformationServerComponentProviderView />
                                 </DataTemplate>
@@ -160,6 +169,7 @@
                                 <dataTemplateSelectors:ComponentProviderTemplateSelector
                                     x:Key="ComponentProviderTemplateSelector"
                                     DefaultTemplate="{StaticResource DefaultTemplate}"
+                                    ElasticSearchServerTemplate="{StaticResource ElasticSearchServerTemplate}"
                                     InternetInformationServerTemplate="{StaticResource InternetInformationServerTemplate}"
                                     PostgreSqlServerTemplate="{StaticResource PostgreSqlServerTemplate}"
                                     WindowsApplicationTemplate="{StaticResource WindowsApplicationTemplate}" />

@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Atc.Installer.Integration.Azure\Atc.Installer.Integration.Azure.csproj" />
+    <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.ElasticSearch\Atc.Installer.Wpf.ComponentProvider.ElasticSearch.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer\Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.PostgreSql\Atc.Installer.Wpf.ComponentProvider.PostgreSql.csproj" />
     <ProjectReference Include="..\Atc.Installer.Wpf.ComponentProvider.WindowsApplication\Atc.Installer.Wpf.ComponentProvider.WindowsApplication.csproj" />

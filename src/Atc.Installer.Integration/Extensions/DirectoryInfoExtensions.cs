@@ -59,6 +59,7 @@ public static class DirectoryInfoExtensions
         IList<string>? excludeDirectories = null)
     {
         ArgumentNullException.ThrowIfNull(directoryInfo);
+        ArgumentException.ThrowIfNullOrEmpty(searchPattern);
 
         var directories = Directory.GetDirectories(directoryInfo.FullName, searchPattern, SearchOption.TopDirectoryOnly);
         foreach (var directory in directories)
@@ -79,6 +80,7 @@ public static class DirectoryInfoExtensions
         IList<string>? excludeFiles = null)
     {
         ArgumentNullException.ThrowIfNull(directoryInfo);
+        ArgumentException.ThrowIfNullOrEmpty(searchPattern);
 
         var files = Directory.GetFiles(directoryInfo.FullName, searchPattern, SearchOption.TopDirectoryOnly);
         foreach (var file in files)
@@ -138,5 +140,133 @@ public static class DirectoryInfoExtensions
         directorySecurity.AddAccessRule(fileSystemAccessRule);
 
         directoryInfo.SetAccessControl(directorySecurity);
+    }
+
+    public static FileInfo? SearchForFile(
+        this DirectoryInfo directoryInfo,
+        string searchPattern = "*",
+        bool useRecursive = true,
+        IList<string>? excludeDirectories = null)
+    {
+        ArgumentNullException.ThrowIfNull(directoryInfo);
+        ArgumentException.ThrowIfNullOrEmpty(searchPattern);
+
+        try
+        {
+            var files = directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories);
+            if (files.Any())
+            {
+                return files[0];
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Access denied, skip this folder
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Directory not found, skip this folder
+        }
+
+        if (!useRecursive)
+        {
+            return null;
+        }
+
+        var subDirectories = directoryInfo.GetDirectories();
+        foreach (var directory in subDirectories)
+        {
+            if (directory.Name.StartsWith('$'))
+            {
+                continue;
+            }
+
+            if (excludeDirectories is not null &&
+                excludeDirectories.Contains(Path.GetFileName(directory.Name), StringComparer.Ordinal))
+            {
+                continue;
+            }
+
+            try
+            {
+                var file = directory.SearchForFile(searchPattern);
+                if (file is not null)
+                {
+                    return file;
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Access denied, skip this folder
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Directory not found, skip this folder
+            }
+        }
+
+        return null;
+    }
+
+    public static IList<FileInfo> SearchForFiles(
+        this DirectoryInfo directoryInfo,
+        string searchPattern = "*",
+        bool useRecursive = true,
+        IList<string>? excludeDirectories = null)
+    {
+        ArgumentNullException.ThrowIfNull(directoryInfo);
+        ArgumentException.ThrowIfNullOrEmpty(searchPattern);
+
+        var result = new List<FileInfo>();
+
+        try
+        {
+            var files = directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories);
+            result.AddRange(files);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Access denied, skip this folder
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Directory not found, skip this folder
+        }
+
+        if (!useRecursive)
+        {
+            return result;
+        }
+
+        var subDirectories = directoryInfo.GetDirectories();
+        foreach (var directory in subDirectories)
+        {
+            if (directory.Name.StartsWith('$'))
+            {
+                continue;
+            }
+
+            if (excludeDirectories is not null &&
+                excludeDirectories.Contains(Path.GetFileName(directory.Name), StringComparer.Ordinal))
+            {
+                continue;
+            }
+
+            try
+            {
+                var files = directory.SearchForFiles(searchPattern);
+                result.AddRange(files);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Access denied, skip this folder
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Directory not found, skip this folder
+            }
+        }
+
+        return result;
     }
 }

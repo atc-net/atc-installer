@@ -4,6 +4,8 @@ public class ComponentProviderTemplateSelector : DataTemplateSelector
 {
     public DataTemplate DefaultTemplate { get; set; } = new();
 
+    public DataTemplate ElasticSearchServerTemplate { get; set; } = new();
+
     public DataTemplate InternetInformationServerTemplate { get; set; } = new();
 
     public DataTemplate PostgreSqlServerTemplate { get; set; } = new();
@@ -16,6 +18,7 @@ public class ComponentProviderTemplateSelector : DataTemplateSelector
         => item switch
         {
             null => DefaultTemplate,
+            ElasticSearchServerComponentProviderViewModel => ElasticSearchServerTemplate,
             InternetInformationServerComponentProviderViewModel => InternetInformationServerTemplate,
             PostgreSqlServerComponentProviderViewModel => PostgreSqlServerTemplate,
             WindowsApplicationComponentProviderViewModel => WindowsApplicationTemplate,

@@ -22,6 +22,9 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     public bool IsMicrosoftDonNet7()
         => IsMicrosoftDonNet(7);
 
+    public bool IsJavaRuntime8()
+        => IsJavaRuntime(8);
+
     public bool IsNodeJs18()
         => IsNodeJs(18);
 
@@ -151,6 +154,33 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
         }
     }
 
+    private static bool IsJavaRuntime(
+        ushort mainVersion)
+    {
+        try
+        {
+            var javaFolder = GetJavaFolder();
+            if (javaFolder is null)
+            {
+                return false;
+            }
+
+            var filePaths = Directory.GetFiles(javaFolder.FullName, "java.exe", SearchOption.AllDirectories);
+            if (!filePaths.Any())
+            {
+                return false;
+            }
+
+            var javaExeFile = new FileInfo(filePaths[0]);
+            var parentDirectory = javaExeFile.Directory!.Parent!;
+            return parentDirectory.Name.Contains($"1.{mainVersion}", StringComparison.Ordinal);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static bool IsNodeJs(
         ushort mainVersion)
     {
@@ -202,5 +232,38 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
         {
             return false;
         }
+    }
+
+    private static DirectoryInfo? GetJavaFolder()
+    {
+        DirectoryInfo? javaFolder = null;
+        if (Environment.Is64BitOperatingSystem)
+        {
+            var javaFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java");
+            if (Directory.Exists(javaFolderPath))
+            {
+                javaFolder = new DirectoryInfo(javaFolderPath);
+            }
+            else
+            {
+                var javaFolderPathX86 =
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java");
+                if (Directory.Exists(javaFolderPathX86))
+                {
+                    javaFolder = new DirectoryInfo(javaFolderPathX86);
+                }
+            }
+        }
+        else
+        {
+            var javaFolderPathX86 =
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java");
+            if (Directory.Exists(javaFolderPathX86))
+            {
+                javaFolder = new DirectoryInfo(javaFolderPathX86);
+            }
+        }
+
+        return javaFolder;
     }
 }

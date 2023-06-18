@@ -5,6 +5,7 @@ public enum ComponentType
 {
     None,
     Application,
+    ElasticSearchServer,
     InternetInformationService,
     PostgreSqlServer,
     WindowsService,

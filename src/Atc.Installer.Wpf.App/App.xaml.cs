@@ -41,6 +41,7 @@ public partial class App
         services.AddSingleton<INetworkShellService, NetworkShellService>();
         services.AddSingleton<IInstalledAppsInstallerService, InstalledAppsInstallerService>();
 
+        services.AddSingleton<IElasticSearchServerInstallerService, ElasticSearchServerInstallerService>();
         services.AddSingleton<IInternetInformationServerInstallerService, InternetInformationServerInstallerService>();
         services.AddSingleton<IPostgreSqlServerInstallerService, PostgreSqlServerInstallerService>();
         services.AddSingleton<IWindowsApplicationInstallerService, WindowsApplicationInstallerService>();

@@ -4,6 +4,7 @@ namespace Atc.Installer.Wpf.App;
 public partial class MainWindowViewModel : MainWindowViewModelBase
 {
     private readonly INetworkShellService networkShellService;
+    private readonly IElasticSearchServerInstallerService esInstallerService;
     private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
     private readonly IWindowsApplicationInstallerService waInstallerService;
@@ -19,47 +20,52 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var installedAppsInstallerService = new InstalledAppsInstallerService();
         this.networkShellService = new NetworkShellService();
 
-        this.iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
         this.waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
+        this.iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
+
+        this.esInstallerService = new ElasticSearchServerInstallerService(waInstallerService, installedAppsInstallerService);
         this.pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
 
         this.installationDirectory = new DirectoryInfo(Path.Combine(installerTempDirectory.FullName, "InstallationFiles"));
 
-        if (IsInDesignMode)
+        if (!IsInDesignMode)
         {
-            ProjectName = "MyProject";
-            ComponentProviders.Add(
-                new WindowsApplicationComponentProviderViewModel(
-                    waInstallerService,
-                    networkShellService,
-                    installerTempDirectory,
-                    installationDirectory,
-                    ProjectName,
-                    new Dictionary<string, object>(StringComparer.Ordinal),
-                    new ApplicationOption
-                    {
-                        Name = "My-NT-Service",
-                        ComponentType = ComponentType.InternetInformationService,
-                    }));
-
-            ComponentProviders.Add(
-                new InternetInformationServerComponentProviderViewModel(
-                    iisInstallerService,
-                    networkShellService,
-                    installerTempDirectory,
-                    installationDirectory,
-                    ProjectName,
-                    new Dictionary<string, object>(StringComparer.Ordinal),
-                    new ApplicationOption
-                    {
-                        Name = "My-WebApi",
-                        ComponentType = ComponentType.InternetInformationService,
-                    }));
+            return;
         }
+
+        ProjectName = "MyProject";
+        ComponentProviders.Add(
+            new WindowsApplicationComponentProviderViewModel(
+                waInstallerService,
+                networkShellService,
+                installerTempDirectory,
+                installationDirectory,
+                ProjectName,
+                new Dictionary<string, object>(StringComparer.Ordinal),
+                new ApplicationOption
+                {
+                    Name = "My-NT-Service",
+                    ComponentType = ComponentType.InternetInformationService,
+                }));
+
+        ComponentProviders.Add(
+            new InternetInformationServerComponentProviderViewModel(
+                iisInstallerService,
+                networkShellService,
+                installerTempDirectory,
+                installationDirectory,
+                ProjectName,
+                new Dictionary<string, object>(StringComparer.Ordinal),
+                new ApplicationOption
+                {
+                    Name = "My-WebApi",
+                    ComponentType = ComponentType.InternetInformationService,
+                }));
     }
 
     public MainWindowViewModel(
         INetworkShellService networkShellService,
+        IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
@@ -68,6 +74,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ArgumentNullException.ThrowIfNull(applicationOptions);
 
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
+        this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
@@ -308,6 +315,25 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ComponentProviders.Add(vm);
     }
 
+    private void AddComponentProviderElasticSearchServer(
+        ApplicationOption appInstallationOption)
+    {
+        if (installationDirectory is null)
+        {
+            return;
+        }
+
+        var vm = new ElasticSearchServerComponentProviderViewModel(
+            esInstallerService,
+            waInstallerService,
+            installerTempDirectory,
+            installationDirectory,
+            ProjectName!,
+            DefaultApplicationSettings,
+            appInstallationOption);
+        ComponentProviders.Add(vm);
+    }
+
     private void AddComponentProviderInternetInformationServer(
         ApplicationOption appInstallationOption)
     {
@@ -363,6 +389,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 case ComponentType.Application or ComponentType.WindowsService:
                 {
                     AddComponentProviderWindowsApplication(appInstallationOption);
+                    break;
+                }
+
+                case ComponentType.ElasticSearchServer:
+                {
+                    AddComponentProviderElasticSearchServer(appInstallationOption);
                     break;
                 }
 
