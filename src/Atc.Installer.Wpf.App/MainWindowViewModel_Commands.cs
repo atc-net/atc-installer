@@ -8,6 +8,8 @@ public partial class MainWindowViewModel
 {
     public IRelayCommandAsync OpenConfigurationFileCommand => new RelayCommandAsync(OpenConfigurationFileCommandHandler);
 
+    public IRelayCommandAsync<string> OpenRecentConfigurationFileCommand => new RelayCommandAsync<string>(OpenRecentConfigurationFileCommandHandler);
+
     public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand => new RelayCommandAsync(DownloadInstallationFilesFromAzureStorageAccountCommandHandler, CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
     public IRelayCommandAsync ApplicationAboutCommand => new RelayCommandAsync(ApplicationAboutCommandHandler);
@@ -25,8 +27,12 @@ public partial class MainWindowViewModel
             return;
         }
 
-        await LoadConfigurationFile(openFileDialog.FileName).ConfigureAwait(true);
+        await LoadConfigurationFile(openFileDialog.FileName, CancellationToken.None).ConfigureAwait(true);
     }
+
+    private Task OpenRecentConfigurationFileCommandHandler(
+        string file)
+        => LoadConfigurationFile(file, CancellationToken.None);
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
         => AzureOptions is not null &&
@@ -52,7 +58,7 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
-        var downloadFolder = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
+        var downloadFolder = Path.Combine(installerTempFolder, @$"{ProjectName}\Download");
 
         var files = await AzureStorageAccountInstallerService.Instance
             .DownloadLatestFilesByNames(

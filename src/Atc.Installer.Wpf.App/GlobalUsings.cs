@@ -17,6 +17,7 @@ global using Atc.Installer.Wpf.ComponentProvider;
 global using Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 global using Atc.Installer.Wpf.ComponentProvider.Messages;
 global using Atc.Installer.Wpf.ComponentProvider.PostgreSql;
+global using Atc.Installer.Wpf.ComponentProvider.ViewModels;
 global using Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;

@@ -66,6 +66,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
 
+        LoadRecentOpenFiles();
+
         ApplicationOptions = applicationOptions.Value;
         AzureOptions = new AzureOptions();
 
@@ -87,6 +89,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             RaisePropertyChanged();
         }
     }
+
+    public ObservableCollectionEx<RecentOpenFileViewModel> RecentOpenFiles { get; } = new();
 
     public ObservableCollectionEx<ComponentProviderViewModel> ComponentProviders { get; } = new();
 
@@ -141,15 +145,94 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         cancellationTokenSource?.Cancel();
     }
 
-    private async Task LoadConfigurationFile(
+    private void LoadRecentOpenFiles()
+    {
+        var recentOpenFilesFile = Path.Combine(installerTempFolder, "RecentOpenFiles.json");
+        if (!File.Exists(recentOpenFilesFile))
+        {
+            return;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(recentOpenFilesFile);
+
+            var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
+                json,
+                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
+
+            RecentOpenFiles.Clear();
+
+            RecentOpenFiles.SuppressOnChangedNotification = true;
+            foreach (var recentOpenFile in recentOpenFilesOption.RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
+            {
+                if (!File.Exists(recentOpenFile.File))
+                {
+                    continue;
+                }
+
+                RecentOpenFiles.Add(new RecentOpenFileViewModel(recentOpenFile.TimeStamp, recentOpenFile.File));
+            }
+
+            RecentOpenFiles.SuppressOnChangedNotification = false;
+        }
+        catch
+        {
+            // Skip
+        }
+    }
+
+    private void AddLoadedFileToRecentOpenFiles(
         string file)
+    {
+        RecentOpenFiles.Add(new RecentOpenFileViewModel(DateTime.Now, file));
+
+        var recentOpenFilesOption = new RecentOpenFilesOption();
+        foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
+        {
+            var item = new RecentOpenFileOption
+            {
+                TimeStamp = vm.TimeStamp,
+                File = vm.File,
+            };
+
+            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.File == item.File) is not null)
+            {
+                continue;
+            }
+
+            if (!File.Exists(item.File))
+            {
+                continue;
+            }
+
+            recentOpenFilesOption.RecentOpenFiles.Add(item);
+        }
+
+        var recentOpenFilesFile = Path.Combine(installerTempFolder, "RecentOpenFiles.json");
+        if (!Directory.Exists(installerTempFolder))
+        {
+            Directory.CreateDirectory(installerTempFolder);
+        }
+
+        var json = JsonSerializer.Serialize(
+            recentOpenFilesOption,
+            Serialization.JsonSerializerOptionsFactory.Create());
+        File.WriteAllText(recentOpenFilesFile, json);
+
+        LoadRecentOpenFiles();
+    }
+
+    private async Task LoadConfigurationFile(
+        string file,
+        CancellationToken cancellationToken)
     {
         try
         {
             StopMonitoringServices();
 
             var json = await File
-                .ReadAllTextAsync(file)
+                .ReadAllTextAsync(file, cancellationToken)
                 .ConfigureAwait(true);
 
             var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
@@ -157,6 +240,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
 
             Populate(installationOptions);
+
+            AddLoadedFileToRecentOpenFiles(file);
 
             StartMonitoringServices();
         }

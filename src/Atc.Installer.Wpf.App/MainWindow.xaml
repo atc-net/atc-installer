@@ -41,6 +41,20 @@
                 <MenuItem Header="_File">
                     <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file" />
                     <Separator />
+                    <MenuItem Header="_Recent Files">
+                        <MenuItem.ItemsSource>
+                            <Binding Path="RecentOpenFiles" />
+                        </MenuItem.ItemsSource>
+                        <MenuItem.ItemTemplate>
+                            <DataTemplate>
+                                <MenuItem
+                                    Command="{Binding Path=DataContext.OpenRecentConfigurationFileCommand, RelativeSource={RelativeSource AncestorType={x:Type Menu}}}"
+                                    CommandParameter="{Binding Path=File}"
+                                    Header="{Binding Path=File}" />
+                            </DataTemplate>
+                        </MenuItem.ItemTemplate>
+                    </MenuItem>
+                    <Separator />
                     <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit" />
                 </MenuItem>
                 <MenuItem Header="_Installation">
@@ -106,7 +120,7 @@
                         <Label
                             Grid.Column="0"
                             Margin="0,10"
-                            Content="{Binding Path=SelectedComponentProvider.Name, FallbackValue='HelloWorld.Service'}"
+                            Content="{Binding Path=SelectedComponentProvider.Name}"
                             FontSize="26" />
                         <atc:ToastNotificationArea
                             x:Name="ToastNotificationArea"
