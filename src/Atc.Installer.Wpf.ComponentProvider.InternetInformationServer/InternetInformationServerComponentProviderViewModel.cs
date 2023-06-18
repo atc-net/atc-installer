@@ -10,10 +10,12 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public InternetInformationServerComponentProviderViewModel(
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         INetworkShellService networkShellService,
+        string installerTempFolder,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            installerTempFolder,
             projectName,
             defaultApplicationSettings,
             applicationOption)

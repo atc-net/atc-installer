@@ -10,10 +10,12 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     public WindowsApplicationComponentProviderViewModel(
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
+        string installerTempFolder,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            installerTempFolder,
             projectName,
             defaultApplicationSettings,
             applicationOption)

@@ -7,6 +7,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
     private readonly IWindowsApplicationInstallerService waInstallerService;
     private readonly ToastNotificationManager notificationManager = new();
+    private readonly string installerTempFolder = Path.Combine(Path.GetTempPath(), "atc-installer");
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
@@ -27,6 +28,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 new WindowsApplicationComponentProviderViewModel(
                     waInstallerService,
                     networkShellService,
+                    installerTempFolder,
                     ProjectName,
                     new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
@@ -39,6 +41,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 new InternetInformationServerComponentProviderViewModel(
                     iisInstallerService,
                     networkShellService,
+                    installerTempFolder,
                     ProjectName,
                     new Dictionary<string, object>(StringComparer.Ordinal),
                     new ApplicationOption
@@ -169,6 +172,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new WindowsApplicationComponentProviderViewModel(
             waInstallerService,
             networkShellService,
+            installerTempFolder,
             ProjectName!,
             DefaultApplicationSettings,
             appInstallationOption);
@@ -181,6 +185,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new InternetInformationServerComponentProviderViewModel(
             iisInstallerService,
             networkShellService,
+            installerTempFolder,
             ProjectName!,
             DefaultApplicationSettings,
             appInstallationOption);
@@ -193,6 +198,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new PostgreSqlServerComponentProviderViewModel(
             pgSqlInstallerService,
             waInstallerService,
+            installerTempFolder,
             ProjectName!,
             DefaultApplicationSettings,
             appInstallationOption);

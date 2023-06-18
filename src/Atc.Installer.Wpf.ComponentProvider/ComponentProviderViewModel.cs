@@ -17,6 +17,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         if (IsInDesignMode)
         {
             InstallationState = ComponentInstallationState.Checking;
+            InstallerTempFolder = Path.Combine(Path.GetTempPath(), "atc-installer");
             ProjectName = "MyProject";
             Name = "MyApp";
             InstallationPath = @"C:\ProgramFiles\MyApp";
@@ -28,6 +29,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public ComponentProviderViewModel(
+        string installerTempFolder,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
@@ -36,6 +38,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationOption);
 
+        InstallerTempFolder = installerTempFolder;
         ProjectName = projectName;
         DefaultApplicationSettingsViewModel.Populate(defaultApplicationSettings);
         ApplicationSettingsViewModel.Populate(applicationOption.ApplicationSettings);
@@ -55,6 +58,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         Messenger.Default.Register<UpdateDependentServiceStateMessage>(this, HandleDependentServiceState);
     }
+
+    public string InstallerTempFolder { get; }
 
     public string ProjectName { get; }
 
@@ -317,7 +322,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         bool unpackIfIfExist)
     {
         // TODO: Improve installationsPath
-        var installationsPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Download");
+        var installationsPath = Path.Combine(InstallerTempFolder, @$"\{ProjectName}\Download");
         if (!Directory.Exists(installationsPath))
         {
             Directory.CreateDirectory(installationsPath);
@@ -334,7 +339,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             return;
         }
 
-        UnpackedZipPath = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Unpacked\{Name}");
+        UnpackedZipPath = Path.Combine(InstallerTempFolder, @$"{ProjectName}\Unpacked\{Name}");
 
         if (!unpackIfIfExist &&
             Directory.Exists(UnpackedZipPath))
@@ -404,7 +409,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         LogItems.Add(LogItemFactory.CreateTrace("Backup files"));
 
         var timestamp = DateTime.Now.ToString("yyyyMMdd_hhmmss", GlobalizationConstants.EnglishCultureInfo);
-        var backupFolder = Path.Combine(Path.GetTempPath(), @$"atc-installer\{ProjectName}\Backup\{Name}");
+        var backupFolder = Path.Combine(InstallerTempFolder, @$"\{ProjectName}\Backup\{Name}");
         if (!Directory.Exists(backupFolder))
         {
             Directory.CreateDirectory(backupFolder);

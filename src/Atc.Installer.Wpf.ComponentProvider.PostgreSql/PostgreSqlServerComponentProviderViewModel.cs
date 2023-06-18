@@ -9,10 +9,12 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     public PostgreSqlServerComponentProviderViewModel(
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
+        string installerTempFolder,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            installerTempFolder,
             projectName,
             defaultApplicationSettings,
             applicationOption)
