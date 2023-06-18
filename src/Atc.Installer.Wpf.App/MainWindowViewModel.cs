@@ -325,6 +325,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         var vm = new ElasticSearchServerComponentProviderViewModel(
             esInstallerService,
+            waInstallerService,
             installerTempDirectory,
             installationDirectory,
             ProjectName!,

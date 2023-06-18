@@ -3,10 +3,12 @@ namespace Atc.Installer.Wpf.ComponentProvider.ElasticSearch;
 public partial class ElasticSearchServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IElasticSearchServerInstallerService esInstallerService;
+    private readonly IWindowsApplicationInstallerService waInstallerService;
     private string? testConnectionResult;
 
     public ElasticSearchServerComponentProviderViewModel(
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
+        IWindowsApplicationInstallerService windowsApplicationInstallerService,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
@@ -22,6 +24,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
+        waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         ElasticSearchConnectionViewModel = new ElasticSearchConnectionViewModel();
 
         InstalledMainFilePath = esInstallerService.GetInstalledMainFile()?.FullName;
@@ -118,6 +121,80 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         RunningState = isRunning
             ? ComponentRunningState.Running
             : ComponentRunningState.Stopped;
+    }
+
+    public override bool CanServiceStopCommandHandler()
+        => RunningState == ComponentRunningState.Running;
+
+    public override async Task ServiceStopCommandHandler()
+    {
+        if (!CanServiceStopCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        LogItems.Add(LogItemFactory.CreateTrace("Stop"));
+
+        var isStopped = await waInstallerService
+            .StopService(ServiceName!)
+            .ConfigureAwait(true);
+
+        if (isStopped)
+        {
+            RunningState = ComponentRunningState.Stopped;
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is stopped");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not stop service");
+        }
+
+        IsBusy = false;
+    }
+
+    public override bool CanServiceStartCommandHandler()
+        => RunningState == ComponentRunningState.Stopped;
+
+    public override async Task ServiceStartCommandHandler()
+    {
+        if (!CanServiceStartCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+
+        var isStarted = await waInstallerService
+            .StartService(ServiceName!)
+            .ConfigureAwait(true);
+
+        if (isStarted)
+        {
+            RunningState = ComponentRunningState.Running;
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is started");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not start service");
+        }
+
+        IsBusy = false;
     }
 
     private void AddToInstallationPrerequisites(
