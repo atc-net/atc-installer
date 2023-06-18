@@ -74,12 +74,42 @@ public class ElasticSearchServerInstallerService : IElasticSearchServerInstaller
         string hostName,
         ushort hostPort,
         string username,
-        string password)
+        string password,
+        string? index)
     {
         try
         {
-            // TODO: Imp. this.
-            return (IsSucceeded: false, ErrorMessage: "Not implemented yet");
+            var uri = new Uri($"{webProtocol}://{username}:{password}@{hostName}:{hostPort}");
+            using var connectionSettings = new ConnectionSettings(uri);
+            var client = new ElasticClient(connectionSettings);
+
+            if (string.IsNullOrEmpty(index))
+            {
+                var pingResponse = await client
+                    .PingAsync()
+                    .ConfigureAwait(false);
+
+                return pingResponse.IsValid
+                    ? (IsSucceeded: true, ErrorMessage: null)
+                    : (IsSucceeded: false, ErrorMessage: "Connection failed");
+            }
+
+            var indicesResponse = await client
+                .Cat
+                .IndicesAsync()
+                .ConfigureAwait(false);
+
+            if (!indicesResponse.IsValid)
+            {
+                return (IsSucceeded: false, ErrorMessage: "Connection failed");
+            }
+
+            if (indicesResponse.Records.Any(x => index.Equals(x.Index, StringComparison.OrdinalIgnoreCase)))
+            {
+                return (IsSucceeded: true, ErrorMessage: null);
+            }
+
+            return (IsSucceeded: false, ErrorMessage: "Connection failed");
         }
         catch (Exception ex)
         {

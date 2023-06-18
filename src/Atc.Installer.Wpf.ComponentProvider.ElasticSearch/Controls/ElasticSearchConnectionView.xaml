@@ -17,5 +17,6 @@
         <atc:LabelIntegerBox LabelText="Host port" Value="{Binding Path=HostPort}" />
         <atc:LabelTextBox LabelText="Username" Text="{Binding Path=Username}" />
         <atc:LabelTextBox LabelText="Password" Text="{Binding Path=Password}" />
+        <atc:LabelTextBox LabelText="Index" Text="{Binding Path=Index}" />
     </StackPanel>
 </UserControl>

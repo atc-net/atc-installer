@@ -54,6 +54,11 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
             ElasticSearchConnectionViewModel.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
         }
 
+        if (TryGetStringFromApplicationSettings("Index", out var indexValue))
+        {
+            ElasticSearchConnectionViewModel.Index = ResolveTemplateIfNeededByApplicationSettingsLookup(indexValue);
+        }
+
         TestConnectionResult = string.Empty;
     }
 

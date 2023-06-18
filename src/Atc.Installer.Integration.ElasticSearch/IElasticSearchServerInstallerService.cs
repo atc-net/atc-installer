@@ -19,5 +19,6 @@ public interface IElasticSearchServerInstallerService : IInstallerService
         string hostName,
         ushort hostPort,
         string username,
-        string password);
+        string password,
+        string? index);
 }

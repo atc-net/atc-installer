@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NEST" Version="7.17.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Atc.Installer.Integration.WindowsApplication\Atc.Installer.Integration.WindowsApplication.csproj" />
     <ProjectReference Include="..\Atc.Installer.Integration\Atc.Installer.Integration.csproj" />
   </ItemGroup>

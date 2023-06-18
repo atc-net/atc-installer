@@ -7,6 +7,7 @@ public class ElasticSearchConnectionViewModel : ViewModelBase
     private ushort? hostPort;
     private string? username;
     private string? password;
+    private string? index;
 
     public string? HostName
     {
@@ -54,6 +55,16 @@ public class ElasticSearchConnectionViewModel : ViewModelBase
         set
         {
             password = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string? Index
+    {
+        get => index;
+        set
+        {
+            index = value;
             RaisePropertyChanged();
         }
     }

@@ -25,7 +25,8 @@ public partial class ElasticSearchServerComponentProviderViewModel
                 ElasticSearchConnectionViewModel.HostName!,
                 ElasticSearchConnectionViewModel.HostPort.GetValueOrDefault(),
                 ElasticSearchConnectionViewModel.Username!,
-                ElasticSearchConnectionViewModel.Password!)
+                ElasticSearchConnectionViewModel.Password!,
+                ElasticSearchConnectionViewModel.Index)
             .ConfigureAwait(true);
 
         if (isSucceeded)
