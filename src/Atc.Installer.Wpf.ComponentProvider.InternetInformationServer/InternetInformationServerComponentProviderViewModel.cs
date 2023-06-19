@@ -104,7 +104,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
 
         if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartialRunning &&
+            RunningState != ComponentRunningState.PartiallyRunning &&
             RunningState != ComponentRunningState.Running)
         {
             RunningState = ComponentRunningState.Checking;
@@ -118,7 +118,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             ComponentRunningState.Stopped when websiteState == ComponentRunningState.Stopped => ComponentRunningState.Stopped,
             ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
             _ => applicationPoolState == ComponentRunningState.Running || websiteState == ComponentRunningState.Running
-                ? ComponentRunningState.PartialRunning
+                ? ComponentRunningState.PartiallyRunning
                 : ComponentRunningState.Unknown,
         };
 

@@ -111,7 +111,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         }
 
         if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartialRunning &&
+            RunningState != ComponentRunningState.PartiallyRunning &&
             RunningState != ComponentRunningState.Running)
         {
             RunningState = ComponentRunningState.Checking;

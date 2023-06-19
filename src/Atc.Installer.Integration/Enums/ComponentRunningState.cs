@@ -15,8 +15,8 @@ public enum ComponentRunningState
     [Description("Stopped")]
     Stopped,
 
-    [Description("Partial running")]
-    PartialRunning,
+    [Description("Partially running")]
+    PartiallyRunning,
 
     [Description("Running")]
     Running,

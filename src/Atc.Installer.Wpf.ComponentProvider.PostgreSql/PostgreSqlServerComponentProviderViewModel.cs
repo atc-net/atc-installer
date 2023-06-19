@@ -80,7 +80,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         }
 
         if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartialRunning &&
+            RunningState != ComponentRunningState.PartiallyRunning &&
             RunningState != ComponentRunningState.Running)
         {
             RunningState = ComponentRunningState.Checking;
