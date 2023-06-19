@@ -12,11 +12,29 @@
     mc:Ignorable="d">
 
     <StackPanel Orientation="Vertical">
-        <atc:LabelTextBox LabelText="WebProtocol" Text="{Binding Path=WebProtocol}" />
-        <atc:LabelTextBox LabelText="Host name" Text="{Binding Path=HostName}" />
-        <atc:LabelIntegerBox LabelText="Host port" Value="{Binding Path=HostPort}" />
-        <atc:LabelTextBox LabelText="Username" Text="{Binding Path=Username}" />
-        <atc:LabelTextBox LabelText="Password" Text="{Binding Path=Password}" />
-        <atc:LabelTextBox LabelText="Index" Text="{Binding Path=Index}" />
+        <atc:LabelTextBox
+            LabelText="WebProtocol"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=WebProtocol}" />
+        <atc:LabelTextBox
+            LabelText="Host name"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=HostName}" />
+        <atc:LabelIntegerBox
+            LabelText="Host port"
+            Style="{DynamicResource AtcApps.Styles.LabelIntegerBox}"
+            Value="{Binding Path=HostPort}" />
+        <atc:LabelTextBox
+            LabelText="Username"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=Username}" />
+        <atc:LabelTextBox
+            LabelText="Password"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=Password}" />
+        <atc:LabelTextBox
+            LabelText="Index"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=Index}" />
     </StackPanel>
 </UserControl>

@@ -41,14 +41,7 @@ public partial class MainWindowViewModel
             return;
         }
 
-        var dialogResult = new ApplicationSettingsDialog(new ApplicationSettingsDialogViewModel(ApplicationOptions))
-            .ShowDialog();
-
-        if (dialogResult.HasValue && dialogResult.Value)
-        {
-            //RaisePropertyChanged("Title");
-            //RaisePropertyChanged("ApplicationOptions.Title");
-        }
+        new ApplicationSettingsDialog(new ApplicationSettingsDialogViewModel(ApplicationOptions)).ShowDialog();
     }
 
     private Task OpenRecentConfigurationFileCommandHandler(

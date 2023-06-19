@@ -12,11 +12,26 @@
     mc:Ignorable="d">
 
     <StackPanel Orientation="Vertical">
-        <atc:LabelTextBox LabelText="Host name" Text="{Binding Path=HostName}" />
-        <atc:LabelIntegerBox LabelText="Host port" Value="{Binding Path=HostPort}" />
-        <atc:LabelTextBox LabelText="Database" Text="{Binding Path=Database}" />
-        <atc:LabelTextBox LabelText="Username" Text="{Binding Path=Username}" />
-        <atc:LabelTextBox LabelText="Password" Text="{Binding Path=Password}" />
+        <atc:LabelTextBox
+            LabelText="Host name"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=HostName}" />
+        <atc:LabelIntegerBox
+            LabelText="Host port"
+            Style="{DynamicResource AtcApps.Styles.LabelIntegerBox}"
+            Value="{Binding Path=HostPort}" />
+        <atc:LabelTextBox
+            LabelText="Database"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=Database}" />
+        <atc:LabelTextBox
+            LabelText="Username"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=Username}" />
+        <atc:LabelTextBox
+            LabelText="Password"
+            Style="{DynamicResource AtcApps.Styles.LabelTextBox}"
+            Text="{Binding Path=Password}" />
     </StackPanel>
 
 </UserControl>

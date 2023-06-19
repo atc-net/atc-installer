@@ -13,6 +13,15 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Atc.Installer.Wpf.ComponentProvider;component/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <atc:GridEx Columns="50,200,50,600" Rows="Auto">
             <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="1" />

@@ -19,4 +19,10 @@
     <ProjectReference Include="..\Atc.Installer.Integration\Atc.Installer.Integration.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Page Update="Styles.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
 </Project>
