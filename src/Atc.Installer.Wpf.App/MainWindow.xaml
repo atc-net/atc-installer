@@ -31,8 +31,10 @@
     <atc:NiceWindow.Resources>
         <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
-        <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
+        <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
+        <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
         <valueConverters:IntGreaterThenZeroToVisibilityVisibleValueConverter x:Key="IntGreaterThenZeroToVisibilityVisibleValueConverter" />
+        <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
     </atc:NiceWindow.Resources>
 
     <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
@@ -303,14 +305,38 @@
                                             Width="300"
                                             DisplayMemberBinding="{Binding Path=Name}"
                                             Header="Name" />
-                                        <GridViewColumn
-                                            Width="200"
-                                            DisplayMemberBinding="{Binding Path=InstallationState, Converter={StaticResource EnumDescriptionToStringValueConverter}}"
-                                            Header="Installation State" />
-                                        <GridViewColumn
-                                            Width="200"
-                                            DisplayMemberBinding="{Binding Path=RunningState, Converter={StaticResource EnumDescriptionToStringValueConverter}}"
-                                            Header="Running State" />
+                                        <GridViewColumn Width="200" Header="Installation State">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type componentProvider:DependentServiceViewModel}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse
+                                                            Width="20"
+                                                            Height="20"
+                                                            Fill="{Binding Path=InstallationState, Converter={StaticResource ComponentInstallationStateToBrushValueConverter}}" />
+                                                        <TextBlock
+                                                            Margin="5,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Path=InstallationState, Converter={StaticResource EnumDescriptionToStringValueConverter}}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Width="200" Header="Running State">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate DataType="{x:Type componentProvider:DependentServiceViewModel}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse
+                                                            Width="20"
+                                                            Height="20"
+                                                            Fill="{Binding Path=RunningState, Converter={StaticResource ComponentRunningStateToBrushValueConverter}}" />
+                                                        <TextBlock
+                                                            Margin="5,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Path=RunningState, Converter={StaticResource EnumDescriptionToStringValueConverter}}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
                                     </GridView>
                                 </ListView.View>
                             </ListView>
