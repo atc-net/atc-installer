@@ -28,6 +28,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         this.installationDirectory = new DirectoryInfo(Path.Combine(installerTempDirectory.FullName, "InstallationFiles"));
 
+        ApplicationOptions = new ApplicationOptionsViewModel(new ApplicationOptions());
+
         if (!IsInDesignMode)
         {
             return;
@@ -81,15 +83,15 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         LoadRecentOpenFiles();
 
-        ApplicationOptions = applicationOptions.Value;
-        AzureOptions = new AzureOptions();
+        ApplicationOptions = new ApplicationOptionsViewModel(applicationOptions.Value);
+        AzureOptions = new AzureOptionsViewModel();
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
     }
 
-    public ApplicationOptions? ApplicationOptions { get; init; }
+    public ApplicationOptionsViewModel ApplicationOptions { get; init; }
 
-    public AzureOptions? AzureOptions { get; set; }
+    public AzureOptionsViewModel? AzureOptions { get; set; }
 
     public IDictionary<string, object> DefaultApplicationSettings { get; private set; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
@@ -376,7 +378,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         InstallationOption installationOptions)
     {
         ProjectName = installationOptions.Name;
-        AzureOptions = installationOptions.Azure;
+        AzureOptions = new AzureOptionsViewModel(installationOptions.Azure);
         DefaultApplicationSettings = installationOptions.DefaultApplicationSettings;
 
         ComponentProviders.Clear();

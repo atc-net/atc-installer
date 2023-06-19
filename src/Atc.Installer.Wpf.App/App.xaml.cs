@@ -18,7 +18,7 @@ public partial class App
                     configuration = configurationBuilder
                         .SetBasePath(Directory.GetCurrentDirectory())
                         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                        .AddJsonFile("appsettings.development.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile("appsettings.custom.json", optional: true, reloadOnChange: true)
                         .AddEnvironmentVariables()
                         .Build();
                 })
@@ -45,6 +45,7 @@ public partial class App
         services.AddSingleton<IPostgreSqlServerInstallerService, PostgreSqlServerInstallerService>();
         services.AddSingleton<IWindowsApplicationInstallerService, WindowsApplicationInstallerService>();
 
+        services.AddSingleton<IApplicationSettingsDialogViewModel, ApplicationSettingsDialogViewModel>();
         services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
     }

@@ -25,40 +25,40 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
         pgInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
-        PostgreSqlConnectionViewModel = new PostgreSqlConnectionViewModel();
+        PostgreSqlConnection = new PostgreSqlConnectionViewModel();
 
         InstalledMainFilePath = pgInstallerService.GetInstalledMainFile()?.FullName;
         ServiceName = pgInstallerService.GetServiceName();
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
         {
-            PostgreSqlConnectionViewModel.HostName = ResolveTemplateIfNeededByApplicationSettingsLookup(hostNameValue);
+            PostgreSqlConnection.HostName = ResolveTemplateIfNeededByApplicationSettingsLookup(hostNameValue);
         }
 
         if (TryGetUshortFromApplicationSettings("HostPort", out var hostPortValue))
         {
-            PostgreSqlConnectionViewModel.HostPort = hostPortValue;
+            PostgreSqlConnection.HostPort = hostPortValue;
         }
 
         if (TryGetStringFromApplicationSettings("Database", out var databaseValue))
         {
-            PostgreSqlConnectionViewModel.Database = ResolveTemplateIfNeededByApplicationSettingsLookup(databaseValue);
+            PostgreSqlConnection.Database = ResolveTemplateIfNeededByApplicationSettingsLookup(databaseValue);
         }
 
         if (TryGetStringFromApplicationSettings("UserName", out var usernameValue))
         {
-            PostgreSqlConnectionViewModel.Username = ResolveTemplateIfNeededByApplicationSettingsLookup(usernameValue);
+            PostgreSqlConnection.Username = ResolveTemplateIfNeededByApplicationSettingsLookup(usernameValue);
         }
 
         if (TryGetStringFromApplicationSettings("Password", out var passwordValue))
         {
-            PostgreSqlConnectionViewModel.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
+            PostgreSqlConnection.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
         }
 
         TestConnectionResult = string.Empty;
     }
 
-    public PostgreSqlConnectionViewModel PostgreSqlConnectionViewModel { get; set; }
+    public PostgreSqlConnectionViewModel PostgreSqlConnection { get; set; }
 
     public string? TestConnectionResult
     {

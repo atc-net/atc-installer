@@ -8,11 +8,13 @@ public partial class MainWindowViewModel
 {
     public IRelayCommandAsync OpenConfigurationFileCommand => new RelayCommandAsync(OpenConfigurationFileCommandHandler);
 
+    public IRelayCommand OpenApplicationSettingsCommand => new RelayCommand(OpenApplicationSettingsCommandHandler);
+
     public IRelayCommandAsync<string> OpenRecentConfigurationFileCommand => new RelayCommandAsync<string>(OpenRecentConfigurationFileCommandHandler);
 
     public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand => new RelayCommandAsync(DownloadInstallationFilesFromAzureStorageAccountCommandHandler, CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
-    public static IRelayCommand ApplicationAboutCommand => new RelayCommand(ApplicationAboutCommandHandler);
+    public static IRelayCommand OpenApplicationAboutCommand => new RelayCommand(OpenApplicationAboutCommandHandler);
 
     private async Task OpenConfigurationFileCommandHandler()
     {
@@ -30,6 +32,23 @@ public partial class MainWindowViewModel
         await LoadConfigurationFile(
             new FileInfo(openFileDialog.FileName),
             CancellationToken.None).ConfigureAwait(true);
+    }
+
+    private void OpenApplicationSettingsCommandHandler()
+    {
+        if (ApplicationOptions is null)
+        {
+            return;
+        }
+
+        var dialogResult = new ApplicationSettingsDialog(new ApplicationSettingsDialogViewModel(ApplicationOptions))
+            .ShowDialog();
+
+        if (dialogResult.HasValue && dialogResult.Value)
+        {
+            //RaisePropertyChanged("Title");
+            //RaisePropertyChanged("ApplicationOptions.Title");
+        }
     }
 
     private Task OpenRecentConfigurationFileCommandHandler(
@@ -83,6 +102,6 @@ public partial class MainWindowViewModel
         IsBusy = false;
     }
 
-    private static void ApplicationAboutCommandHandler()
+    private static void OpenApplicationAboutCommandHandler()
         => new AboutBoxDialog().ShowDialog();
 }

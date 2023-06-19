@@ -23,17 +23,17 @@
                 Spacing="10">
                 <GroupBox Header="Default Application Settings">
                     <Expander>
-                        <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettingsViewModel}" IsEnabled="False" />
+                        <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettings}" IsEnabled="False" />
                     </Expander>
                 </GroupBox>
                 <GroupBox Header="Application Settings">
                     <Expander>
-                        <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettingsViewModel}" IsEnabled="False" />
+                        <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettings}" IsEnabled="False" />
                     </Expander>
                 </GroupBox>
                 <GroupBox Header="Folder Permissions">
                     <Expander>
-                        <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissionsViewModel}" IsEnabled="False" />
+                        <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissions}" IsEnabled="False" />
                     </Expander>
                 </GroupBox>
             </atc:UniformSpacingPanel>

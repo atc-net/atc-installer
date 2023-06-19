@@ -9,11 +9,12 @@ public partial class ElasticSearchServerComponentProviderViewModel
     public IRelayCommandAsync TestConnectionCommand => new RelayCommandAsync(TestConnectionCommandHandler, CanTestConnectionCommandHandler);
 
     private bool CanTestConnectionCommandHandler()
-        => !string.IsNullOrEmpty(ElasticSearchConnectionViewModel.WebProtocol) &&
-           !string.IsNullOrEmpty(ElasticSearchConnectionViewModel.HostName) &&
-           ElasticSearchConnectionViewModel.HostPort.HasValue &&
-           !string.IsNullOrEmpty(ElasticSearchConnectionViewModel.Username) &&
-           !string.IsNullOrEmpty(ElasticSearchConnectionViewModel.Password);
+        => RunningState == ComponentRunningState.Running &&
+           !string.IsNullOrEmpty(ElasticSearchConnection.WebProtocol) &&
+           !string.IsNullOrEmpty(ElasticSearchConnection.HostName) &&
+           ElasticSearchConnection.HostPort.HasValue &&
+           !string.IsNullOrEmpty(ElasticSearchConnection.Username) &&
+           !string.IsNullOrEmpty(ElasticSearchConnection.Password);
 
     private async Task TestConnectionCommandHandler()
     {
@@ -21,12 +22,12 @@ public partial class ElasticSearchServerComponentProviderViewModel
 
         var (isSucceeded, errorMessage) = await esInstallerService
             .TestConnection(
-                ElasticSearchConnectionViewModel.WebProtocol!,
-                ElasticSearchConnectionViewModel.HostName!,
-                ElasticSearchConnectionViewModel.HostPort.GetValueOrDefault(),
-                ElasticSearchConnectionViewModel.Username!,
-                ElasticSearchConnectionViewModel.Password!,
-                ElasticSearchConnectionViewModel.Index)
+                ElasticSearchConnection.WebProtocol!,
+                ElasticSearchConnection.HostName!,
+                ElasticSearchConnection.HostPort.GetValueOrDefault(),
+                ElasticSearchConnection.Username!,
+                ElasticSearchConnection.Password!,
+                ElasticSearchConnection.Index)
             .ConfigureAwait(true);
 
         if (isSucceeded)

@@ -43,9 +43,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         InstallerTempDirectory = installerTempDirectory;
         InstallationDirectory = installationDirectory;
         ProjectName = projectName;
-        DefaultApplicationSettingsViewModel.Populate(defaultApplicationSettings);
-        ApplicationSettingsViewModel.Populate(applicationOption.ApplicationSettings);
-        FolderPermissionsViewModel.Populate(applicationOption.FolderPermissions);
+        DefaultApplicationSettings.Populate(defaultApplicationSettings);
+        ApplicationSettings.Populate(applicationOption.ApplicationSettings);
+        FolderPermissions.Populate(applicationOption.FolderPermissions);
         ConfigurationSettingsFiles = applicationOption.ConfigurationSettingsFiles;
         Name = applicationOption.Name;
         ComponentType = applicationOption.ComponentType;
@@ -69,11 +69,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public string ProjectName { get; }
 
-    public ApplicationSettingsViewModel DefaultApplicationSettingsViewModel { get; } = new();
+    public ApplicationSettingsViewModel DefaultApplicationSettings { get; } = new();
 
-    public ApplicationSettingsViewModel ApplicationSettingsViewModel { get; } = new();
+    public ApplicationSettingsViewModel ApplicationSettings { get; } = new();
 
-    public FolderPermissionsViewModel FolderPermissionsViewModel { get; } = new();
+    public FolderPermissionsViewModel FolderPermissions { get; } = new();
 
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; } = new List<ConfigurationSettingsFileOption>();
 
@@ -189,14 +189,14 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         string key,
         out string value)
     {
-        if (ApplicationSettingsViewModel.TryGetString(key, out value) &&
+        if (ApplicationSettings.TryGetString(key, out value) &&
             !string.IsNullOrWhiteSpace(value) &&
             !value.Equals($"[[{key}]]", StringComparison.Ordinal))
         {
             return true;
         }
 
-        return DefaultApplicationSettingsViewModel.TryGetString(key, out value) &&
+        return DefaultApplicationSettings.TryGetString(key, out value) &&
                !string.IsNullOrWhiteSpace(value);
     }
 
@@ -204,13 +204,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         string key,
         out ushort value)
     {
-        if (ApplicationSettingsViewModel.TryGetUshort(key, out value) &&
+        if (ApplicationSettings.TryGetUshort(key, out value) &&
             value != default)
         {
             return true;
         }
 
-        return DefaultApplicationSettingsViewModel.TryGetUshort(key, out value) &&
+        return DefaultApplicationSettings.TryGetUshort(key, out value) &&
                value != default;
     }
 
@@ -232,7 +232,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                 LogItems.Add(LogItemFactory.CreateError(message));
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(toastNotificationType), toastNotificationType, null);
+                throw new ArgumentOutOfRangeException(nameof(toastNotificationType), toastNotificationType, message: null);
         }
 
         Messenger.Default.Send(
@@ -461,7 +461,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         ResolveDirectoriesForFolderPermissions();
 
-        var useDeleteBeforeCopy = !FolderPermissionsViewModel
+        var useDeleteBeforeCopy = !FolderPermissions
             .Items
             .Any(x => x.Directory is not null &&
                       x.Directory.FullName.StartsWith(InstallationFolderPath, StringComparison.OrdinalIgnoreCase));
@@ -475,7 +475,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
         else
         {
-            var excludeDirectories = FolderPermissionsViewModel
+            var excludeDirectories = FolderPermissions
                 .Items
                 .Where(x => x.Directory is not null &&
                             x.Directory.FullName.StartsWith(InstallationFolderPath, StringComparison.OrdinalIgnoreCase))
@@ -529,7 +529,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         ResolveDirectoriesForFolderPermissions();
 
-        foreach (var vm in FolderPermissionsViewModel.Items)
+        foreach (var vm in FolderPermissions.Items)
         {
             vm.Directory?.SetPermissions(
                 vm.User,
@@ -599,7 +599,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     private void ResolveDirectoriesForFolderPermissions()
     {
-        foreach (var vm in FolderPermissionsViewModel.Items)
+        foreach (var vm in FolderPermissions.Items)
         {
             if (vm.Directory is null)
             {

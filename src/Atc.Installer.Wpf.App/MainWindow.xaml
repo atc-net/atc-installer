@@ -42,7 +42,6 @@
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
                     <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file" />
-                    <Separator />
                     <MenuItem Header="_Recent Files">
                         <MenuItem.ItemsSource>
                             <Binding Path="RecentOpenFiles" />
@@ -71,13 +70,15 @@
                         </MenuItem.ItemTemplate>
                     </MenuItem>
                     <Separator />
+                    <MenuItem Command="{Binding Path=OpenApplicationSettingsCommand}" Header="Application settings" />
+                    <Separator />
                     <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit" />
                 </MenuItem>
                 <MenuItem Header="_Installation">
                     <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount" />
                 </MenuItem>
                 <MenuItem Header="_Help">
-                    <MenuItem Command="{Binding Path=ApplicationAboutCommand}" Header="_About" />
+                    <MenuItem Command="{Binding Path=OpenApplicationAboutCommand}" Header="_About" />
                 </MenuItem>
             </Menu>
 

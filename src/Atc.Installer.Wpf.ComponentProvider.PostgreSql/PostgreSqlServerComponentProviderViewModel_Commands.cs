@@ -9,11 +9,12 @@ public partial class PostgreSqlServerComponentProviderViewModel
     public IRelayCommandAsync TestConnectionCommand => new RelayCommandAsync(TestConnectionCommandHandler, CanTestConnectionCommandHandler);
 
     private bool CanTestConnectionCommandHandler()
-        => !string.IsNullOrEmpty(PostgreSqlConnectionViewModel.HostName) &&
-           PostgreSqlConnectionViewModel.HostPort.HasValue &&
-           !string.IsNullOrEmpty(PostgreSqlConnectionViewModel.Database) &&
-           !string.IsNullOrEmpty(PostgreSqlConnectionViewModel.Username) &&
-           !string.IsNullOrEmpty(PostgreSqlConnectionViewModel.Password);
+        => RunningState == ComponentRunningState.Running &&
+           !string.IsNullOrEmpty(PostgreSqlConnection.HostName) &&
+           PostgreSqlConnection.HostPort.HasValue &&
+           !string.IsNullOrEmpty(PostgreSqlConnection.Database) &&
+           !string.IsNullOrEmpty(PostgreSqlConnection.Username) &&
+           !string.IsNullOrEmpty(PostgreSqlConnection.Password);
 
     private async Task TestConnectionCommandHandler()
     {
@@ -21,11 +22,11 @@ public partial class PostgreSqlServerComponentProviderViewModel
 
         var (isSucceeded, errorMessage) = await pgInstallerService
             .TestConnection(
-                PostgreSqlConnectionViewModel.HostName!,
-                PostgreSqlConnectionViewModel.HostPort.GetValueOrDefault(),
-                PostgreSqlConnectionViewModel.Database!,
-                PostgreSqlConnectionViewModel.Username!,
-                PostgreSqlConnectionViewModel.Password!)
+                PostgreSqlConnection.HostName!,
+                PostgreSqlConnection.HostPort.GetValueOrDefault(),
+                PostgreSqlConnection.Database!,
+                PostgreSqlConnection.Username!,
+                PostgreSqlConnection.Password!)
             .ConfigureAwait(true);
 
         if (isSucceeded)
