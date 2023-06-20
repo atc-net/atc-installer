@@ -642,10 +642,12 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
 
         if (InstallationFolderPath is not null &&
-            InstalledMainFilePath is not null &&
-            File.Exists(InstalledMainFilePath))
+            InstalledMainFilePath is not null)
         {
-            InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+            if (File.Exists(InstalledMainFilePath))
+            {
+                InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+            }
 
             if (UnpackedZipFolderPath is not null)
             {
@@ -668,6 +670,12 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         CheckPrerequisites();
         CheckServiceState();
+
+        if (InstallationState == ComponentInstallationState.Checking)
+        {
+            InstallationState = ComponentInstallationState.NotInstalled;
+            RunningState = ComponentRunningState.NotAvailable;
+        }
     }
 
     private void WorkOnAnalyzeAndUpdateStatesForDotNet()
@@ -684,7 +692,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.dll");
         }
 
-        if (File.Exists(installationMainFile))
+        if (File.Exists(installationMainFile) &&
+            File.Exists(InstalledMainFilePath))
         {
             var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
             var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath);

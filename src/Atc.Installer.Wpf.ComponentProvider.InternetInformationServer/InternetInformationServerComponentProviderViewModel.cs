@@ -119,7 +119,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
             _ => applicationPoolState == ComponentRunningState.Running || websiteState == ComponentRunningState.Running
                 ? ComponentRunningState.PartiallyRunning
-                : ComponentRunningState.Unknown,
+                : ComponentRunningState.NotAvailable,
         };
 
         if (RunningState == ComponentRunningState.Checking)
@@ -291,6 +291,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         {
             ComponentRunningState.Stopped => true,
             ComponentRunningState.Unknown when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
+            ComponentRunningState.NotAvailable when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
             _ => false,
         };
     }

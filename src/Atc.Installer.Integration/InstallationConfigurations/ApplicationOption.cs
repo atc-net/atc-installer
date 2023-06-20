@@ -4,6 +4,8 @@ public class ApplicationOption
 {
     public string Name { get; set; } = string.Empty;
 
+    public string? ServiceName { get; set; }
+
     public ComponentType ComponentType { get; set; }
 
     public HostingFrameworkType HostingFramework { get; set; }

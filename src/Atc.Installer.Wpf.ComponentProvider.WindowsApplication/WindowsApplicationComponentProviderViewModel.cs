@@ -1,7 +1,9 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
+// ReSharper disable SuggestBaseTypeForParameter
 namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 
+[SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IWindowsApplicationInstallerService waInstallerService;
@@ -30,12 +32,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         if (applicationOption.ComponentType == ComponentType.WindowsService)
         {
             IsWindowsService = true;
-            ServiceName = Name;
-            if (applicationOption.DependentComponents.Count > 0)
-            {
-                ServiceName = applicationOption.DependentComponents[0];
-            }
-
+            ServiceName = string.IsNullOrEmpty(applicationOption.ServiceName)
+                ? Name
+                : applicationOption.ServiceName;
             DependentComponents = applicationOption.DependentComponents;
         }
 
@@ -203,6 +202,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         {
             ComponentRunningState.Stopped => true,
             ComponentRunningState.Unknown when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
+            ComponentRunningState.NotAvailable when InstallationState is ComponentInstallationState.NotInstalled or ComponentInstallationState.InstalledWithOldVersion => true,
             _ => false,
         };
     }
@@ -484,6 +484,22 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
 
+        if (RunningState == ComponentRunningState.NotAvailable &&
+            InstalledMainFilePath is not null &&
+            File.Exists(InstalledMainFilePath) &&
+            InstalledMainFilePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            if (SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath)))
+            {
+                LogItems.Add(LogItemFactory.CreateInformation("Service is installed"));
+                RunningState = waInstallerService.GetServiceState(ServiceName!);
+            }
+            else
+            {
+                LogItems.Add(LogItemFactory.CreateError("Service is not installed"));
+            }
+        }
+
         if (useAutoStart)
         {
             LogItems.Add(LogItemFactory.CreateTrace("Auto starting service"));
@@ -551,5 +567,40 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         isDone = true;
 
         return isDone;
+    }
+
+    private static bool SetupInstalledMainFilePathAsService(
+        FileInfo installedMainFile)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = installedMainFile.FullName,
+                Arguments = "install",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+                WorkingDirectory = installedMainFile.Directory!.FullName,
+                Verb = "runas",
+            };
+
+            var process = Process.Start(psi);
+            if (process is null)
+            {
+                return false;
+            }
+
+            var output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            return output is not null &&
+                   output.Contains("successfully installed", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
