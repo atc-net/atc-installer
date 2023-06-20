@@ -105,6 +105,9 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public bool IsComponentInstalledMicrosoftNetAppHostPack7()
         => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET AppHost Pack - 7.");
 
+    public bool IsComponentInstalledMicrosoftAspNetCoreModule2()
+        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft ASP.NET Core Module V2");
+
     public bool IsComponentInstalledUrlRewriteModule2()
         => iaInstallerService.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2");
 

@@ -402,6 +402,15 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetAppHostPack7", LogCategoryType.Warning, "IIS module 'Microsoft .NET AppHost Pack - 7' is not installed");
                 }
 
+                if (iisInstallerService.IsComponentInstalledMicrosoftAspNetCoreModule2())
+                {
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftAspNetCoreModule2", LogCategoryType.Information, "IIS module 'Microsoft ASP.NET Core Module V2' is installed");
+                }
+                else
+                {
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftAspNetCoreModule2", LogCategoryType.Warning, "IIS module 'Microsoft ASP.NET Core Module V2' is not installed");
+                }
+
                 break;
 
             case HostingFrameworkType.NodeJs:

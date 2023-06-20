@@ -20,6 +20,8 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     bool IsComponentInstalledMicrosoftNetAppHostPack7();
 
+    bool IsComponentInstalledMicrosoftAspNetCoreModule2();
+
     bool IsComponentInstalledUrlRewriteModule2();
 
     string? ResolvedVirtuelRootFolder(
