@@ -21,6 +21,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_91AC4473324C48F0B73036379CCEA32C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_B80DFB6270524AC7B2F3C294312B6821"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -142,6 +148,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_91AC4473324C48F0B73036379CCEA32C"
+            {
+            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\Resources\\AppIcon.ico"
+            "TargetName" = "8:AppIcon.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -203,7 +229,7 @@
         "UpgradeCode" = "8:{F7F3665E-9FEB-4AE3-B0EA-F3791208A1A8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
@@ -215,7 +241,7 @@
         "ARPCONTACT" = "8:ATC-NET"
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
-        "ARPURLINFOABOUT" = "8:"
+        "ARPURLINFOABOUT" = "8:https://atc-net.github.io/"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
@@ -330,7 +356,7 @@
             "Target" = "8:_B80DFB6270524AC7B2F3C294312B6821"
             "Folder" = "8:_07FB788DEEB0413D8664EFF8C9FC293F"
             "WorkingFolder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"
-            "Icon" = "8:"
+            "Icon" = "8:_91AC4473324C48F0B73036379CCEA32C"
             "Feature" = "8:"
             }
         }
