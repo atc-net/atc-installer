@@ -207,7 +207,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     }
 
     public override bool CanServiceStopCommandHandler()
-        => RunningState == ComponentRunningState.Running;
+        => RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
 
     public override async Task ServiceStopCommandHandler()
     {
@@ -220,9 +220,31 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         LogItems.Add(LogItemFactory.CreateTrace("Stop service"));
 
-        var isStopped = await iisInstallerService
-            .StopWebsiteApplicationPool(Name, Name)
-            .ConfigureAwait(true);
+        var isStopped = false;
+        if (RunningState == ComponentRunningState.PartiallyRunning)
+        {
+            var websiteState = iisInstallerService.GetWebsiteState(Name);
+            if (websiteState == ComponentRunningState.Running)
+            {
+                isStopped = await iisInstallerService
+                    .StopWebsite(Name)
+                    .ConfigureAwait(true);
+            }
+
+            var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
+            if (applicationPoolState == ComponentRunningState.Running)
+            {
+                isStopped = await iisInstallerService
+                    .StopApplicationPool(Name)
+                    .ConfigureAwait(true);
+            }
+        }
+        else
+        {
+            isStopped = await iisInstallerService
+                .StopWebsiteApplicationPool(Name, Name)
+                .ConfigureAwait(true);
+        }
 
         if (isStopped)
         {
