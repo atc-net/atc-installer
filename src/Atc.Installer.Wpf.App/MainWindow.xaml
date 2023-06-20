@@ -136,6 +136,7 @@
                     Columns="*"
                     Rows="100,3*,10,2*">
 
+                    <!--  Right-Content-Header  -->
                     <atc:GridEx
                         Grid.Row="0"
                         Grid.Column="0"
@@ -152,9 +153,11 @@
                             Position="TopRight" />
                     </atc:GridEx>
 
+                    <!--  Right-Content-ContentControls  -->
                     <ScrollViewer
                         Grid.Row="1"
                         Grid.Column="0"
+                        HorizontalScrollBarVisibility="Auto"
                         VerticalScrollBarVisibility="Auto">
                         <ContentControl Content="{Binding Path=SelectedComponentProvider}">
                             <ContentControl.Resources>
@@ -198,6 +201,7 @@
                         </ContentControl>
                     </ScrollViewer>
 
+                    <!--  Right-Content-Logs/Prerequisites/DependentServices  -->
                     <TabControl
                         Grid.Row="3"
                         Grid.Column="0"
