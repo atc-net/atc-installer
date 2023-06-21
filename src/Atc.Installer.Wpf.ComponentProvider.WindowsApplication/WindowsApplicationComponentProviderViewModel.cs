@@ -29,48 +29,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
-        if (applicationOption.ComponentType == ComponentType.WindowsService)
-        {
-            IsWindowsService = true;
-            ServiceName = string.IsNullOrEmpty(applicationOption.ServiceName)
-                ? Name
-                : applicationOption.ServiceName;
-            DependentComponents = applicationOption.DependentComponents;
-        }
-
-        SettingsVisibility = HostingFramework == HostingFrameworkType.NativeNoSettings
-            ? Visibility.Collapsed
-            : Visibility.Visible;
-
-        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
-            TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
-        {
-            if (TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
-            {
-                Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpPortValue}"));
-            }
-
-            if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsPortValue))
-            {
-                Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpsPortValue}"));
-            }
-        }
-
-        foreach (var endpoint in applicationOption.Endpoints)
-        {
-            Endpoints.Add(
-                new EndpointViewModel(
-                    endpoint.Name,
-                    endpoint.EndpointType,
-                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
-        }
+        InitializeFromApplicationOptions(applicationOption);
     }
 
-    public bool IsWindowsService { get; }
+    public bool IsWindowsService { get; private set; }
 
-    public Visibility SettingsVisibility { get; }
+    public Visibility SettingsVisibility { get; private set; }
 
-    public IList<string> DependentComponents { get; init; } = new List<string>();
+    public IList<string> DependentComponents { get; private set; } = new List<string>();
 
     public override void CheckServiceState()
     {
@@ -319,6 +285,62 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
 
         return folder;
+    }
+
+    private void InitializeFromApplicationOptions(
+        ApplicationOption applicationOption)
+    {
+        if (applicationOption.ComponentType == ComponentType.WindowsService)
+        {
+            IsWindowsService = true;
+            ServiceName = string.IsNullOrEmpty(applicationOption.ServiceName)
+                ? Name
+                : applicationOption.ServiceName;
+            DependentComponents = applicationOption.DependentComponents;
+        }
+
+        SettingsVisibility = HostingFramework == HostingFrameworkType.NativeNoSettings
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+
+        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
+            TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            if (TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
+            {
+                if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
+                    swaggerEnabledValue)
+                {
+                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{hostNameValue}:{httpPortValue}/swagger"));
+                }
+                else
+                {
+                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{hostNameValue}:{httpPortValue}"));
+                }
+            }
+
+            if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsPortValue))
+            {
+                if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
+                    swaggerEnabledValue)
+                {
+                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpsPortValue}/swagger"));
+                }
+                else
+                {
+                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpsPortValue}"));
+                }
+            }
+        }
+
+        foreach (var endpoint in applicationOption.Endpoints)
+        {
+            Endpoints.Add(
+                new EndpointViewModel(
+                    endpoint.Name,
+                    endpoint.EndpointType,
+                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
+        }
     }
 
     private void CheckPrerequisitesForHostingFramework()

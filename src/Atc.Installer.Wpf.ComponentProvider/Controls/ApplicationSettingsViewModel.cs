@@ -34,6 +34,27 @@ public class ApplicationSettingsViewModel : ViewModelBase
         return true;
     }
 
+    public bool TryGetBoolean(string key, out bool value)
+    {
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if (item?.Value is null)
+        {
+            value = default;
+            return false;
+        }
+
+        if (bool.TryParse(
+                item.Value.ToString()!,
+                out var resultValue))
+        {
+            value = resultValue;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
     public bool TryGetUshort(string key, out ushort value)
     {
         var item = Items.FirstOrDefault(x => x.Key == key);

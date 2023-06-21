@@ -27,6 +27,13 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         PostgreSqlConnection = new PostgreSqlConnectionViewModel();
 
+        InitializeFromApplicationOptions(applicationOption);
+    }
+
+    [SuppressMessage("Major Code Smell", "S1172:Unused method parameters should be removed", Justification = "OK - for now.")]
+    private void InitializeFromApplicationOptions(
+        ApplicationOption applicationOption)
+    {
         InstalledMainFilePath = pgInstallerService.GetInstalledMainFile()?.FullName;
         ServiceName = pgInstallerService.GetServiceName();
 

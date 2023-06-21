@@ -1,9 +1,6 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 // ReSharper disable StringLiteralTypo
-
-using System.Collections.ObjectModel;
-
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
@@ -207,6 +204,20 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         return DefaultApplicationSettings.TryGetString(key, out value) &&
                !string.IsNullOrWhiteSpace(value);
+    }
+
+    public bool TryGetBooleanFromApplicationSettings(
+        string key,
+        out bool value)
+    {
+        if (ApplicationSettings.TryGetBoolean(key, out value) &&
+            value != default)
+        {
+            return true;
+        }
+
+        return DefaultApplicationSettings.TryGetBoolean(key, out value) &&
+               value != default;
     }
 
     public bool TryGetUshortFromApplicationSettings(

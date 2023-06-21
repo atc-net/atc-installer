@@ -27,58 +27,16 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
-        if (InstallationFolderPath is not null)
-        {
-            InstallationFolderPath = iisInstallerService.ResolvedVirtuelRootFolder(InstallationFolderPath)!;
-        }
-
-        if (InstalledMainFilePath is not null)
-        {
-            InstalledMainFilePath = iisInstallerService.ResolvedVirtuelRootFolder(InstalledMainFilePath);
-        }
-
-        IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
-
-        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
-        {
-            HostName = hostNameValue;
-        }
-
-        if (TryGetUshortFromApplicationSettings("HttpPort", out var httpValue))
-        {
-            HttpPort = httpValue;
-            if (!string.IsNullOrEmpty(HostName))
-            {
-                Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}"));
-            }
-        }
-
-        if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsValue))
-        {
-            HttpsPort = httpsValue;
-            if (!string.IsNullOrEmpty(HostName))
-            {
-                Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}"));
-            }
-        }
-
-        foreach (var endpoint in applicationOption.Endpoints)
-        {
-            Endpoints.Add(
-                new EndpointViewModel(
-                    endpoint.Name,
-                    endpoint.EndpointType,
-                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
-        }
+        InitializeFromApplicationOptions(applicationOption);
     }
 
-    public bool IsRequiredWebSockets { get; }
+    public bool IsRequiredWebSockets { get; private set; }
 
-    public string? HostName { get; }
+    public string? HostName { get; private set; }
 
-    public ushort? HttpPort { get; }
+    public ushort? HttpPort { get; private set; }
 
-    public ushort? HttpsPort { get; }
+    public ushort? HttpsPort { get; private set; }
 
     public override void CheckPrerequisites()
     {
@@ -340,6 +298,70 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override Task ServiceDeployAndStartCommandHandler()
         => ServiceDeployAndStart(useAutoStart: true);
+
+    private void InitializeFromApplicationOptions(
+        ApplicationOption applicationOption)
+    {
+        if (InstallationFolderPath is not null)
+        {
+            InstallationFolderPath = iisInstallerService.ResolvedVirtuelRootFolder(InstallationFolderPath)!;
+        }
+
+        if (InstalledMainFilePath is not null)
+        {
+            InstalledMainFilePath = iisInstallerService.ResolvedVirtuelRootFolder(InstalledMainFilePath);
+        }
+
+        IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
+
+        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            HostName = hostNameValue;
+        }
+
+        if (TryGetUshortFromApplicationSettings("HttpPort", out var httpValue))
+        {
+            HttpPort = httpValue;
+            if (!string.IsNullOrEmpty(HostName))
+            {
+                if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
+                    swaggerEnabledValue)
+                {
+                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}/swagger"));
+                }
+                else
+                {
+                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}"));
+                }
+            }
+        }
+
+        if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsValue))
+        {
+            HttpsPort = httpsValue;
+            if (!string.IsNullOrEmpty(HostName))
+            {
+                if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
+                    swaggerEnabledValue)
+                {
+                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}/swagger"));
+                }
+                else
+                {
+                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}"));
+                }
+            }
+        }
+
+        foreach (var endpoint in applicationOption.Endpoints)
+        {
+            Endpoints.Add(
+                new EndpointViewModel(
+                    endpoint.Name,
+                    endpoint.EndpointType,
+                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
+        }
+    }
 
     private async Task ServiceDeployAndStart(
         bool useAutoStart)

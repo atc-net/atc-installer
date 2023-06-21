@@ -27,45 +27,10 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         ElasticSearchConnection = new ElasticSearchConnectionViewModel();
 
-        InstalledMainFilePath = esInstallerService.GetInstalledMainFile()?.FullName;
-        ServiceName = esInstallerService.GetServiceName();
-
-        IsRequiredJava = applicationOption.DependentComponents.Contains("Java", StringComparer.Ordinal);
-
-        if (TryGetStringFromApplicationSettings("WebProtocol", out var webProtocolValue))
-        {
-            ElasticSearchConnection.WebProtocol = ResolveTemplateIfNeededByApplicationSettingsLookup(webProtocolValue);
-        }
-
-        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
-        {
-            ElasticSearchConnection.HostName = ResolveTemplateIfNeededByApplicationSettingsLookup(hostNameValue);
-        }
-
-        if (TryGetUshortFromApplicationSettings("HostPort", out var hostPortValue))
-        {
-            ElasticSearchConnection.HostPort = hostPortValue;
-        }
-
-        if (TryGetStringFromApplicationSettings("UserName", out var usernameValue))
-        {
-            ElasticSearchConnection.Username = ResolveTemplateIfNeededByApplicationSettingsLookup(usernameValue);
-        }
-
-        if (TryGetStringFromApplicationSettings("Password", out var passwordValue))
-        {
-            ElasticSearchConnection.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
-        }
-
-        if (TryGetStringFromApplicationSettings("Index", out var indexValue))
-        {
-            ElasticSearchConnection.Index = ResolveTemplateIfNeededByApplicationSettingsLookup(indexValue);
-        }
-
-        TestConnectionResult = string.Empty;
+        InitializeFromApplicationOptions(applicationOption);
     }
 
-    public bool IsRequiredJava { get; }
+    public bool IsRequiredJava { get; private set; }
 
     public ElasticSearchConnectionViewModel ElasticSearchConnection { get; set; }
 
@@ -195,6 +160,46 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         }
 
         IsBusy = false;
+    }
+
+    private void InitializeFromApplicationOptions(ApplicationOption applicationOption)
+    {
+        InstalledMainFilePath = esInstallerService.GetInstalledMainFile()?.FullName;
+        ServiceName = esInstallerService.GetServiceName();
+
+        IsRequiredJava = applicationOption.DependentComponents.Contains("Java", StringComparer.Ordinal);
+
+        if (TryGetStringFromApplicationSettings("WebProtocol", out var webProtocolValue))
+        {
+            ElasticSearchConnection.WebProtocol = ResolveTemplateIfNeededByApplicationSettingsLookup(webProtocolValue);
+        }
+
+        if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            ElasticSearchConnection.HostName = ResolveTemplateIfNeededByApplicationSettingsLookup(hostNameValue);
+        }
+
+        if (TryGetUshortFromApplicationSettings("HostPort", out var hostPortValue))
+        {
+            ElasticSearchConnection.HostPort = hostPortValue;
+        }
+
+        if (TryGetStringFromApplicationSettings("UserName", out var usernameValue))
+        {
+            ElasticSearchConnection.Username = ResolveTemplateIfNeededByApplicationSettingsLookup(usernameValue);
+        }
+
+        if (TryGetStringFromApplicationSettings("Password", out var passwordValue))
+        {
+            ElasticSearchConnection.Password = ResolveTemplateIfNeededByApplicationSettingsLookup(passwordValue);
+        }
+
+        if (TryGetStringFromApplicationSettings("Index", out var indexValue))
+        {
+            ElasticSearchConnection.Index = ResolveTemplateIfNeededByApplicationSettingsLookup(indexValue);
+        }
+
+        TestConnectionResult = string.Empty;
     }
 
     private void AddToInstallationPrerequisites(
