@@ -40,6 +40,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             new WindowsApplicationComponentProviderViewModel(
                 waInstallerService,
                 networkShellService,
+                new ObservableCollectionEx<ComponentProviderViewModel>(),
                 installerTempDirectory,
                 installationDirectory,
                 ProjectName,
@@ -54,6 +55,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             new InternetInformationServerComponentProviderViewModel(
                 iisInstallerService,
                 networkShellService,
+                ComponentProviders,
                 installerTempDirectory,
                 installationDirectory,
                 ProjectName,
@@ -329,6 +331,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new WindowsApplicationComponentProviderViewModel(
             waInstallerService,
             networkShellService,
+            ComponentProviders,
             installerTempDirectory,
             installationDirectory,
             ProjectName!,
@@ -348,6 +351,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new ElasticSearchServerComponentProviderViewModel(
             esInstallerService,
             waInstallerService,
+            ComponentProviders,
             installerTempDirectory,
             installationDirectory,
             ProjectName!,
@@ -367,6 +371,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new InternetInformationServerComponentProviderViewModel(
             iisInstallerService,
             networkShellService,
+            ComponentProviders,
             installerTempDirectory,
             installationDirectory,
             ProjectName!,
@@ -386,6 +391,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         var vm = new PostgreSqlServerComponentProviderViewModel(
             pgSqlInstallerService,
             waInstallerService,
+            ComponentProviders,
             installerTempDirectory,
             installationDirectory,
             ProjectName!,

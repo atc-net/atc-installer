@@ -10,12 +10,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public InternetInformationServerComponentProviderViewModel(
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         INetworkShellService networkShellService,
+        ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            refComponentProviders,
             installerTempDirectory,
             installationDirectory,
             projectName,

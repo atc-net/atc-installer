@@ -55,6 +55,11 @@
                         <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissions}" IsEnabled="False" />
                     </Expander>
                 </GroupBox>
+                <GroupBox Header="Configuration Settings Files">
+                    <Expander>
+                        <controls:ConfigurationSettingsFilesView DataContext="{Binding Path=ConfigurationSettingsFiles}" IsEnabled="False" />
+                    </Expander>
+                </GroupBox>
             </atc:UniformSpacingPanel>
         </atc:GridEx>
     </atc:BusyOverlay>

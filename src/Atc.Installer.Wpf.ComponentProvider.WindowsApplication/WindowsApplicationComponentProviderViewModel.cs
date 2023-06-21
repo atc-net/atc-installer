@@ -12,12 +12,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     public WindowsApplicationComponentProviderViewModel(
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
+        ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            refComponentProviders,
             installerTempDirectory,
             installationDirectory,
             projectName,

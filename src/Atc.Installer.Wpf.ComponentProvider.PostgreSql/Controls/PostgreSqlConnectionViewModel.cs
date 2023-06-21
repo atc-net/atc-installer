@@ -57,4 +57,18 @@ public class PostgreSqlConnectionViewModel : ViewModelBase
             RaisePropertyChanged();
         }
     }
+
+    public string? GetConnectionString()
+    {
+        if (string.IsNullOrEmpty(HostName) ||
+            HostPort is null ||
+            string.IsNullOrEmpty(Database) ||
+            string.IsNullOrEmpty(Username) ||
+            string.IsNullOrEmpty(Password))
+        {
+            return null;
+        }
+
+        return $"Host={HostName}:{HostPort};Username={Username};Password={Password};Database={Database}";
+    }
 }

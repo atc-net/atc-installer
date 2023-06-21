@@ -9,12 +9,14 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     public PostgreSqlServerComponentProviderViewModel(
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
+        ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            refComponentProviders,
             installerTempDirectory,
             installationDirectory,
             projectName,
@@ -97,6 +99,24 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         RunningState = isRunning
             ? ComponentRunningState.Running
             : ComponentRunningState.Stopped;
+    }
+
+    public override bool TryGetStringFromApplicationSetting(
+        string key,
+        out string resultValue)
+    {
+        if ("ConnectionString".Equals(key, StringComparison.Ordinal))
+        {
+            var connectionString = PostgreSqlConnection?.GetConnectionString();
+            if (connectionString is not null)
+            {
+                resultValue = connectionString;
+                return true;
+            }
+        }
+
+        resultValue = string.Empty;
+        return false;
     }
 
     public override bool CanServiceStopCommandHandler()

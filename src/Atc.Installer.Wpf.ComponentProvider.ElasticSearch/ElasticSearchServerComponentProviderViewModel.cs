@@ -9,12 +9,14 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
     public ElasticSearchServerComponentProviderViewModel(
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
+        ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            refComponentProviders,
             installerTempDirectory,
             installationDirectory,
             projectName,

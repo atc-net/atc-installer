@@ -7,6 +7,7 @@ namespace Atc.Installer.Wpf.ComponentProvider;
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
 public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 {
+    private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
     private string? installationFile;
@@ -20,6 +21,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     {
         if (IsInDesignMode)
         {
+            refComponentProviders = new ObservableCollectionEx<ComponentProviderViewModel>();
             InstallationState = ComponentInstallationState.Checking;
             InstallerTempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "atc-installer"));
             InstallationDirectory = new DirectoryInfo(Path.Combine(InstallerTempDirectory.FullName, "InstallationFiles"));
@@ -34,16 +36,19 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public ComponentProviderViewModel(
+        ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
     {
+        ArgumentNullException.ThrowIfNull(refComponentProviders);
         ArgumentException.ThrowIfNullOrEmpty(projectName);
         ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationOption);
 
+        this.refComponentProviders = refComponentProviders;
         InstallerTempDirectory = installerTempDirectory;
         InstallationDirectory = installationDirectory;
         ProjectName = projectName;
@@ -427,6 +432,14 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public virtual void CheckServiceState() { }
 
+    public virtual bool TryGetStringFromApplicationSetting(
+        string key,
+        out string resultValue)
+    {
+        resultValue = string.Empty;
+        return false;
+    }
+
     public virtual void UpdateConfigurationDynamicJson(
         string fileName,
         DynamicJson dynamicJson)
@@ -590,7 +603,20 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             var keys = value.GetTemplateKeys();
             foreach (var key in keys)
             {
-                if (TryGetStringFromApplicationSettings(key, out var resultValue))
+                if (key.Contains('|', StringComparison.Ordinal))
+                {
+                    var sa = key.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    if (sa.Length == 2)
+                    {
+                        var refComponentProvider = refComponentProviders.First(x => x.Name == sa[0]);
+                        if (refComponentProvider is not null &&
+                            refComponentProvider.TryGetStringFromApplicationSetting(sa[1], out var resultValue))
+                        {
+                            value = resultValue;
+                        }
+                    }
+                }
+                else if (TryGetStringFromApplicationSettings(key, out var resultValue))
                 {
                     value = value.ReplaceTemplateWithKey(key, resultValue);
                 }
