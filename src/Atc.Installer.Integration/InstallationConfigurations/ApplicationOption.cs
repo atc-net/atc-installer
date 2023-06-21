@@ -24,6 +24,8 @@ public class ApplicationOption
 
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; init; } = new List<ConfigurationSettingsFileOption>();
 
+    public IList<EndpointOption> Endpoints { get; init; } = new List<EndpointOption>();
+
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(ComponentType)}: {ComponentType}, {nameof(HostingFramework)}: {HostingFramework}";
 }

@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Controls;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,12 +19,21 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Atc.Installer.Wpf.ComponentProvider;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <atc:GridEx Columns="50,200,50,600" Rows="Auto">
-            <componentProvider:ComponentProviderServiceActionsView Grid.Row="0" Grid.Column="1" />
+            <atc:UniformSpacingPanel
+                Grid.Row="0"
+                Grid.Column="1"
+                Orientation="Vertical"
+                Spacing="10">
+                <componentProvider:ComponentProviderServiceActionsView />
+                <componentProvider:ComponentProviderServiceLinksView Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}" />
+            </atc:UniformSpacingPanel>
             <atc:UniformSpacingPanel
                 Grid.Row="0"
                 Grid.Column="3"

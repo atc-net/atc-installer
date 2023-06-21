@@ -1,6 +1,9 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 // ReSharper disable StringLiteralTypo
+
+using System.Collections.ObjectModel;
+
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
@@ -182,6 +185,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         => InstallationPrerequisites.Count(x => x.CategoryType == LogCategoryType.Error);
 
     public ObservableCollectionEx<DependentServiceViewModel> DependentServices { get; } = new();
+
+    public ObservableCollectionEx<EndpointViewModel> Endpoints { get; } = new();
+
+    public ObservableCollection<EndpointViewModel> BrowserLinkEndpoints
+        => new(Endpoints.Where(x => x.EndpointType == ComponentEndpointType.BrowserLink));
 
     public int DependentServicesIssueCount
         => DependentServices.Count(x => x.RunningState != ComponentRunningState.Running);

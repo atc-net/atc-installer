@@ -47,11 +47,28 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (TryGetUshortFromApplicationSettings("HttpPort", out var httpValue))
         {
             HttpPort = httpValue;
+            if (!string.IsNullOrEmpty(HostName))
+            {
+                Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}"));
+            }
         }
 
         if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsValue))
         {
             HttpsPort = httpsValue;
+            if (!string.IsNullOrEmpty(HostName))
+            {
+                Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}"));
+            }
+        }
+
+        foreach (var endpoint in applicationOption.Endpoints)
+        {
+            Endpoints.Add(
+                new EndpointViewModel(
+                    endpoint.Name,
+                    endpoint.EndpointType,
+                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
         }
     }
 

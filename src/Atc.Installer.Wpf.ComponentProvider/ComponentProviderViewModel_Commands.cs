@@ -15,6 +15,8 @@ public partial class ComponentProviderViewModel
 
     public IRelayCommandAsync ServiceDeployAndStartCommand => new RelayCommandAsync(ServiceDeployAndStartCommandHandler, CanServiceDeployCommandHandler);
 
+    public IRelayCommand<string> ServiceEndpointBrowserLinkCommand => new RelayCommand<string>(ServiceEndpointBrowserLinkCommandHandler, CanServiceEndpointBrowserLinkCommandHandler);
+
     public virtual bool CanServiceStopCommandHandler()
         => false;
 
@@ -35,4 +37,12 @@ public partial class ComponentProviderViewModel
 
     public virtual Task ServiceDeployAndStartCommandHandler()
         => Task.CompletedTask;
+
+    private bool CanServiceEndpointBrowserLinkCommandHandler(
+        string endpoint)
+        => RunningState == ComponentRunningState.Running;
+
+    private void ServiceEndpointBrowserLinkCommandHandler(
+        string endpoint)
+        => InternetBrowserHelper.OpenUrl(new Uri(endpoint));
 }

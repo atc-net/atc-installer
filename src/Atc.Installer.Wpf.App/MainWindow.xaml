@@ -15,6 +15,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:Atc.Data.Models;assembly=Atc"
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
+    xmlns:viewModels="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ViewModels;assembly=Atc.Installer.Wpf.ComponentProvider"
     x:Name="MainWindowControl"
     Title="{Binding Path=ApplicationOptions.Title, FallbackValue='..:: Atc.Installer ::..'}"
     Width="1920"
@@ -311,7 +312,7 @@
                                             Header="Name" />
                                         <GridViewColumn Width="200" Header="Installation State">
                                             <GridViewColumn.CellTemplate>
-                                                <DataTemplate DataType="{x:Type componentProvider:DependentServiceViewModel}">
+                                                <DataTemplate DataType="{x:Type viewModels:DependentServiceViewModel}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <Ellipse
                                                             Width="20"
@@ -327,7 +328,7 @@
                                         </GridViewColumn>
                                         <GridViewColumn Width="200" Header="Running State">
                                             <GridViewColumn.CellTemplate>
-                                                <DataTemplate DataType="{x:Type componentProvider:DependentServiceViewModel}">
+                                                <DataTemplate DataType="{x:Type viewModels:DependentServiceViewModel}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <Ellipse
                                                             Width="20"

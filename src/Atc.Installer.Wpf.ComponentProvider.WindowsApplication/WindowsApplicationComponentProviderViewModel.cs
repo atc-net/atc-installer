@@ -41,6 +41,29 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         SettingsVisibility = HostingFramework == HostingFrameworkType.NativeNoSettings
             ? Visibility.Collapsed
             : Visibility.Visible;
+
+        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
+            TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
+        {
+            if (TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
+            {
+                Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpPortValue}"));
+            }
+
+            if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsPortValue))
+            {
+                Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpsPortValue}"));
+            }
+        }
+
+        foreach (var endpoint in applicationOption.Endpoints)
+        {
+            Endpoints.Add(
+                new EndpointViewModel(
+                    endpoint.Name,
+                    endpoint.EndpointType,
+                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
+        }
     }
 
     public bool IsWindowsService { get; }
@@ -474,12 +497,21 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         EnsureFolderPermissions();
 
-        if (TryGetStringFromApplicationSettings("WebProtocol", out _) &&
-            TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
+        if (TryGetStringFromApplicationSettings("WebProtocol", out _))
         {
-            await networkShellService
-                .OpenHttpPortForEveryone(httpPortValue)
-                .ConfigureAwait(false);
+            if (TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
+            {
+                await networkShellService
+                    .OpenHttpPortForEveryone(httpPortValue)
+                    .ConfigureAwait(false);
+            }
+
+            if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsPortValue))
+            {
+                await networkShellService
+                    .OpenHttpsPortForEveryone(httpsPortValue)
+                    .ConfigureAwait(false);
+            }
         }
 
         InstallationState = ComponentInstallationState.InstalledWithNewestVersion;

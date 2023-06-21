@@ -1,4 +1,4 @@
-namespace Atc.Installer.Wpf.ComponentProvider;
+namespace Atc.Installer.Wpf.ComponentProvider.ViewModels;
 
 public class DependentServiceViewModel : ViewModelBase
 {
