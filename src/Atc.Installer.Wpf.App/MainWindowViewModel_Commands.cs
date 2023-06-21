@@ -41,7 +41,10 @@ public partial class MainWindowViewModel
             return;
         }
 
-        new ApplicationSettingsDialog(new ApplicationSettingsDialogViewModel(ApplicationOptions)).ShowDialog();
+        new ApplicationSettingsDialog(
+            new ApplicationSettingsDialogViewModel(
+                ApplicationOptions,
+                installerTempDirectory)).ShowDialog();
     }
 
     private Task OpenRecentConfigurationFileCommandHandler(

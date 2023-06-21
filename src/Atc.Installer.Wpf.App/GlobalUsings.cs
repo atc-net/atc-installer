@@ -8,6 +8,7 @@ global using System.Windows;
 global using System.Windows.Controls;
 global using System.Windows.Input;
 
+global using Atc.Helpers;
 global using Atc.Installer.Integration;
 global using Atc.Installer.Integration.Azure;
 global using Atc.Installer.Integration.ElasticSearch;

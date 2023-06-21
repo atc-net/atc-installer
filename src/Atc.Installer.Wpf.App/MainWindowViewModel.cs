@@ -74,6 +74,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         IOptions<ApplicationOptions> applicationOptions)
     {
         ArgumentNullException.ThrowIfNull(applicationOptions);
+        var applicationOptionsValue = applicationOptions.Value;
 
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
         this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
@@ -81,9 +82,10 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
 
+        applicationOptionsValue = RestoreCustomAppSettingsIfNeeded(applicationOptionsValue);
         LoadRecentOpenFiles();
 
-        ApplicationOptions = new ApplicationOptionsViewModel(applicationOptions.Value);
+        ApplicationOptions = new ApplicationOptionsViewModel(applicationOptionsValue);
         AzureOptions = new AzureOptionsViewModel();
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
@@ -158,6 +160,24 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     public void StopMonitoringServices()
     {
         cancellationTokenSource?.Cancel();
+    }
+
+    private ApplicationOptions RestoreCustomAppSettingsIfNeeded(
+        ApplicationOptions applicationOptions)
+    {
+        var currentFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json"));
+        var backupFile = new FileInfo(Path.Combine(installerTempDirectory.FullName, "appsettings.custom.json"));
+        if (!currentFile.Exists ||
+            !backupFile.Exists ||
+            currentFile.LastWriteTime == backupFile.LastWriteTime)
+        {
+            return applicationOptions;
+        }
+
+        File.Copy(backupFile.FullName, currentFile.FullName, overwrite: true);
+
+        var wrapperModel = FileHelper<ApplicationOptionsWrapper>.ReadJsonFileToModel(fileInfo: backupFile)!;
+        return wrapperModel.Application;
     }
 
     private void LoadRecentOpenFiles()
