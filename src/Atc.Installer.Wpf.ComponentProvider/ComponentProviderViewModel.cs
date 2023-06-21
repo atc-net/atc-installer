@@ -1,5 +1,6 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+// ReSharper disable StringLiteralTypo
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
@@ -410,7 +411,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         LogItems.Add(LogItemFactory.CreateTrace("Backup files"));
 
         var timestamp = DateTime.Now.ToString("yyyyMMdd_hhmmss", GlobalizationConstants.EnglishCultureInfo);
-        var backupFolder = Path.Combine(InstallerTempDirectory.FullName, @$"\{ProjectName}\Backup\{Name}");
+        var backupFolder = Path.Combine(InstallerTempDirectory.FullName, @$"{ProjectName}\Backup\{Name}");
         if (!Directory.Exists(backupFolder))
         {
             Directory.CreateDirectory(backupFolder);
