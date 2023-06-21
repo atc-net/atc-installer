@@ -371,7 +371,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                     else
                     {
                         AddToInstallationPrerequisites($"Is{ServiceName}", LogCategoryType.Information, $"{ServiceName} is installed");
-                        InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+                        InstallationState = ComponentInstallationState.Installed;
                         RunningState = runningState;
                     }
 
@@ -536,7 +536,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             }
         }
 
-        InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+        InstallationState = ComponentInstallationState.Installed;
 
         if (RunningState == ComponentRunningState.NotAvailable &&
             InstalledMainFilePath is not null &&

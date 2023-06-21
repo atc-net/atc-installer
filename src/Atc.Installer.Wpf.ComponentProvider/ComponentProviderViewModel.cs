@@ -1,6 +1,7 @@
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 // ReSharper disable InvertIf
-// ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 // ReSharper disable StringLiteralTypo
+// ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
@@ -12,6 +13,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     private string? unpackedZipFolderPath;
     private string? installationFolderPath;
     private string? installedMainFilePath;
+    private string? installedVersion;
+    private string? installationVersion;
 
     public ComponentProviderViewModel()
     {
@@ -124,6 +127,26 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         protected set
         {
             installedMainFilePath = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string? InstalledVersion
+    {
+        get => installedVersion;
+        protected set
+        {
+            installedVersion = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string? InstallationVersion
+    {
+        get => installationVersion;
+        protected set
+        {
+            installationVersion = value;
             RaisePropertyChanged();
         }
     }
@@ -666,7 +689,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         {
             if (File.Exists(InstalledMainFilePath))
             {
-                InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+                InstallationState = ComponentInstallationState.Installed;
             }
 
             if (UnpackedZipFolderPath is not null)
@@ -715,18 +738,27 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         if (File.Exists(installationMainFile) &&
             File.Exists(InstalledMainFilePath))
         {
+            Version? sourceVersion = null;
             var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
-            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath);
-            if (installationMainFileVersion.FileVersion is not null &&
-                installedMainFileVersion.FileVersion is not null)
+            if (installationMainFileVersion?.FileVersion != null)
             {
-                var sourceVersion = new Version(installationMainFileVersion.FileVersion);
-                var destinationVersion = new Version(installedMainFileVersion.FileVersion);
+                sourceVersion = new Version(installationMainFileVersion.FileVersion);
+                InstallationVersion = installationMainFileVersion.FileVersion;
+            }
 
-                if (sourceVersion.IsNewerThan(destinationVersion))
-                {
-                    InstallationState = ComponentInstallationState.InstalledWithOldVersion;
-                }
+            Version? destinationVersion = null;
+            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath);
+            if (installedMainFileVersion?.FileVersion is not null)
+            {
+                destinationVersion = new Version(installedMainFileVersion.FileVersion);
+                InstalledVersion = installedMainFileVersion.FileVersion;
+            }
+
+            if (sourceVersion is not null &&
+                destinationVersion is not null &&
+                sourceVersion.IsNewerThan(destinationVersion))
+            {
+                InstallationState = ComponentInstallationState.InstalledWithOldVersion;
             }
         }
     }
@@ -739,34 +771,50 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             return;
         }
 
+        string? sourceVersion = null;
         var installationVersionFile = Path.Combine(UnpackedZipFolderPath, "version.json");
-        var installedVersionFile = Path.Combine(InstallationFolderPath, "version.json");
-        if (File.Exists(installationVersionFile) &&
-            File.Exists(installedVersionFile))
+        if (File.Exists(installationVersionFile))
         {
             var sourceDynamicJson = new DynamicJson(new FileInfo(installationVersionFile));
             var sourceValue = sourceDynamicJson.GetValue("VERSION");
+            if (sourceValue is not null)
+            {
+                sourceVersion = sourceValue.ToString();
+                InstallationVersion = sourceVersion;
+            }
+        }
+
+        string? destinationVersion = null;
+        var installedVersionFile = Path.Combine(InstallationFolderPath, "version.json");
+        if (File.Exists(installedVersionFile))
+        {
             var destinationDynamicJson = new DynamicJson(new FileInfo(installedVersionFile));
             var destinationValue = destinationDynamicJson.GetValue("VERSION");
-            if (sourceValue is not null &&
-                destinationValue is not null)
+            if (destinationValue is not null)
             {
-                if (sourceValue.ToString()! == destinationValue.ToString()!)
-                {
-                    InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
-                }
-                else
-                {
-                    var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
+                destinationVersion = destinationValue.ToString();
+                InstalledVersion = destinationVersion;
+            }
+        }
+
+        if (sourceVersion is not null &&
+            destinationVersion is not null)
+        {
+            if (sourceVersion == destinationVersion)
+            {
+                InstallationState = ComponentInstallationState.Installed;
+            }
+            else
+            {
+                var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
                     {
-                        sourceValue.ToString()!,
-                        destinationValue.ToString()!,
+                        sourceVersion,
+                        destinationVersion,
                     };
 
-                    InstallationState = destinationValue.ToString()! == sortedSet.First()
-                        ? ComponentInstallationState.InstalledWithOldVersion
-                        : ComponentInstallationState.InstalledWithNewestVersion;
-                }
+                InstallationState = destinationVersion == sortedSet.First()
+                    ? ComponentInstallationState.InstalledWithOldVersion
+                    : ComponentInstallationState.Installed;
             }
         }
     }

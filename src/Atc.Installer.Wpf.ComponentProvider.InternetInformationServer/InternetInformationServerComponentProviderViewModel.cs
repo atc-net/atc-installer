@@ -601,7 +601,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .ConfigureAwait(false);
         }
 
-        InstallationState = ComponentInstallationState.InstalledWithNewestVersion;
+        InstallationState = ComponentInstallationState.Installed;
 
         if (useAutoStart)
         {

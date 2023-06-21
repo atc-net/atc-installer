@@ -21,6 +21,6 @@ public enum ComponentInstallationState
     [Description("Installed with old version")]
     InstalledWithOldVersion,
 
-    [Description("Installed with newest version")]
-    InstalledWithNewestVersion,
+    [Description("Installed")]
+    Installed,
 }
