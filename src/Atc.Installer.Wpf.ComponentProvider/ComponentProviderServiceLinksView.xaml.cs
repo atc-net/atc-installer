@@ -1,23 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
 namespace Atc.Installer.Wpf.ComponentProvider;
+
 /// <summary>
-/// Interaction logic for ComponentProviderServiceLinksView.xaml
+/// Interaction logic for ComponentProviderServiceLinksView.
 /// </summary>
-public partial class ComponentProviderServiceLinksView : UserControl
+public partial class ComponentProviderServiceLinksView
 {
     public ComponentProviderServiceLinksView()
     {

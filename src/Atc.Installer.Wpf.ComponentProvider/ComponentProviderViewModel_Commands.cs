@@ -42,7 +42,7 @@ public partial class ComponentProviderViewModel
         string endpoint)
         => RunningState == ComponentRunningState.Running;
 
-    private void ServiceEndpointBrowserLinkCommandHandler(
+    private static void ServiceEndpointBrowserLinkCommandHandler(
         string endpoint)
         => InternetBrowserHelper.OpenUrl(new Uri(endpoint));
 }

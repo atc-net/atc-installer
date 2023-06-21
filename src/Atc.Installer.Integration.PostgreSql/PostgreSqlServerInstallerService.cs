@@ -2,6 +2,7 @@
 namespace Atc.Installer.Integration.PostgreSql;
 
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
+[SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "OK.")]
 [SuppressMessage("Major Code Smell", "S3010:Static fields should not be updated in constructors", Justification = "OK.")]
 public sealed class PostgreSqlServerInstallerService : IPostgreSqlServerInstallerService
 {

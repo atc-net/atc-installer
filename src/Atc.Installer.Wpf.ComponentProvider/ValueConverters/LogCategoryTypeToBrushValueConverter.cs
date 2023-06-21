@@ -40,7 +40,5 @@ public class LogCategoryTypeToBrushValueConverter : IValueConverter
         Type targetType,
         object parameter,
         CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
+        => LogCategoryType.Trace;
 }

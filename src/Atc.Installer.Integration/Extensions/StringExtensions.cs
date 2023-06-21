@@ -12,6 +12,7 @@ public static class StringExtensions
                value.Contains("]]", StringComparison.Ordinal);
     }
 
+    [SuppressMessage("Performance", "MA0110:Use the Regex source generator", Justification = "OK.")]
     public static IList<string> GetTemplateKeys(
         this string value)
     {
