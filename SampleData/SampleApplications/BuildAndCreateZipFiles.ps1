@@ -6,7 +6,13 @@ function BuildDotnetAndPackageProject {
     $rootPath = $PSScriptRoot;
     $projectPath = "$rootPath\Code\$projectName"
     $outputDirectory = "$projectPath\bin\Debug\net7.0\publish"
-    $zipFileLocation = "$rootPath\InstallationFiles\$projectName.zip"
+	$installationDirectory = "$rootPath\InstallationFiles"
+    $zipFileLocation = "$installationDirectory\$projectName.zip"
+
+	if (!(Test-Path -Path $installationDirectory))
+    {
+        New-Item -Force -Type Directory $installationDirectory
+	}
 
     if ($projectName -eq "HelloWorldWpf") {
         $outputDirectory = "$projectPath\bin\Debug\net7.0-windows\publish"
