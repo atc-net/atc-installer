@@ -1,6 +1,9 @@
+// ReSharper disable StringLiteralTypo
 namespace Atc.Installer.Integration.WindowsApplication.Tests;
 
 [SuppressMessage("Microsoft.Interoperability", "CA1416:ValidatePlatformCompatibility", Justification = "OK.")]
+[Trait(Traits.Category, Traits.Categories.Integration)]
+[Trait(Traits.Category, Traits.Categories.SkipWhenLiveUnitTesting)]
 public class WindowsApplicationInstallerServiceTests
 {
     [Fact]
