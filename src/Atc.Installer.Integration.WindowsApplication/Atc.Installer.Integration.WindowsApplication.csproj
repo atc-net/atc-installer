@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc" Version="2.0.310" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.1.0" />
+    <PackageReference Include="Atc" Version="2.0.313" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>
