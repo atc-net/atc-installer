@@ -84,7 +84,7 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
-        var files = await AzureStorageAccountInstallerService.Instance
+        var files = await azureStorageAccountInstallerService
             .DownloadLatestFilesByNames(
                 AzureOptions!.StorageConnectionString,
                 AzureOptions!.BlobContainerName,
@@ -100,7 +100,7 @@ public partial class MainWindowViewModel
                 continue;
             }
 
-            vm.PrepareInstallationFiles(unpackIfIfExist: true);
+            vm.PrepareInstallationFiles(unpackIfExist: true);
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
         }
 

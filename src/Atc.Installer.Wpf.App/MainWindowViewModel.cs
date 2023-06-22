@@ -8,6 +8,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
     private readonly IWindowsApplicationInstallerService waInstallerService;
+    private readonly IAzureStorageAccountInstallerService azureStorageAccountInstallerService;
     private readonly ToastNotificationManager notificationManager = new();
     private readonly DirectoryInfo installerTempDirectory = new(Path.Combine(Path.GetTempPath(), "atc-installer"));
     private DirectoryInfo? installationDirectory;
@@ -25,6 +26,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         this.esInstallerService = new ElasticSearchServerInstallerService(waInstallerService, installedAppsInstallerService);
         this.pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
+
+        this.azureStorageAccountInstallerService = new AzureStorageAccountInstallerService();
 
         this.installationDirectory = new DirectoryInfo(Path.Combine(installerTempDirectory.FullName, "InstallationFiles"));
 
@@ -73,6 +76,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
+        IAzureStorageAccountInstallerService azureStorageAccountInstallerService,
         IOptions<ApplicationOptions> applicationOptions)
     {
         ArgumentNullException.ThrowIfNull(applicationOptions);
@@ -83,6 +87,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
+        this.azureStorageAccountInstallerService = azureStorageAccountInstallerService ?? throw new ArgumentNullException(nameof(azureStorageAccountInstallerService));
 
         applicationOptionsValue = RestoreCustomAppSettingsIfNeeded(applicationOptionsValue);
         LoadRecentOpenFiles();

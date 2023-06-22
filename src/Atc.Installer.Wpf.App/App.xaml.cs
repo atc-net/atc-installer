@@ -44,6 +44,7 @@ public partial class App
         services.AddSingleton<IInternetInformationServerInstallerService, InternetInformationServerInstallerService>();
         services.AddSingleton<IPostgreSqlServerInstallerService, PostgreSqlServerInstallerService>();
         services.AddSingleton<IWindowsApplicationInstallerService, WindowsApplicationInstallerService>();
+        services.AddSingleton<IAzureStorageAccountInstallerService, AzureStorageAccountInstallerService>();
 
         services.AddSingleton<IApplicationSettingsDialogViewModel, ApplicationSettingsDialogViewModel>();
         services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();

@@ -3,24 +3,6 @@ namespace Atc.Installer.Integration.Azure;
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
 public class AzureStorageAccountInstallerService : IAzureStorageAccountInstallerService
 {
-    private static readonly object InstanceLock = new();
-    private static AzureStorageAccountInstallerService? instance;
-
-    private AzureStorageAccountInstallerService()
-    {
-    }
-
-    public static AzureStorageAccountInstallerService Instance
-    {
-        get
-        {
-            lock (InstanceLock)
-            {
-                return instance ??= new AzureStorageAccountInstallerService();
-            }
-        }
-    }
-
     public async Task<IList<FileInfo>> DownloadLatestFilesByNames(
         string storageConnectionString,
         string blobContainerName,
