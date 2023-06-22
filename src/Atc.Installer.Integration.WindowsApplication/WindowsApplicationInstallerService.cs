@@ -3,6 +3,7 @@
 namespace Atc.Installer.Integration.WindowsApplication;
 
 [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
+[SupportedOSPlatform("windows")]
 public sealed class WindowsApplicationInstallerService : IWindowsApplicationInstallerService
 {
     private readonly IInstalledAppsInstallerService iaInstallerService;
@@ -25,8 +26,7 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         try
         {
             var services = ServiceController.GetServices();
-            var service =
-                services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
             if (service is null)
             {
                 return ComponentRunningState.NotAvailable;

@@ -1,5 +1,6 @@
 namespace Atc.Installer.Integration.WindowsApplication.Tests;
 
+[SuppressMessage("Microsoft.Interoperability", "CA1416:ValidatePlatformCompatibility", Justification = "OK.")]
 public class WindowsApplicationInstallerServiceTests
 {
     [Fact]
