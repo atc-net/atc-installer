@@ -66,7 +66,8 @@ public partial class MainWindowViewModel
         => AzureOptions is not null &&
            !string.IsNullOrEmpty(AzureOptions.StorageConnectionString) &&
            !string.IsNullOrEmpty(AzureOptions.BlobContainerName) &&
-           ComponentProviders.Count != 0;
+           ComponentProviders.Count != 0 &&
+           NetworkInformationHelper.HasConnection();
 
     private async Task DownloadInstallationFilesFromAzureStorageAccountCommandHandler()
     {
