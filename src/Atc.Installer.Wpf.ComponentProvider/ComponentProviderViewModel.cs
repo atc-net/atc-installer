@@ -374,7 +374,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public void PrepareInstallationFiles(
-        bool unpackIfIfExist)
+        bool unpackIfExist)
     {
         if (InstallationFile is null ||
             !InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
@@ -390,7 +390,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         UnpackedZipFolderPath = Path.Combine(InstallerTempDirectory.FullName, @$"{ProjectName}\Unpacked\{Name}");
 
-        if (!unpackIfIfExist &&
+        if (!unpackIfExist &&
             Directory.Exists(UnpackedZipFolderPath))
         {
             return;

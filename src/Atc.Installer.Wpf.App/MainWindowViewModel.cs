@@ -449,7 +449,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         foreach (var vm in ComponentProviders)
         {
-            vm.PrepareInstallationFiles(unpackIfIfExist: false);
+            vm.PrepareInstallationFiles(unpackIfExist: false);
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
         }
 
