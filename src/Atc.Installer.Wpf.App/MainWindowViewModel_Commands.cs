@@ -60,7 +60,9 @@ public partial class MainWindowViewModel
 
     private Task OpenRecentConfigurationFileCommandHandler(
         string filePath)
-        => LoadConfigurationFile(new FileInfo(filePath), CancellationToken.None);
+        => LoadConfigurationFile(
+            new FileInfo(filePath),
+            CancellationToken.None);
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
         => AzureOptions is not null &&
