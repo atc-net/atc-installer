@@ -33,6 +33,7 @@
         <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
         <atcValueConverters:StringNullOrEmptyToVisibilityCollapsedValueConverter x:Key="StringNullOrEmptyToVisibilityCollapsedValueConverter" />
+        <atcValueConverters:StringNullOrEmptyToVisibilityVisibleValueConverter x:Key="StringNullOrEmptyToVisibilityVisibleValueConverter" />
         <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
         <valueConverters:ComponentProviderVersionCompareVisibilityVisibleValueConverter x:Key="ComponentProviderVersionCompareVisibilityVisibleValueConverter" />
@@ -56,21 +57,7 @@
                                 <MenuItem
                                     Command="{Binding Path=DataContext.OpenRecentConfigurationFileCommand, RelativeSource={RelativeSource AncestorType={x:Type Menu}}}"
                                     CommandParameter="{Binding Path=File}"
-                                    Header="{Binding Path=File}">
-                                    <MenuItem.Style>
-                                        <Style TargetType="{x:Type MenuItem}">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="{x:Type MenuItem}">
-                                                        <Border Background="{TemplateBinding Background}">
-                                                            <ContentPresenter ContentSource="Header" />
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </MenuItem.Style>
-                                </MenuItem>
+                                    Header="{Binding Path=File}" />
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
@@ -91,7 +78,8 @@
             <atc:GridEx
                 Margin="10"
                 Columns="400,10,*"
-                Rows="*">
+                Rows="*"
+                Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
 
                 <!--  Left-Content  -->
                 <atc:GridEx
@@ -374,6 +362,13 @@
 
                 </atc:GridEx>
             </atc:GridEx>
+            <Grid Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Text="Please open a configuration file" />
+            </Grid>
 
         </DockPanel>
     </atc:BusyOverlay>
