@@ -18,7 +18,7 @@
         VerticalAlignment="Top"
         Header="Browser links">
         <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
-            <ItemsControl ItemsSource="{Binding BrowserLinkEndpoints}">
+            <ItemsControl ItemsSource="{Binding Path=BrowserLinkEndpoints}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button

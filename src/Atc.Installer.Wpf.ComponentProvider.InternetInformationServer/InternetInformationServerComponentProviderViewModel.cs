@@ -1,5 +1,7 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+using System.Diagnostics.CodeAnalysis;
+
 namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
@@ -70,7 +72,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         RaisePropertyChanged(nameof(InstallationPrerequisites));
     }
 
-    [SuppressMessage("SonarRules", "S3440:Variables should not be checked against the values they're about to be assigned", Justification = "OK.")]
+    [SuppressMessage("Unknown", "S3440:RemoveThisUselessCondition", Justification = "OK.")]
     public override void CheckServiceState()
     {
         base.CheckServiceState();
@@ -111,14 +113,14 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         ArgumentNullException.ThrowIfNull(dynamicJson);
 
-        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles.JsonItems)
         {
             if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            foreach (var setting in configurationSettingsFile.JsonSettings)
+            foreach (var setting in configurationSettingsFile.Settings)
             {
                 var value = setting.Value;
                 if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
@@ -137,32 +139,37 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         ArgumentNullException.ThrowIfNull(xmlDocument);
 
-        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles.XmlItems)
         {
             if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            foreach (var setting in configurationSettingsFile.XmlSettings)
+            foreach (var setting in configurationSettingsFile.Settings)
             {
                 if (setting.Element.Equals("add", StringComparison.Ordinal) &&
                     setting.Path.EndsWith("appSettings", StringComparison.Ordinal))
                 {
                     var attributeKey = setting.Attributes.FirstOrDefault(x => x.Key == "key");
                     var attributeValue = setting.Attributes.FirstOrDefault(x => x.Key == "value");
-                    if (!string.IsNullOrEmpty(attributeKey.Value) &&
-                        !string.IsNullOrEmpty(attributeValue.Value))
+                    if (!string.IsNullOrEmpty(attributeKey?.Value?.ToString()) &&
+                        !string.IsNullOrEmpty(attributeValue?.Value?.ToString()))
                     {
-                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value);
-                        xmlDocument.SetAppSettings(attributeKey.Value, value);
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value.ToString()!);
+                        xmlDocument.SetAppSettings(attributeKey.Value.ToString()!, value);
                     }
                 }
                 else
                 {
                     foreach (var settingAttribute in setting.Attributes)
                     {
-                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value);
+                        if (settingAttribute.Value is null)
+                        {
+                            continue;
+                        }
+
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value.ToString()!);
                         xmlDocument.SetValue(setting.Path, setting.Element, settingAttribute.Key, value);
                     }
                 }

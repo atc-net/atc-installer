@@ -55,7 +55,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         DefaultApplicationSettings.Populate(defaultApplicationSettings);
         ApplicationSettings.Populate(applicationOption.ApplicationSettings);
         FolderPermissions.Populate(applicationOption.FolderPermissions);
-        ConfigurationSettingsFiles = applicationOption.ConfigurationSettingsFiles;
+        ConfigurationSettingsFiles.Populate(applicationOption.ConfigurationSettingsFiles);
         Name = applicationOption.Name;
         ComponentType = applicationOption.ComponentType;
         HostingFramework = applicationOption.HostingFramework;
@@ -84,7 +84,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public FolderPermissionsViewModel FolderPermissions { get; } = new();
 
-    public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; } = new List<ConfigurationSettingsFileOption>();
+    public ConfigurationSettingsFilesViewModel ConfigurationSettingsFiles { get; } = new();
 
     public string Name { get; }
 

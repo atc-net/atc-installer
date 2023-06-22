@@ -5,17 +5,8 @@
     xmlns:app="clr-namespace:Atc.Installer.Wpf.App"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
-    xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider;assembly=Atc.Installer.Wpf.ComponentProvider"
-    xmlns:componentProviderEs="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ElasticSearch;assembly=Atc.Installer.Wpf.ComponentProvider.ElasticSearch"
-    xmlns:componentProviderIis="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;assembly=Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
-    xmlns:componentProviderPgSql="clr-namespace:Atc.Installer.Wpf.ComponentProvider.PostgreSql;assembly=Atc.Installer.Wpf.ComponentProvider.PostgreSql"
-    xmlns:componentProviderWa="clr-namespace:Atc.Installer.Wpf.ComponentProvider.WindowsApplication;assembly=Atc.Installer.Wpf.ComponentProvider.WindowsApplication"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:dataTemplateSelectors="clr-namespace:Atc.Installer.Wpf.App.DataTemplateSelectors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:Atc.Data.Models;assembly=Atc"
-    xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
-    xmlns:viewModels="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ViewModels;assembly=Atc.Installer.Wpf.ComponentProvider"
     x:Name="MainWindowControl"
     Title="{Binding Path=ApplicationOptions.Title, Mode=OneWay, StringFormat='..:: {0} ::..', FallbackValue='..:: Atc.Installer ::..'}"
     Width="1920"
@@ -30,18 +21,10 @@
     mc:Ignorable="d">
 
     <atc:NiceWindow.Resources>
-        <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
-        <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
         <atcValueConverters:StringNullOrEmptyToVisibilityCollapsedValueConverter x:Key="StringNullOrEmptyToVisibilityCollapsedValueConverter" />
         <atcValueConverters:StringNullOrEmptyToVisibilityVisibleValueConverter x:Key="StringNullOrEmptyToVisibilityVisibleValueConverter" />
-        <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
-        <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
-        <valueConverters:ComponentProviderVersionCompareVisibilityVisibleValueConverter x:Key="ComponentProviderVersionCompareVisibilityVisibleValueConverter" />
-        <valueConverters:IntGreaterThenZeroToVisibilityVisibleValueConverter x:Key="IntGreaterThenZeroToVisibilityVisibleValueConverter" />
-        <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
     </atc:NiceWindow.Resources>
 
-    <!--  ReSharper disable Xaml.PossibleNullReferenceException  -->
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
         <DockPanel>
             <!--  Menu  -->
@@ -75,303 +58,19 @@
             </Menu>
 
             <!--  Main-Content  -->
-            <atc:GridEx
-                Margin="10"
-                Columns="400,10,*"
-                Rows="*"
-                Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
-
-                <!--  Left-Content  -->
-                <atc:GridEx
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Columns="*"
-                    Rows="Auto,*">
+            <atc:GridEx Rows="*">
+                <Grid Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
                     <TextBlock
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Margin="0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         FontSize="24"
-                        Text="{Binding Path=ProjectName, FallbackValue='- Project Name -'}" />
-                    <GroupBox
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Padding="0"
-                        Header="Components">
-                        <ListBox ItemsSource="{Binding Path=ComponentProviders}" SelectedItem="{Binding Path=SelectedComponentProvider}">
-                            <ListBox.Resources>
-                                <DataTemplate DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">
-                                    <componentProvider:ComponentProviderMenuItemView />
-                                </DataTemplate>
+                        Text="Please open a configuration file" />
+                </Grid>
 
-                                <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
-                                    <componentProvider:ComponentProviderMenuItemView />
-                                </DataTemplate>
-
-                                <DataTemplate DataType="{x:Type componentProviderPgSql:PostgreSqlServerComponentProviderViewModel}">
-                                    <componentProvider:ComponentProviderMenuItemView />
-                                </DataTemplate>
-
-                                <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                                    <componentProvider:ComponentProviderMenuItemView />
-                                </DataTemplate>
-                            </ListBox.Resources>
-                        </ListBox>
-                    </GroupBox>
-                </atc:GridEx>
-
-                <!--  Right-Content  -->
-                <atc:GridEx
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Columns="*"
-                    Rows="100,3*,10,2*">
-
-                    <!--  Right-Content-Header  -->
-                    <atc:GridEx
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Columns="*,10,350">
-                        <StackPanel Grid.Column="0" Orientation="Vertical">
-                            <TextBlock
-                                Margin="0,20,0,10"
-                                FontSize="26"
-                                Text="{Binding Path=SelectedComponentProvider.Name}" />
-                            <StackPanel Orientation="Horizontal" Visibility="{Binding Path=ComponentProviders, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                                <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider.InstalledVersion, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                                    <TextBlock FontSize="18" Text="Version" />
-                                    <TextBlock
-                                        Margin="10,0,0,0"
-                                        FontSize="18"
-                                        Text="{Binding Path=SelectedComponentProvider.InstalledVersion}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider, Converter={StaticResource ComponentProviderVersionCompareVisibilityVisibleValueConverter}}">
-                                    <TextBlock
-                                        Margin="20,0,0,0"
-                                        FontSize="18"
-                                        Foreground="Gold"
-                                        Text="New version is found" />
-                                    <TextBlock
-                                        Margin="10,0,0,0"
-                                        FontSize="18"
-                                        Foreground="Gold"
-                                        Text="{Binding Path=SelectedComponentProvider.InstallationVersion}" />
-                                </StackPanel>
-                            </StackPanel>
-                        </StackPanel>
-                        <atc:ToastNotificationArea
-                            x:Name="ToastNotificationArea"
-                            Grid.Column="2"
-                            MaxItems="1"
-                            Position="TopRight" />
-                    </atc:GridEx>
-
-                    <!--  Right-Content-ContentControls  -->
-                    <ScrollViewer
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        HorizontalScrollBarVisibility="Auto"
-                        VerticalScrollBarVisibility="Auto">
-                        <ContentControl Content="{Binding Path=SelectedComponentProvider}">
-                            <ContentControl.Resources>
-                                <DataTemplate x:Key="DefaultTemplate">
-                                    <TextBlock
-                                        Margin="0,-200,0,0"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        FontSize="26"
-                                        Text="Please open a configuration file" />
-                                </DataTemplate>
-
-                                <DataTemplate x:Key="ElasticSearchServerTemplate" DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">
-                                    <componentProviderEs:ElasticSearchServerComponentProviderView />
-                                </DataTemplate>
-
-                                <DataTemplate x:Key="InternetInformationServerTemplate" DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
-                                    <componentProviderIis:InternetInformationServerComponentProviderView />
-                                </DataTemplate>
-
-                                <DataTemplate x:Key="PostgreSqlServerTemplate" DataType="{x:Type componentProviderPgSql:PostgreSqlServerComponentProviderViewModel}">
-                                    <componentProviderPgSql:PostgreSqlServerComponentProviderView />
-                                </DataTemplate>
-
-                                <DataTemplate x:Key="WindowsApplicationTemplate" DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                                    <componentProviderWa:WindowsApplicationComponentProviderView />
-                                </DataTemplate>
-
-                                <dataTemplateSelectors:ComponentProviderTemplateSelector
-                                    x:Key="ComponentProviderTemplateSelector"
-                                    DefaultTemplate="{StaticResource DefaultTemplate}"
-                                    ElasticSearchServerTemplate="{StaticResource ElasticSearchServerTemplate}"
-                                    InternetInformationServerTemplate="{StaticResource InternetInformationServerTemplate}"
-                                    PostgreSqlServerTemplate="{StaticResource PostgreSqlServerTemplate}"
-                                    WindowsApplicationTemplate="{StaticResource WindowsApplicationTemplate}" />
-                            </ContentControl.Resources>
-
-                            <ContentControl.ContentTemplateSelector>
-                                <StaticResource ResourceKey="ComponentProviderTemplateSelector" />
-                            </ContentControl.ContentTemplateSelector>
-                        </ContentControl>
-                    </ScrollViewer>
-
-                    <!--  Right-Content-Logs/Prerequisites/DependentServices  -->
-                    <TabControl
-                        Grid.Row="3"
-                        Grid.Column="0"
-                        atc:TabControlHelper.Underlined="SelectedTabItem"
-                        BorderThickness="0"
-                        Visibility="{Binding Path=ComponentProviders, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                        <TabItem Header="Logs">
-                            <ListView Margin="0,10,0,0" ItemsSource="{Binding Path=SelectedComponentProvider.LogItems}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn
-                                            Width="100"
-                                            DisplayMemberBinding="{Binding Path=TimeStamp, StringFormat='HH:mm:ss fff'}"
-                                            Header="Timestamp" />
-                                        <GridViewColumn Width="80" Header="Severity">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate DataType="{x:Type models:LogItem}">
-                                                    <Ellipse
-                                                        Width="20"
-                                                        Height="20"
-                                                        Fill="{Binding Path=Severity, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}"
-                                                        ToolTip="{Binding Path=Severity}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn
-                                            Width="500"
-                                            DisplayMemberBinding="{Binding Path=Message}"
-                                            Header="Message" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </TabItem>
-                        <TabItem x:Name="NamePrerequisites">
-                            <TabItem.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Prerequisites" />
-                                        <Grid
-                                            Width="20"
-                                            Height="20"
-                                            Margin="5,0,0,0"
-                                            Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.InstallationPrerequisiteIssueCount, Converter={StaticResource IntGreaterThenZeroToVisibilityVisibleValueConverter}}">
-                                            <Ellipse Fill="Red" />
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                FontFamily="Arial"
-                                                FontSize="14"
-                                                Foreground="White"
-                                                Text="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.InstallationPrerequisiteIssueCount, FallbackValue=33}"
-                                                TextAlignment="Center" />
-                                        </Grid>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </TabItem.HeaderTemplate>
-                            <ListView Margin="0,10,0,0" ItemsSource="{Binding Path=SelectedComponentProvider.InstallationPrerequisites}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn Width="80" Header="State">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate DataType="{x:Type viewModels:InstallationPrerequisiteViewModel}">
-                                                    <Ellipse
-                                                        Width="20"
-                                                        Height="20"
-                                                        Fill="{Binding Path=CategoryType, Converter={StaticResource LogCategoryTypeToBrushValueConverter}}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn
-                                            Width="500"
-                                            DisplayMemberBinding="{Binding Path=Message}"
-                                            Header="Message" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </TabItem>
-                        <TabItem x:Name="NameDependentServices">
-                            <TabItem.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Dependent Services" />
-                                        <Grid
-                                            Width="20"
-                                            Height="20"
-                                            Margin="5,0,0,0"
-                                            Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.DependentServicesIssueCount, Converter={StaticResource IntGreaterThenZeroToVisibilityVisibleValueConverter}}">
-                                            <Ellipse Fill="Red" />
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                FontFamily="Arial"
-                                                FontSize="14"
-                                                Foreground="White"
-                                                Text="{Binding ElementName=NameDependentServices, Path=DataContext.SelectedComponentProvider.DependentServicesIssueCount, FallbackValue=3}"
-                                                TextAlignment="Center" />
-                                        </Grid>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </TabItem.HeaderTemplate>
-                            <ListView Margin="0,10,0,0" ItemsSource="{Binding Path=SelectedComponentProvider.DependentServices}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn
-                                            Width="300"
-                                            DisplayMemberBinding="{Binding Path=Name}"
-                                            Header="Name" />
-                                        <GridViewColumn Width="200" Header="Installation State">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate DataType="{x:Type viewModels:DependentServiceViewModel}">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Ellipse
-                                                            Width="20"
-                                                            Height="20"
-                                                            Fill="{Binding Path=InstallationState, Converter={StaticResource ComponentInstallationStateToBrushValueConverter}}" />
-                                                        <TextBlock
-                                                            Margin="5,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Text="{Binding Path=InstallationState, Converter={StaticResource EnumDescriptionToStringValueConverter}}" />
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Width="200" Header="Running State">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate DataType="{x:Type viewModels:DependentServiceViewModel}">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Ellipse
-                                                            Width="20"
-                                                            Height="20"
-                                                            Fill="{Binding Path=RunningState, Converter={StaticResource ComponentRunningStateToBrushValueConverter}}" />
-                                                        <TextBlock
-                                                            Margin="5,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Text="{Binding Path=RunningState, Converter={StaticResource EnumDescriptionToStringValueConverter}}" />
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </TabItem>
-                    </TabControl>
-
-                </atc:GridEx>
+                <app:MainWindowProjectContent Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}" />
             </atc:GridEx>
-            <Grid Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="24"
-                    Text="Please open a configuration file" />
-            </Grid>
 
         </DockPanel>
     </atc:BusyOverlay>
-    <!--  ReSharper restore Xaml.PossibleNullReferenceException  -->
 
 </atc:NiceWindow>

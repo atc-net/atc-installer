@@ -2,16 +2,93 @@
     x:Class="Atc.Installer.Wpf.ComponentProvider.Controls.ConfigurationSettingsFilesView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ViewModels"
     d:DataContext="{d:DesignInstance Type=controls:ConfigurationSettingsFilesViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
 
     <Grid>
-        <TextBlock Foreground="Yellow" Text="Not implement yes" />
+        <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
+
+            <ItemsControl ItemsSource="{Binding Path=JsonItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <atc:LabelTextInfo
+                                HideAreas="All"
+                                LabelText="File"
+                                Style="{DynamicResource AtcApps.Styles.LabelTextInfo}"
+                                Text="{Binding Path=FileName}" />
+                            <ListView ItemsSource="{Binding Path=Settings}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn
+                                            Width="200"
+                                            DisplayMemberBinding="{Binding Path=Key}"
+                                            Header="Key" />
+                                        <GridViewColumn
+                                            Width="200"
+                                            DisplayMemberBinding="{Binding Path=Value}"
+                                            Header="Value" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl ItemsSource="{Binding Path=XmlItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <atc:LabelTextInfo
+                                HideAreas="All"
+                                LabelText="File"
+                                Style="{DynamicResource AtcApps.Styles.LabelTextInfo}"
+                                Text="{Binding Path=FileName}" />
+                            <ListView ItemsSource="{Binding Path=Settings}">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn
+                                            Width="180"
+                                            DisplayMemberBinding="{Binding Path=Path}"
+                                            Header="Path" />
+                                        <GridViewColumn
+                                            Width="100"
+                                            DisplayMemberBinding="{Binding Path=Element}"
+                                            Header="Element" />
+                                        <GridViewColumn Width="300" Header="Attributes">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ItemsControl d:DataContext="{d:DesignInstance Type=viewModels:XmlElementViewModel}" ItemsSource="{Binding Path=Attributes}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Path=Key}" />
+                                                                    <TextBlock Text="=" />
+                                                                    <TextBlock Text="{Binding Path=Value}" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </atc:UniformSpacingPanel>
     </Grid>
 
 </UserControl>

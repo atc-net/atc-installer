@@ -9,9 +9,9 @@ public class ApplicationSettingsViewModel : ViewModelBase
     {
         ArgumentNullException.ThrowIfNull(applicationSettings);
 
-        Items.SuppressOnChangedNotification = true;
-
         Items.Clear();
+
+        Items.SuppressOnChangedNotification = true;
 
         foreach (var applicationSetting in applicationSettings)
         {

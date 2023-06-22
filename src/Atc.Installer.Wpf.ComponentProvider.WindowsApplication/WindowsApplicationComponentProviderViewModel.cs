@@ -217,14 +217,14 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         ArgumentNullException.ThrowIfNull(dynamicJson);
 
-        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles.JsonItems)
         {
             if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            foreach (var setting in configurationSettingsFile.JsonSettings)
+            foreach (var setting in configurationSettingsFile.Settings)
             {
                 var value = setting.Value;
                 if (value is JsonElement { ValueKind: JsonValueKind.String } jsonElement)
@@ -243,32 +243,37 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         ArgumentNullException.ThrowIfNull(xmlDocument);
 
-        foreach (var configurationSettingsFile in ConfigurationSettingsFiles)
+        foreach (var configurationSettingsFile in ConfigurationSettingsFiles.XmlItems)
         {
             if (!configurationSettingsFile.FileName.Equals(fileName, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            foreach (var setting in configurationSettingsFile.XmlSettings)
+            foreach (var setting in configurationSettingsFile.Settings)
             {
                 if (setting.Element.Equals("add", StringComparison.Ordinal) &&
                     setting.Path.EndsWith("appSettings", StringComparison.Ordinal))
                 {
                     var attributeKey = setting.Attributes.FirstOrDefault(x => x.Key == "key");
                     var attributeValue = setting.Attributes.FirstOrDefault(x => x.Key == "value");
-                    if (!string.IsNullOrEmpty(attributeKey.Value) &&
-                        !string.IsNullOrEmpty(attributeValue.Value))
+                    if (!string.IsNullOrEmpty(attributeKey?.Value?.ToString()) &&
+                        !string.IsNullOrEmpty(attributeValue?.Value?.ToString()))
                     {
-                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value);
-                        xmlDocument.SetAppSettings(attributeKey.Value, value);
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value.ToString()!);
+                        xmlDocument.SetAppSettings(attributeKey.Value.ToString()!, value);
                     }
                 }
                 else
                 {
                     foreach (var settingAttribute in setting.Attributes)
                     {
-                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value);
+                        if (settingAttribute.Value is null)
+                        {
+                            continue;
+                        }
+
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value.ToString()!);
                         xmlDocument.SetValue(setting.Path, setting.Element, settingAttribute.Key, value);
                     }
                 }

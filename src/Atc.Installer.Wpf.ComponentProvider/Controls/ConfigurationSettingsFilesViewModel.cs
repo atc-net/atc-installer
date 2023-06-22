@@ -1,3 +1,4 @@
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
 public class ConfigurationSettingsFilesViewModel : ViewModelBase
@@ -11,26 +12,29 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     {
         ArgumentNullException.ThrowIfNull(configurationSettingsFiles);
 
-        JsonItems.SuppressOnChangedNotification = true;
-        XmlItems.SuppressOnChangedNotification = true;
-
         JsonItems.Clear();
         XmlItems.Clear();
+
+        JsonItems.SuppressOnChangedNotification = true;
+        XmlItems.SuppressOnChangedNotification = true;
 
         foreach (var configurationSettingsFile in configurationSettingsFiles)
         {
             if (configurationSettingsFile.JsonSettings.Any())
             {
-                // TODO: Implement
+                JsonItems.Add(new ConfigurationSettingsJsonFileViewModel(configurationSettingsFile));
             }
 
             if (configurationSettingsFile.XmlSettings.Any())
             {
-                // TODO: Implement
+                XmlItems.Add(new ConfigurationSettingsXmlFileViewModel(configurationSettingsFile));
             }
         }
 
         JsonItems.SuppressOnChangedNotification = false;
         XmlItems.SuppressOnChangedNotification = false;
     }
+
+    public override string ToString()
+        => $"{nameof(JsonItems)}.Count: {JsonItems?.Count}, {nameof(XmlItems)}.Count: {XmlItems?.Count}";
 }
