@@ -73,11 +73,7 @@ public partial class MainWindowViewModel
             return;
         }
 
-        var componentNames = ComponentProviders
-            .Select(x => x.Name)
-            .ToArray();
-
-        if (!componentNames.Any())
+        if (!ComponentProviders.Any())
         {
             return;
         }
@@ -89,7 +85,7 @@ public partial class MainWindowViewModel
                 AzureOptions!.StorageConnectionString,
                 AzureOptions!.BlobContainerName,
                 installationDirectory!.FullName,
-                componentNames)
+                GetComponentsWithInstallationFileContentHash())
             .ConfigureAwait(true);
 
         foreach (var vm in ComponentProviders)
@@ -109,4 +105,43 @@ public partial class MainWindowViewModel
 
     private static void OpenApplicationAboutCommandHandler()
         => new AboutBoxDialog().ShowDialog();
+
+    private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
+    {
+        var components = new List<(string ComponentName, string? ContentHash)>();
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.InstallationFile is null)
+            {
+                components.Add((vm.Name, ContentHash: null));
+            }
+            else
+            {
+                var existingInstallationFileInfo =
+                    new FileInfo(Path.Combine(vm.InstallationDirectory.FullName, vm.InstallationFile));
+                if (existingInstallationFileInfo.Exists)
+                {
+                    var calculateMd5 = CalculateMd5(existingInstallationFileInfo);
+                    components.Add((vm.Name, ContentHash: calculateMd5));
+                }
+                else
+                {
+                    components.Add((vm.Name, ContentHash: null));
+                }
+            }
+        }
+
+        return components;
+    }
+
+    public static string CalculateMd5(
+        FileInfo file)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+
+        using var md5 = MD5.Create();
+        using var stream = File.OpenRead(file.FullName);
+        var hash = md5.ComputeHash(stream);
+        return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
+    }
 }

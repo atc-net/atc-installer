@@ -6,5 +6,5 @@ public interface IAzureStorageAccountInstallerService
         string storageConnectionString,
         string blobContainerName,
         string downloadFolder,
-        string[] componentNames);
+        IReadOnlyList<(string ComponentName, string? ContentHash)> components);
 }

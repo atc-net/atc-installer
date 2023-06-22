@@ -3,6 +3,7 @@ global using System.ComponentModel.DataAnnotations;
 global using System.Diagnostics.CodeAnalysis;
 global using System.IO;
 global using System.Reflection;
+global using System.Security.Cryptography;
 global using System.Text.Json;
 global using System.Windows;
 global using System.Windows.Controls;
