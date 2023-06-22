@@ -6,7 +6,10 @@ namespace Atc.Installer.Wpf.ComponentProvider.PostgreSql;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "OK.")]
 public partial class PostgreSqlServerComponentProviderViewModel
 {
-    public IRelayCommandAsync TestConnectionCommand => new RelayCommandAsync(TestConnectionCommandHandler, CanTestConnectionCommandHandler);
+    public IRelayCommandAsync TestConnectionCommand
+        => new RelayCommandAsync(
+            TestConnectionCommandHandler,
+            CanTestConnectionCommandHandler);
 
     private bool CanTestConnectionCommandHandler()
         => RunningState == ComponentRunningState.Running &&

@@ -6,7 +6,10 @@ namespace Atc.Installer.Wpf.ComponentProvider.ElasticSearch;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "OK.")]
 public partial class ElasticSearchServerComponentProviderViewModel
 {
-    public IRelayCommandAsync TestConnectionCommand => new RelayCommandAsync(TestConnectionCommandHandler, CanTestConnectionCommandHandler);
+    public IRelayCommandAsync TestConnectionCommand
+        => new RelayCommandAsync(
+            TestConnectionCommandHandler,
+            CanTestConnectionCommandHandler);
 
     private bool CanTestConnectionCommandHandler()
         => RunningState == ComponentRunningState.Running &&

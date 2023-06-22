@@ -6,15 +6,26 @@ namespace Atc.Installer.Wpf.App;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "OK.")]
 public partial class MainWindowViewModel
 {
-    public IRelayCommandAsync OpenConfigurationFileCommand => new RelayCommandAsync(OpenConfigurationFileCommandHandler);
+    public IRelayCommandAsync OpenConfigurationFileCommand
+        => new RelayCommandAsync(
+            OpenConfigurationFileCommandHandler);
 
-    public IRelayCommand OpenApplicationSettingsCommand => new RelayCommand(OpenApplicationSettingsCommandHandler);
+    public IRelayCommand OpenApplicationSettingsCommand
+        => new RelayCommand(
+            OpenApplicationSettingsCommandHandler);
 
-    public IRelayCommandAsync<string> OpenRecentConfigurationFileCommand => new RelayCommandAsync<string>(OpenRecentConfigurationFileCommandHandler);
+    public IRelayCommandAsync<string> OpenRecentConfigurationFileCommand
+        => new RelayCommandAsync<string>(
+            OpenRecentConfigurationFileCommandHandler);
 
-    public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand => new RelayCommandAsync(DownloadInstallationFilesFromAzureStorageAccountCommandHandler, CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
+    public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand
+        => new RelayCommandAsync(
+            DownloadInstallationFilesFromAzureStorageAccountCommandHandler,
+            CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
-    public static IRelayCommand OpenApplicationAboutCommand => new RelayCommand(OpenApplicationAboutCommandHandler);
+    public static IRelayCommand OpenApplicationAboutCommand
+        => new RelayCommand(
+            OpenApplicationAboutCommandHandler);
 
     private async Task OpenConfigurationFileCommandHandler()
     {

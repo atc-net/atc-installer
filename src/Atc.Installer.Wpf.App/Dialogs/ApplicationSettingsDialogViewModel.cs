@@ -4,7 +4,9 @@ public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSet
 {
     private readonly DirectoryInfo installerTempDirectory;
 
-    public IRelayCommand<NiceWindow> OkCommand => new RelayCommand<NiceWindow>(OkCommandCommandHandler);
+    public IRelayCommand<NiceWindow> OkCommand
+        => new RelayCommand<NiceWindow>(
+            OkCommandCommandHandler);
 
     public ApplicationSettingsDialogViewModel(
         ApplicationOptionsViewModel applicationOptionsViewModel,

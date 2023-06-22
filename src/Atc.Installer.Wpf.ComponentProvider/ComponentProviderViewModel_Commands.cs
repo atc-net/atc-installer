@@ -7,15 +7,30 @@ namespace Atc.Installer.Wpf.ComponentProvider;
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
 public partial class ComponentProviderViewModel
 {
-    public IRelayCommandAsync ServiceStopCommand => new RelayCommandAsync(ServiceStopCommandHandler, CanServiceStopCommandHandler);
+    public IRelayCommandAsync ServiceStopCommand
+        => new RelayCommandAsync(
+            ServiceStopCommandHandler,
+            CanServiceStopCommandHandler);
 
-    public IRelayCommandAsync ServiceStartCommand => new RelayCommandAsync(ServiceStartCommandHandler, CanServiceStartCommandHandler);
+    public IRelayCommandAsync ServiceStartCommand
+        => new RelayCommandAsync(
+            ServiceStartCommandHandler,
+            CanServiceStartCommandHandler);
 
-    public IRelayCommandAsync ServiceDeployCommand => new RelayCommandAsync(ServiceDeployCommandHandler, CanServiceDeployCommandHandler);
+    public IRelayCommandAsync ServiceDeployCommand
+        => new RelayCommandAsync(
+            ServiceDeployCommandHandler,
+            CanServiceDeployCommandHandler);
 
-    public IRelayCommandAsync ServiceDeployAndStartCommand => new RelayCommandAsync(ServiceDeployAndStartCommandHandler, CanServiceDeployCommandHandler);
+    public IRelayCommandAsync ServiceDeployAndStartCommand
+        => new RelayCommandAsync(
+            ServiceDeployAndStartCommandHandler,
+            CanServiceDeployCommandHandler);
 
-    public IRelayCommand<string> ServiceEndpointBrowserLinkCommand => new RelayCommand<string>(ServiceEndpointBrowserLinkCommandHandler, CanServiceEndpointBrowserLinkCommandHandler);
+    public IRelayCommand<string> ServiceEndpointBrowserLinkCommand
+        => new RelayCommand<string>(
+            ServiceEndpointBrowserLinkCommandHandler,
+            CanServiceEndpointBrowserLinkCommandHandler);
 
     public virtual bool CanServiceStopCommandHandler()
         => false;
