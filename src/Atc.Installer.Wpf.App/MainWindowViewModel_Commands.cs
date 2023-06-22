@@ -47,11 +47,6 @@ public partial class MainWindowViewModel
 
     private void OpenApplicationSettingsCommandHandler()
     {
-        if (ApplicationOptions is null)
-        {
-            return;
-        }
-
         new ApplicationSettingsDialog(
             new ApplicationSettingsDialogViewModel(
                 ApplicationOptions,
