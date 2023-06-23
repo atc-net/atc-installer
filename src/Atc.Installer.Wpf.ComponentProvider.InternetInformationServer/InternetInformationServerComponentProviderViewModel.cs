@@ -620,6 +620,12 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 ? LogItemFactory.CreateInformation("Website is started")
                 : LogItemFactory.CreateWarning("Website is not started"));
         }
+        else
+        {
+            await iisInstallerService
+                .StopApplicationPool(Name)
+                .ConfigureAwait(true);
+        }
     }
 
     private async Task ServiceDeployWebsiteStart()
