@@ -41,6 +41,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "setup", "setup", "{15976B8D
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Atc.Installer", "setup\Atc.Installer\Atc.Installer.vdproj", "{0EE66B03-5312-4B27-A3B9-81EB87E2DB93}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{FB317626-02FC-447B-9C67-92C5CDE13C50}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

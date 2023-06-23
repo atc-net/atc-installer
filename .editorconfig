@@ -511,12 +511,12 @@ dotnet_diagnostic.S1135.severity = suggestion       # https://github.com/atc-net
 ##########################################
 [*.{cs,csx,cake}]
 
-
 dotnet_diagnostic.CA1040.severity = none            # Avoid empty interface
 dotnet_diagnostic.CA1724.severity = none            # The type name App conflicts in whole or in part with the namespace name
 dotnet_diagnostic.CA5351.severity = none            # Do Not Use Broken Cryptographic Algorithms - Its ok, only using to calculate a file-hash
 
-dotnet_diagnostic.SCS0006.severity = none           # Do Not Use Broken Cryptographic Algorithms - Its ok, only using to calculate a file-hash
+dotnet_diagnostic.IDE0057.severity = none           # csharp_style_prefer_range_operator
+dotnet_diagnostic.IDE0079.severity = none           # dotnet_remove_unnecessary_suppression_exclusions
 
 dotnet_diagnostic.MA0134.severity = none            # Observe result of async calls
 
@@ -524,3 +524,5 @@ dotnet_diagnostic.S3267.severity = none            	# Loops should be simplified
 dotnet_diagnostic.S4487.severity = none            	# Remove this unread private field
 dotnet_diagnostic.S6602.severity = none            	# "Find" method should be used instead of the "FirstOrDefault"
 dotnet_diagnostic.S6605.severity = none             # Collection-specific "Exists" method should be used instead of the "Any"
+
+dotnet_diagnostic.SCS0006.severity = none           # Do Not Use Broken Cryptographic Algorithms - Its ok, only using to calculate a file-hash
