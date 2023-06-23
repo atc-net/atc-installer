@@ -145,7 +145,7 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         ArgumentNullException.ThrowIfNull(applicationFile);
 
         var applicationName = applicationFile.Name.Substring(
-            0,
+            startIndex: 0,
             applicationFile.Name.Length - applicationFile.Extension.Length);
         return GetApplicationState(applicationName);
     }
@@ -187,7 +187,7 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         ArgumentNullException.ThrowIfNull(applicationFile);
 
         var applicationName = applicationFile.Name.Substring(
-            0,
+            startIndex: 0,
             applicationFile.Name.Length - applicationFile.Extension.Length);
         return StopApplication(applicationName, timeoutInSeconds);
     }

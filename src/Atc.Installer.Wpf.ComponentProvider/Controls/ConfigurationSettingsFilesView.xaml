@@ -32,7 +32,7 @@
                                             DisplayMemberBinding="{Binding Path=Key}"
                                             Header="Key" />
                                         <GridViewColumn
-                                            Width="200"
+                                            Width="500"
                                             DisplayMemberBinding="{Binding Path=Value}"
                                             Header="Value" />
                                     </GridView>
@@ -63,7 +63,7 @@
                                             Width="100"
                                             DisplayMemberBinding="{Binding Path=Element}"
                                             Header="Element" />
-                                        <GridViewColumn Width="300" Header="Attributes">
+                                        <GridViewColumn Width="Auto" Header="Attributes">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ItemsControl d:DataContext="{d:DesignInstance Type=viewModels:XmlElementViewModel}" ItemsSource="{Binding Path=Attributes}">

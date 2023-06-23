@@ -25,7 +25,7 @@
     </UserControl.Resources>
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
-        <atc:GridEx Columns="50,200,50,600" Rows="Auto">
+        <atc:GridEx Columns="50,200,50,*" Rows="Auto">
             <atc:UniformSpacingPanel
                 Grid.Row="0"
                 Grid.Column="1"

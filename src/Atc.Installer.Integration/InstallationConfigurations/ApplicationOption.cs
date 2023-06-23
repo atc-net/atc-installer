@@ -10,7 +10,7 @@ public class ApplicationOption
 
     public HostingFrameworkType HostingFramework { get; set; }
 
-    public string InstallationFile { get; set; } = string.Empty;
+    public string? InstallationFile { get; set; }
 
     public string InstallationPath { get; set; } = string.Empty;
 

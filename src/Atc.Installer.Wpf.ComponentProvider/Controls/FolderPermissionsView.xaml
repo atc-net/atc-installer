@@ -22,7 +22,7 @@
                         DisplayMemberBinding="{Binding Path=FileSystemRights}"
                         Header="Value" />
                     <GridViewColumn
-                        Width="200"
+                        Width="Auto"
                         DisplayMemberBinding="{Binding Path=Folder}"
                         Header="Value" />
                 </GridView>
