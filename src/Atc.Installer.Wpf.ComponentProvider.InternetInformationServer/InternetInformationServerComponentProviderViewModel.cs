@@ -1,7 +1,5 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-using System.Diagnostics.CodeAnalysis;
-
 namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
@@ -626,6 +624,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .StopApplicationPool(Name)
                 .ConfigureAwait(true);
         }
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
     }
 
     private async Task ServiceDeployWebsiteStart()

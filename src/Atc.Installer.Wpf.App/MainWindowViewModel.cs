@@ -96,6 +96,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         AzureOptions = new AzureOptionsViewModel();
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
+        Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
     }
 
     public ApplicationOptionsViewModel ApplicationOptions { get; init; }
@@ -139,6 +140,10 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 obj.Message),
             areaName: "ToastNotificationArea");
     }
+
+    private void HandleRefreshSelectedComponentProviderMessage(
+        RefreshSelectedComponentProviderMessage obj)
+        => RaisePropertyChanged(nameof(SelectedComponentProvider));
 
     private void StartMonitoringServices()
     {

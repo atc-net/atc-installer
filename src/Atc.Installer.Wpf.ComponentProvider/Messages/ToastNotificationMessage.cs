@@ -1,6 +1,6 @@
 namespace Atc.Installer.Wpf.ComponentProvider.Messages;
 
-public class ToastNotificationMessage
+public class ToastNotificationMessage : MessageBase
 {
     public ToastNotificationMessage(
         ToastNotificationType toastNotificationType,

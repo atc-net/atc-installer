@@ -626,6 +626,27 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         return value;
     }
 
+    protected void WorkOnAnalyzeAndUpdateStatesForVersion()
+    {
+        if (UnpackedZipFolderPath is not null)
+        {
+            InstallationVersion = null;
+            InstalledVersion = null;
+
+            if (ComponentType == ComponentType.InternetInformationService &&
+                HostingFramework == HostingFrameworkType.NodeJs)
+            {
+                WorkOnAnalyzeAndUpdateStatesForNodeJsVersion();
+            }
+            else
+            {
+                WorkOnAnalyzeAndUpdateStatesForDotNetVersion();
+            }
+
+            Messenger.Default.Send(new RefreshSelectedComponentProviderMessage());
+        }
+    }
+
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
 
@@ -718,18 +739,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
                 InstallationState = ComponentInstallationState.Installed;
             }
 
-            if (UnpackedZipFolderPath is not null)
-            {
-                if (ComponentType == ComponentType.InternetInformationService &&
-                    HostingFramework == HostingFrameworkType.NodeJs)
-                {
-                    WorkOnAnalyzeAndUpdateStatesForNodeJsVersion();
-                }
-                else
-                {
-                    WorkOnAnalyzeAndUpdateStatesForDotNet();
-                }
-            }
+            WorkOnAnalyzeAndUpdateStatesForVersion();
         }
         else
         {
@@ -747,7 +757,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
     }
 
-    private void WorkOnAnalyzeAndUpdateStatesForDotNet()
+    private void WorkOnAnalyzeAndUpdateStatesForDotNetVersion()
     {
         if (UnpackedZipFolderPath is null ||
             InstalledMainFilePath is null)

@@ -569,6 +569,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 ? LogItemFactory.CreateInformation("Service is started")
                 : LogItemFactory.CreateWarning("Service is not started"));
         }
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
     }
 
     private async Task ServiceDeployWindowServiceStart()
