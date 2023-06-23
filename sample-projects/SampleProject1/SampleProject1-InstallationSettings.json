@@ -1,0 +1,388 @@
+{
+  "Name": "SampleProject1",
+  "Azure": {
+      "StorageConnectionString": "",
+      "BlobContainerName": "deployment-files"
+  },
+  "DefaultApplicationSettings": {
+      "WebProtocol": "https",
+      "HostName": "sampleproject1.mycompany.com",
+      "UserName": "myUserName",
+      "Password": "mySecret",
+      "ElasticBaseEndpoint": "http://sampleproject1.mycompany.com:9200",
+      "ElasticUserName": "elastic",
+      "ElasticPassword": "elastic-secret",
+      "FileLogPath": "C:\\SampleProject1\\Logs",
+      "FileLogRollingInterval": "Day"
+  },
+  "Applications": [
+      {
+          "Name": "Network List Service",
+          "ServiceName": "netprofm",
+          "ComponentType": "WindowsService",
+          "HostingFramework": "NativeNoSettings",
+          "InstallationFile": "",
+          "InstallationPath": ".",
+          "DependentComponents": [],
+          "DependentServices": [],
+          "ApplicationSettings": {}
+      },
+      {
+          "Name": "PostgreSQL",
+          "ComponentType": "PostgreSQLServer",
+          "HostingFramework": "Native",
+          "InstallationFile": "postgresql-15.3-2-windows-x64-binaries.zip",
+          "InstallationPath": ".",
+          "DependentComponents": [],
+          "DependentServices": [],
+          "ApplicationSettings": {
+              "HostName": "[[HostName]]",
+              "HostPort": 5432,
+              "Database": "sampleproject1",
+              "UserName": "myAdminUserName",
+              "Password": "mysecret"
+          }
+      },
+      {
+          "Name": "Elastic Search",
+          "ComponentType": "ElasticSearchServer",
+          "HostingFramework": "Native",
+          "InstallationFile": "elasticsearch-8.8.1-windows-x86_64.zip",
+          "InstallationPath": ".",
+          "DependentComponents": [
+              "Java"
+          ],
+          "DependentServices": [],
+          "ApplicationSettings": {
+              "WebProtocol": "http",
+              "HostName": "[[HostName]]",
+              "HostPort": 9200,
+              "UserName": "[[ElasticUserName]]",
+              "Password": "[[ElasticPassword]]",
+              "Index": ""
+          }
+      },
+      {
+          "Name": "MyCompany.SampleProject1.Backend1.Api",
+          "ComponentType": "InternetInformationService",
+          "HostingFramework": "DotNet7",
+          "InstallationFile": "MyCompany.SampleProject1.Backend1.Api.zip",
+          "InstallationPath": ".\\MyCompany.SampleProject1.Backend1.Api",
+          "DependentComponents": [
+              "WebSockets"
+          ],
+          "DependentServices": [
+              "Elastic Search"
+          ],
+          "ApplicationSettings": {
+              "HttpPort": 6152,
+              "HttpsPort": 7152,
+              "SwaggerEnabled": true
+          },
+          "FolderPermissions": [
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": "[[FileLogPath]]"
+              },
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": ".\\opc"
+              }
+          ],
+          "ConfigurationSettingsFiles": [
+              {
+                  "FileName": "appsettings.json",
+                  "JsonSettings": {
+                      "Serilog.FileLogPath": "[[FileLogPath]]",
+                      "Serilog.FileLogRollingInterval": "[[FileLogRollingInterval]]",
+                      "ElasticConfiguration.Uri": "[[ElasticBaseEndpoint]]",
+                      "ElasticConfiguration.UserName": "[[ElasticUserName]]",
+                      "ElasticConfiguration.Password": "[[ElasticPassword]]"
+                  }
+              }
+          ],
+          "Endpoints": [
+              {
+                  "Name": "AssemblyInfo",
+                  "ComponentEndpointType": "ReportingAssemblyInfo",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpsPort]]/management/assembly-informations"
+              },
+              {
+                  "Name": "HealthCheck",
+                  "ComponentEndpointType": "ReportingHealthCheck",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpsPort]]/health"
+              }
+          ]
+      },
+      {
+          "Name": "MyCompany.SampleProject1.FrontendGateway.Api",
+          "ComponentType": "InternetInformationService",
+          "HostingFramework": "DotNet7",
+          "InstallationFile": "MyCompany.SampleProject1.FrontendGateway.Api.zip",
+          "InstallationPath": ".\\MyCompany.SampleProject1.FrontendGateway.Api",
+          "DependentComponents": [
+              "WebSockets"
+          ],
+          "DependentServices": [
+              "PostgreSQL",
+              "Elastic Search",
+              "MyCompany.SampleProject1.Backend1.Api",
+              "MyCompany.SampleProject1.Backend2.Api",
+              "MyCompany.SampleProject1.Backend3.Service"
+          ],
+          "ApplicationSettings": {
+              "HttpPort": 6155,
+              "HttpsPort": 7155,
+              "SwaggerEnabled": true,
+              "Folder": "[[StorageFolder]]"
+          },
+          "FolderPermissions": [
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": "[[FileLogPath]]"
+              },
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": "[[StorageFolder]]"
+              }
+          ],
+          "ConfigurationSettingsFiles": [
+              {
+                  "FileName": "appsettings.json",
+                  "JsonSettings": {
+                      "EnvironmentOptions.EnvironmentType": "Local",
+                      "EnvironmentOptions.EnvironmentName": "dev",
+                      "PostgresSqlOptions.ConnectionString": "[[PostgreSQL|ConnectionString]]",
+                      "TenantOptions.IsMultiTenant": false,
+                      "TenantOptions.TenantId": "5ea85f64-5717-4562-b3fc-2c963f66afa6",
+                      "SwaggerAuthOptions.ClientId": "swagger",
+                      "SwaggerAuthOptions.Secret": "559D56FA-B47B-5199-BA61-B298D431C318",
+                      "OpenIdDictOptions.CertificatePath": "[[CertificateFolder]]",
+                      "StorageOptions.ApiBaseAddress": "[[WebProtocol]]://[[HostName]]:7155",
+                      "StorageOptions.FolderPath": "[[LabelStorageFolder]]",
+                      "Serilog.FileLogPath": "[[FileLogPath]]",
+                      "Serilog.FileLogRollingInterval": "[[FileLogRollingInterval]]",
+                      "ElasticConfiguration.Uri": "[[ElasticBaseEndpoint]]",
+                      "ElasticConfiguration.UserName": "[[ElasticUserName]]",
+                      "ElasticConfiguration.Password": "[[ElasticPassword]]"
+                  }
+              }
+          ],
+          "Endpoints": [
+              {
+                  "Name": "AssemblyInfo",
+                  "ComponentEndpointType": "ReportingAssemblyInfo",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpsPort]]/management/assembly-informations"
+              },
+              {
+                  "Name": "HealthCheck",
+                  "ComponentEndpointType": "ReportingHealthCheck",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpsPort]]/health"
+              }
+          ]
+      },
+      {
+          "Name": "MyCompany.SampleProject1.Frontend",
+          "ComponentType": "InternetInformationService",
+          "HostingFramework": "NodeJs",
+          "InstallationFile": "MyCompany.SampleProject1.Frontend.zip",
+          "InstallationPath": ".\\MyCompany.SampleProject1.Frontend",
+          "DependentComponents": [
+              "WebSockets"
+          ],
+          "DependentServices": [
+              "MyCompany.SampleProject1.FrontendGateway.Api"
+          ],
+          "ApplicationSettings": {
+              "HttpPort": 2000,
+              "HttpsPort": 3000
+          },
+          "FolderPermissions": [
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": "[[FileLogPath]]"
+              }
+          ],
+          "ConfigurationSettingsFiles": [
+              {
+                  "FileName": "env.json",
+                  "JsonSettings": {
+                      "API_BASE_URL": "[[WebProtocol]]://[[HostName]]:7155/api/v1",
+                      "CLIENT_ID": "octopus",
+                      "CLIENT_SECRET": "d44cd877-82e7-482a-b8c5-76d692852084"
+                  }
+              }
+          ],
+          "Endpoints": []
+      },
+      {
+          "Name": "MyCompany.SampleProject1.Backend2.Api",
+          "ComponentType": "InternetInformationService",
+          "HostingFramework": "DotNet7",
+          "InstallationFile": "MyCompany.SampleProject1.Backend2.Api.zip",
+          "InstallationPath": ".\\MyCompany.SampleProject1.Backend2.Api",
+          "DependentComponents": [
+              "WebSockets"
+          ],
+          "DependentServices": [
+              "Elastic Search"
+          ],
+          "ApplicationSettings": {
+              "HttpPort": 6151,
+              "HttpsPort": 7151,
+              "SwaggerEnabled": true
+          },
+          "FolderPermissions": [
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": "[[FileLogPath]]"
+              }
+          ],
+          "ConfigurationSettingsFiles": [
+              {
+                  "FileName": "appsettings.json",
+                  "JsonSettings": {
+                      "Serilog.FileLogPath": "[[FileLogPath]]",
+                      "Serilog.FileLogRollingInterval": "[[FileLogRollingInterval]]",
+                      "ElasticConfiguration.Uri": "[[ElasticBaseEndpoint]]",
+                      "ElasticConfiguration.UserName": "[[ElasticUserName]]",
+                      "ElasticConfiguration.Password": "[[ElasticPassword]]"
+                  }
+              }
+          ],
+          "Endpoints": [
+              {
+                  "Name": "AssemblyInfo",
+                  "ComponentEndpointType": "ReportingAssemblyInfo",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpsPort]]/management/assembly-informations"
+              },
+              {
+                  "Name": "HealthCheck",
+                  "ComponentEndpointType": "ReportingHealthCheck",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpsPort]]/health"
+              }
+          ]
+      },
+      {
+          "Name": "MyCompany.SampleProject1.Backend3.Service",
+          "ComponentType": "WindowsService",
+          "HostingFramework": "DonNetFramework48",
+          "InstallationFile": "MyCompany.SampleProject1.Backend3.Service.zip",
+          "InstallationPath": "C:\\MyCompany\\MyCompany.SampleProject1.Backend3.Service",
+          "DependentComponents": [],
+          "DependentServices": [
+              "Network List Service",
+              "Elastic Search"
+          ],
+          "ApplicationSettings": {
+              "WebProtocol": "http",
+              "HttpPort": 6150,
+              "SwaggerEnabled": true
+          },
+          "FolderPermissions": [
+              {
+                  "User": "IIS_IUSRS",
+                  "FileSystemRights": "Modify",
+                  "Folder": "[[FileLogPath]]"
+              }
+          ],
+          "ConfigurationSettingsFiles": [
+              {
+                  "FileName": "MyCompany.SampleProject1.Backend3.Service.exe.config",
+                  "XmlSettings": [
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "Environment",
+                              "value": "Development"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "ApiBaseEndpoint",
+                              "value": "[[WebProtocol]]://[[HostName]]:[[HttpPort]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "ApiUserName",
+                              "value": "[[UserName]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "ApiPasword",
+                              "value": "[[Password]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "ElasticBaseEndpoint",
+                              "value": "[[ElasticBaseEndpoint]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "ElasticUserName",
+                              "value": "[[ElasticUserName]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "ElasticPassword",
+                              "value": "[[ElasticPassword]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "FileLogPath",
+                              "value": "[[FileLogPath]]"
+                          }
+                      },
+                      {
+                          "Path": "configuration:appSettings",
+                          "Element": "add",
+                          "Attributes": {
+                              "key": "FileLogRollingInterval",
+                              "value": "[[FileLogRollingInterval]]"
+                          }
+                      }
+                  ]
+              }
+          ],
+          "Endpoints": [
+              {
+                  "Name": "AssemblyInfo",
+                  "ComponentEndpointType": "ReportingAssemblyInfo",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpPort]]/management/assembly-informations"
+              },
+              {
+                  "Name": "HealthCheck",
+                  "ComponentEndpointType": "ReportingHealthCheck",
+                  "Endpoint": "[[WebProtocol]]://[[HostName]]:[[HttpPort]]/health"
+              }
+          ]
+      }
+  ]
+}
