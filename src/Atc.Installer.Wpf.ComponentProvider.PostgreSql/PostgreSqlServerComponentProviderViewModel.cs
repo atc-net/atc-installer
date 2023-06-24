@@ -8,6 +8,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
     public PostgreSqlServerComponentProviderViewModel(
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
+        INetworkShellService networkShellService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
@@ -16,6 +17,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            networkShellService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,

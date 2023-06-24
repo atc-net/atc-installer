@@ -5,7 +5,6 @@ namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IInternetInformationServerInstallerService iisInstallerService;
-    private readonly INetworkShellService networkShellService;
 
     public InternetInformationServerComponentProviderViewModel(
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
@@ -17,6 +16,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            networkShellService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -27,7 +27,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
-        this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
         InitializeFromApplicationOptions(applicationOption);
     }
@@ -596,16 +595,12 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (HttpPort.HasValue)
         {
-            await networkShellService
-                .OpenHttpPortForEveryone(HttpPort.Value)
-                .ConfigureAwait(false);
+            await EnsureUrlReservationEntryIfNeeded("http", HttpPort.Value).ConfigureAwait(true);
         }
 
         if (HttpsPort.HasValue)
         {
-            await networkShellService
-                .OpenHttpsPortForEveryone(HttpsPort.Value)
-                .ConfigureAwait(false);
+            await EnsureUrlReservationEntryIfNeeded("https", HttpsPort.Value).ConfigureAwait(true);
         }
 
         InstallationState = ComponentInstallationState.Installed;

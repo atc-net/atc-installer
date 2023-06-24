@@ -7,7 +7,6 @@ namespace Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 public class WindowsApplicationComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IWindowsApplicationInstallerService waInstallerService;
-    private readonly INetworkShellService networkShellService;
 
     public WindowsApplicationComponentProviderViewModel(
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
@@ -19,6 +18,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            networkShellService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -29,7 +29,6 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         ArgumentNullException.ThrowIfNull(applicationOption);
 
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
-        this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
 
         InitializeFromApplicationOptions(applicationOption);
     }
@@ -530,16 +529,12 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         {
             if (TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
             {
-                await networkShellService
-                    .OpenHttpPortForEveryone(httpPortValue)
-                    .ConfigureAwait(false);
+                await EnsureUrlReservationEntryIfNeeded("http", httpPortValue).ConfigureAwait(true);
             }
 
             if (TryGetUshortFromApplicationSettings("HttpsPort", out var httpsPortValue))
             {
-                await networkShellService
-                    .OpenHttpsPortForEveryone(httpsPortValue)
-                    .ConfigureAwait(false);
+                await EnsureUrlReservationEntryIfNeeded("https", httpsPortValue).ConfigureAwait(true);
             }
         }
 

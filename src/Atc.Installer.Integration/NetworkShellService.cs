@@ -1,22 +1,96 @@
-// ReSharper disable StringLiteralTypo
+// ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 // ReSharper disable InvertIf
+// ReSharper disable LoopCanBeConvertedToQuery
+// ReSharper disable StringLiteralTypo
 namespace Atc.Installer.Integration;
 
 public class NetworkShellService : INetworkShellService
 {
     [SupportedOSPlatform("Windows")]
-    public Task<bool> OpenHttpPortForEveryone(
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpPortForEveryone(
         ushort port)
-        => OpenPort($"netsh http add urlacl url=http://+:{port}/ user=Everyone");
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=http://+:{port}/ user=Everyone");
 
     [SupportedOSPlatform("Windows")]
-    public Task<bool> OpenHttpsPortForEveryone(
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpPortForEveryone(
+        string hostName,
         ushort port)
-        => OpenPort($"netsh http add urlacl url=https://+:{port}/ user=Everyone");
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=http://{hostName}:{port}/ user=Everyone");
 
-    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "OK - not possible for process.StandardInput.")]
+    [SupportedOSPlatform("Windows")]
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
+        string hostName,
+        ushort port)
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://{hostName}:{port}/ user=Everyone");
+
+    [SupportedOSPlatform("Windows")]
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
+        ushort port)
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://+:{port}/ user=Everyone");
+
+    public async Task<IList<string>> GetUrlReservations()
+    {
+        var output = await ExecuteCmdCommandAndReadStandardOutput("netsh http show urlacl")
+            .ConfigureAwait(false);
+
+        var list = new List<string>();
+        foreach (var line in output
+                     .ToLines()
+                     .Where(x => x.Length > 0 && x.Contains("Reserved URL", StringComparison.Ordinal)))
+        {
+            var i = line.IndexOf(':', StringComparison.Ordinal) + 1;
+            list.Add(line[i..].Trim());
+        }
+
+        return list;
+    }
+
+    private static async Task<(bool IsSucceeded, string? ErrorMessage)> ExecuteUrlReservationsCommand(
+        string command)
+    {
+        var output = await ExecuteCmdCommandAndReadStandardOutput(command)
+            .ConfigureAwait(false);
+
+        if (output.Contains("Error", StringComparison.OrdinalIgnoreCase))
+        {
+            var lines = output.ToLines();
+            var sb = new StringBuilder();
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrEmpty(line) ||
+                    line.Contains(":\\", StringComparison.Ordinal) ||
+                    line.Contains("Microsoft", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                sb.AppendLine(line);
+            }
+
+            return (false, sb.ToString());
+        }
+
+        return (true, null);
+    }
+
+    private static FileInfo GetCmdFile()
+    {
+        var systemRoot = Environment.GetEnvironmentVariable("SystemRoot");
+        if (systemRoot is not null)
+        {
+            var cmdPath = Path.Combine(systemRoot, "System32", "cmd.exe");
+            if (File.Exists(cmdPath))
+            {
+                return new FileInfo(cmdPath);
+            }
+        }
+
+        throw new FileNotFoundException("Could not find cmd.exe");
+    }
+
+    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "OK.")]
     [SuppressMessage("Usage", "MA0004:Use Task.ConfigureAwait(false)", Justification = "OK - not possible for process.StandardInput.")]
-    private static async Task<bool> OpenPort(
+    private static async Task<string> ExecuteCmdCommandAndReadStandardOutput(
         string command)
     {
         var processStartInfo = new ProcessStartInfo
@@ -58,21 +132,6 @@ public class NetworkShellService : INetworkShellService
 
         process.Dispose();
 
-        return output.Contains("error", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static FileInfo GetCmdFile()
-    {
-        var systemRoot = Environment.GetEnvironmentVariable("SystemRoot");
-        if (systemRoot is not null)
-        {
-            var cmdPath = Path.Combine(systemRoot, "System32", "cmd.exe");
-            if (File.Exists(cmdPath))
-            {
-                return new FileInfo(cmdPath);
-            }
-        }
-
-        throw new FileNotFoundException("Could not find cmd.exe");
+        return output;
     }
 }

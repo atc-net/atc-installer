@@ -361,6 +361,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         var vm = new ElasticSearchServerComponentProviderViewModel(
             esInstallerService,
+            networkShellService,
             waInstallerService,
             ComponentProviders,
             installerTempDirectory,
@@ -401,6 +402,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         var vm = new PostgreSqlServerComponentProviderViewModel(
             pgSqlInstallerService,
+            networkShellService,
             waInstallerService,
             ComponentProviders,
             installerTempDirectory,
