@@ -6,6 +6,7 @@
   },
   "DefaultApplicationSettings": {
       "WebProtocol": "https",
+      "UrlReservationForWebProtocol": "sampleproject1.mycompany.com",
       "HostName": "sampleproject1.mycompany.com",
       "UserName": "myUserName",
       "Password": "mySecret",
@@ -77,6 +78,7 @@
           "ApplicationSettings": {
               "HttpPort": 6152,
               "HttpsPort": 7152,
+              "UrlReservationForWebProtocol": "[[UrlReservationForWebProtocol]]",
               "SwaggerEnabled": true
           },
           "FolderPermissions": [
@@ -135,6 +137,7 @@
           "ApplicationSettings": {
               "HttpPort": 6155,
               "HttpsPort": 7155,
+              "UrlReservationForWebProtocol": "[[UrlReservationForWebProtocol]]",
               "SwaggerEnabled": true,
               "Folder": "[[StorageFolder]]"
           },
@@ -199,7 +202,8 @@
           ],
           "ApplicationSettings": {
               "HttpPort": 2000,
-              "HttpsPort": 3000
+              "HttpsPort": 3000,
+              "UrlReservationForWebProtocol": "[[UrlReservationForWebProtocol]]"
           },
           "FolderPermissions": [
               {
@@ -235,6 +239,7 @@
           "ApplicationSettings": {
               "HttpPort": 6151,
               "HttpsPort": 7151,
+              "UrlReservationForWebProtocol": "[[UrlReservationForWebProtocol]]",
               "SwaggerEnabled": true
           },
           "FolderPermissions": [
@@ -283,6 +288,7 @@
           "ApplicationSettings": {
               "WebProtocol": "http",
               "HttpPort": 6150,
+              "UrlReservationForWebProtocol": "[[UrlReservationForWebProtocol]]",
               "SwaggerEnabled": true
           },
           "FolderPermissions": [
