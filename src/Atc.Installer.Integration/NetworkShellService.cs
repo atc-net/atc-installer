@@ -4,30 +4,9 @@
 // ReSharper disable StringLiteralTypo
 namespace Atc.Installer.Integration;
 
+[SupportedOSPlatform("Windows")]
 public class NetworkShellService : INetworkShellService
 {
-    [SupportedOSPlatform("Windows")]
-    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpPortForEveryone(
-        ushort port)
-        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=http://+:{port}/ user=Everyone");
-
-    [SupportedOSPlatform("Windows")]
-    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpPortForEveryone(
-        string hostName,
-        ushort port)
-        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=http://{hostName}:{port}/ user=Everyone");
-
-    [SupportedOSPlatform("Windows")]
-    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
-        string hostName,
-        ushort port)
-        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://{hostName}:{port}/ user=Everyone");
-
-    [SupportedOSPlatform("Windows")]
-    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
-        ushort port)
-        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://+:{port}/ user=Everyone");
-
     public async Task<IList<string>> GetUrlReservations()
     {
         var output = await ExecuteCmdCommandAndReadStandardOutput("netsh http show urlacl")
@@ -44,6 +23,24 @@ public class NetworkShellService : INetworkShellService
 
         return list;
     }
+
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpPortForEveryone(
+        ushort port)
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=http://+:{port}/ user={GetTranslatedAccountNameForEveryone()}");
+
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpPortForEveryone(
+        string hostName,
+        ushort port)
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=http://{hostName}:{port}/ user={GetTranslatedAccountNameForEveryone()}");
+
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
+        string hostName,
+        ushort port)
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://{hostName}:{port}/ user={GetTranslatedAccountNameForEveryone()}");
+
+    public Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
+        ushort port)
+        => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://+:{port}/ user={GetTranslatedAccountNameForEveryone()}");
 
     private static async Task<(bool IsSucceeded, string? ErrorMessage)> ExecuteUrlReservationsCommand(
         string command)
@@ -71,6 +68,17 @@ public class NetworkShellService : INetworkShellService
         }
 
         return (true, null);
+    }
+
+    private static string GetTranslatedAccountNameForEveryone()
+    {
+        var sid = new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null);
+
+        var account = (NTAccount)sid.Translate(typeof(NTAccount));
+
+        return account is null
+            ? "Everyone"
+            : account.Value;
     }
 
     private static FileInfo GetCmdFile()
