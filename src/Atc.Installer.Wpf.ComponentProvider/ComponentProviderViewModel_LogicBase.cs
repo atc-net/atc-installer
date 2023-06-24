@@ -418,40 +418,6 @@ public partial class ComponentProviderViewModel
         return value;
     }
 
-    protected async Task EnsureUrlReservationEntryIfNeeded(
-        string webProtocol,
-        ushort port)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(webProtocol);
-
-        var useWildcard = false;
-        var hostName = string.Empty;
-        if (TryGetStringFromApplicationSettings("UrlReservationForWebProtocol", out var urlReservationForWebProtocol))
-        {
-            if (string.IsNullOrEmpty(urlReservationForWebProtocol) ||
-                urlReservationForWebProtocol.Equals("Skip", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            if (urlReservationForWebProtocol.Equals("+", StringComparison.Ordinal) ||
-                urlReservationForWebProtocol.Equals("*", StringComparison.Ordinal))
-            {
-                useWildcard = true;
-            }
-            else
-            {
-                hostName = ResolveTemplateIfNeededByApplicationSettingsLookup(urlReservationForWebProtocol);
-            }
-        }
-
-        await EnsureUrlReservationEntry(
-            webProtocol,
-            port,
-            useWildcard,
-            hostName).ConfigureAwait(true);
-    }
-
     protected void WorkOnAnalyzeAndUpdateStatesForVersion()
     {
         if (UnpackedZipFolderPath is not null)
@@ -542,95 +508,6 @@ public partial class ComponentProviderViewModel
             }
 
             vm.Directory = new DirectoryInfo(folder);
-        }
-    }
-
-    private async Task EnsureUrlReservationEntry(
-        string webProtocol,
-        ushort port,
-        bool useWildcard,
-        string hostName)
-    {
-        var isHttps = webProtocol.Equals("https", StringComparison.OrdinalIgnoreCase);
-
-        if (isHttps)
-        {
-            if (useWildcard)
-            {
-                var (isSucceeded, errorMessage) = await networkShellService
-                    .AddUrlReservationEntryWithHttpsPortForEveryone(port)
-                    .ConfigureAwait(false);
-                LogUrlReservationEntryResult(isHttps, port, useWildcard, hostName, isSucceeded, errorMessage);
-            }
-            else
-            {
-                var (isSucceeded, errorMessage) = await networkShellService
-                    .AddUrlReservationEntryWithHttpsPortForEveryone(hostName, port)
-                    .ConfigureAwait(false);
-                LogUrlReservationEntryResult(isHttps, port, useWildcard, hostName, isSucceeded, errorMessage);
-            }
-        }
-        else
-        {
-            if (useWildcard)
-            {
-                var (isSucceeded, errorMessage) = await networkShellService
-                    .AddUrlReservationEntryWithHttpPortForEveryone(port)
-                    .ConfigureAwait(false);
-                LogUrlReservationEntryResult(isHttps, port, useWildcard, hostName, isSucceeded, errorMessage);
-            }
-            else
-            {
-                var (isSucceeded, errorMessage) = await networkShellService
-                    .AddUrlReservationEntryWithHttpPortForEveryone(hostName, port)
-                    .ConfigureAwait(false);
-                LogUrlReservationEntryResult(isHttps, port, useWildcard, hostName, isSucceeded, errorMessage);
-            }
-        }
-    }
-
-    private void LogUrlReservationEntryResult(
-        bool isHttps,
-        ushort port,
-        bool useWildcard,
-        string hostName,
-        bool isSucceeded,
-        string? errorMessage)
-    {
-        if (isSucceeded)
-        {
-            if (useWildcard)
-            {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateInformation($"Url reservation entry is added: https://+:{port}")
-                    : LogItemFactory.CreateInformation($"Url reservation entry is added: http://+:{port}"));
-            }
-            else
-            {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateInformation($"Url reservation entry is added: https://{hostName}:{port}")
-                    : LogItemFactory.CreateInformation($"Url reservation entry is added: http://{hostName}:{port}"));
-            }
-        }
-        else
-        {
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                errorMessage = errorMessage.IndentEachLineWith("    ");
-            }
-
-            if (useWildcard)
-            {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateWarning($"Url reservation entry is not added: https://+:{port}{Environment.NewLine}{errorMessage}")
-                    : LogItemFactory.CreateWarning($"Url reservation entry is not added: http://+:{port}{Environment.NewLine}{errorMessage}"));
-            }
-            else
-            {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateWarning($"Url reservation entry is not added: https://{hostName}:{port}{Environment.NewLine}{errorMessage}")
-                    : LogItemFactory.CreateWarning($"Url reservation entry is not added: http://{hostName}:{port}{Environment.NewLine}{errorMessage}"));
-            }
         }
     }
 

@@ -17,4 +17,13 @@ public interface INetworkShellService
     Task<(bool IsSucceeded, string? ErrorMessage)> AddUrlReservationEntryWithHttpsPortForEveryone(
         string hostName,
         ushort port);
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> RemoveUrlReservationEntryByPort(
+        ushort port);
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> RemoveUrlReservationEntryByHttpPort(
+        ushort port);
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> RemoveUrlReservationEntryByHttpsPort(
+        ushort port);
 }

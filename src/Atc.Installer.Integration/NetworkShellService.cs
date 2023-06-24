@@ -42,6 +42,56 @@ public class NetworkShellService : INetworkShellService
         ushort port)
         => ExecuteUrlReservationsCommand($"netsh http add urlacl url=https://+:{port}/ user={GetTranslatedAccountNameForEveryone()}");
 
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> RemoveUrlReservationEntryByPort(
+        ushort port)
+    {
+        var urlReservations = await GetUrlReservations()
+            .ConfigureAwait(false);
+
+        var urlReservation = urlReservations.FirstOrDefault(x => x.Contains($":{port}", StringComparison.Ordinal));
+        if (urlReservation is null)
+        {
+            return (false, $"URL Reservation Entry don't exist by port={port}");
+        }
+
+        return await ExecuteUrlReservationsCommand($"netsh http delete urlacl url={urlReservation}")
+            .ConfigureAwait(false);
+    }
+
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> RemoveUrlReservationEntryByHttpPort(
+        ushort port)
+    {
+        var urlReservations = await GetUrlReservations()
+            .ConfigureAwait(false);
+
+        var urlReservation = urlReservations.FirstOrDefault(x => x.Contains("http:", StringComparison.OrdinalIgnoreCase) &&
+                                                                 x.Contains($":{port}", StringComparison.Ordinal));
+        if (urlReservation is null)
+        {
+            return (false, $"URL Reservation Entry don't exist by protocol=http, port={port}");
+        }
+
+        return await ExecuteUrlReservationsCommand($"netsh http delete urlacl url={urlReservation}")
+            .ConfigureAwait(false);
+    }
+
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> RemoveUrlReservationEntryByHttpsPort(
+        ushort port)
+    {
+        var urlReservations = await GetUrlReservations()
+            .ConfigureAwait(false);
+
+        var urlReservation = urlReservations.FirstOrDefault(x => x.Contains("https:", StringComparison.OrdinalIgnoreCase) &&
+                                                                 x.Contains($":{port}", StringComparison.Ordinal));
+        if (urlReservation is null)
+        {
+            return (false, $"URL Reservation Entry don't exist by protocol=https, port={port}");
+        }
+
+        return await ExecuteUrlReservationsCommand($"netsh http delete urlacl url={urlReservation}")
+            .ConfigureAwait(false);
+    }
+
     private static async Task<(bool IsSucceeded, string? ErrorMessage)> ExecuteUrlReservationsCommand(
         string command)
     {
