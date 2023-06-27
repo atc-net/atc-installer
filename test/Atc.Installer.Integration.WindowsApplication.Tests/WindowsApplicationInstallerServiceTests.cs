@@ -1,6 +1,7 @@
 // ReSharper disable StringLiteralTypo
 namespace Atc.Installer.Integration.WindowsApplication.Tests;
 
+[SuppressMessage("Major Code Smell", "S2925:\"Thread.Sleep\" should not be used in tests", Justification = "OK.")]
 [SuppressMessage("Microsoft.Interoperability", "CA1416:ValidatePlatformCompatibility", Justification = "OK.")]
 [Trait(Traits.Category, Traits.Categories.Integration)]
 [Trait(Traits.Category, Traits.Categories.SkipWhenLiveUnitTesting)]

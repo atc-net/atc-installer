@@ -545,7 +545,10 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             File.Exists(InstalledMainFilePath) &&
             InstalledMainFilePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
-            if (SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath)))
+            var isInstalled = await SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath))
+                .ConfigureAwait(true);
+
+            if (isInstalled)
             {
                 LogItems.Add(LogItemFactory.CreateInformation("Service is installed"));
                 RunningState = waInstallerService.GetServiceState(ServiceName!);
@@ -627,38 +630,18 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         return isDone;
     }
 
-    private static bool SetupInstalledMainFilePathAsService(
+    private static async Task<bool> SetupInstalledMainFilePathAsService(
         FileInfo installedMainFile)
     {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = installedMainFile.FullName,
-                Arguments = "install",
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true,
-                WorkingDirectory = installedMainFile.Directory!.FullName,
-                Verb = "runas",
-            };
+        var (isSuccessful, output) = await ProcessHelper
+            .Execute(
+                new FileInfo(installedMainFile.FullName),
+                "install",
+                runAsAdministrator: true)
+            .ConfigureAwait(true);
 
-            var process = Process.Start(psi);
-            if (process is null)
-            {
-                return false;
-            }
-
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            return output is not null &&
-                   output.Contains("successfully installed", StringComparison.OrdinalIgnoreCase);
-        }
-        catch
-        {
-            return false;
-        }
+        return isSuccessful &&
+               output is not null &&
+               output.Contains("successfully installed", StringComparison.OrdinalIgnoreCase);
     }
 }

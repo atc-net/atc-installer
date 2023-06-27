@@ -15,6 +15,7 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     private const string InstalledAppsRegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
     private const string DotNetFrameworkRegistryPath = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
     private const int DonNetFramework480Value = 528040;
+    private readonly FileInfo cmdFile = new(@"C:\Windows\System32\cmd.exe");
 
     public bool IsMicrosoftDonNetFramework48()
         => IsMicrosoftDonNetFramework(DonNetFramework480Value);
@@ -25,7 +26,7 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     public bool IsJavaRuntime8()
         => IsJavaRuntime(8);
 
-    public bool IsNodeJs18()
+    public Task<bool> IsNodeJs18()
         => IsNodeJs(18);
 
     public bool IsAppInstalledByDisplayName(
@@ -181,57 +182,40 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
         }
     }
 
-    private static bool IsNodeJs(
+    [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "OK.")]
+    private async Task<bool> IsNodeJs(
         ushort mainVersion)
     {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true,
-            };
+        var (isSuccessful, output) = await ProcessHelper
+            .ExecutePrompt(
+                new DirectoryInfo(@"C:\"),
+                cmdFile,
+                string.Empty,
+                new[] { "node.exe -v", "exit" })
+            .ConfigureAwait(false);
 
-            var process = Process.Start(psi);
-            if (process is null)
-            {
-                return false;
-            }
-
-            process.StandardInput.WriteLine("node.exe -v");
-            process.StandardInput.WriteLine("exit");
-
-            var output = process.StandardOutput.ReadToEnd();
-            if (output is null)
-            {
-                return false;
-            }
-
-            var lineWithVersion = output
-                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-                .FirstOrDefault(x => x.StartsWith('v'));
-
-            if (lineWithVersion is null)
-            {
-                return false;
-            }
-
-            var versionAsStr = lineWithVersion[(lineWithVersion.IndexOf('v', StringComparison.Ordinal) + 1)..];
-            if (!Version.TryParse(versionAsStr, out var version))
-            {
-                return false;
-            }
-
-            var minVersion = new Version(mainVersion, 0);
-            return version.GreaterThanOrEqualTo(minVersion, 1);
-        }
-        catch
+        if (!isSuccessful || output is null)
         {
             return false;
         }
+
+        var lineWithVersion = output
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault(x => x.StartsWith('v'));
+
+        if (lineWithVersion is null)
+        {
+            return false;
+        }
+
+        var versionAsStr = lineWithVersion[(lineWithVersion.IndexOf('v', StringComparison.Ordinal) + 1)..];
+        if (!Version.TryParse(versionAsStr, out var version))
+        {
+            return false;
+        }
+
+        var minVersion = new Version(mainVersion, 0);
+        return version.GreaterThanOrEqualTo(minVersion, 1);
     }
 
     private static DirectoryInfo? GetJavaFolder()
