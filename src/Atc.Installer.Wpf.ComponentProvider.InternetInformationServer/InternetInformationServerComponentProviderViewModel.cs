@@ -593,14 +593,27 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         EnsureFolderPermissions();
 
+        if (HostingFramework == HostingFrameworkType.NodeJs)
+        {
+            await iisInstallerService
+                .UnlockConfigSectionSystemWebServerModules()
+                .ConfigureAwait(true);
+
+            await iisInstallerService
+                .EnsureSettingsForComponentUrlRewriteModule2(new DirectoryInfo(InstallationFolderPath!))
+                .ConfigureAwait(true);
+        }
+
         if (HttpPort.HasValue)
         {
-            await EnsureUrlReservationEntryIfNeeded("http", HttpPort.Value).ConfigureAwait(true);
+            await EnsureUrlReservationEntryIfNeeded("http", HttpPort.Value)
+                .ConfigureAwait(true);
         }
 
         if (HttpsPort.HasValue)
         {
-            await EnsureUrlReservationEntryIfNeeded("https", HttpsPort.Value).ConfigureAwait(true);
+            await EnsureUrlReservationEntryIfNeeded("https", HttpsPort.Value)
+                .ConfigureAwait(true);
         }
 
         InstallationState = ComponentInstallationState.Installed;

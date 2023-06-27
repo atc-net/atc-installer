@@ -27,6 +27,11 @@ public interface IInternetInformationServerInstallerService : IInstallerService
     string? ResolvedVirtuelRootFolder(
         string folder);
 
+    Task<(bool IsSucceeded, string? ErrorMessage)> UnlockConfigSectionSystemWebServerModules();
+
+    Task<(bool IsSucceeded, string? ErrorMessage)> EnsureSettingsForComponentUrlRewriteModule2(
+        DirectoryInfo installationPath);
+
     ComponentRunningState GetApplicationPoolState(
         string applicationPoolName);
 

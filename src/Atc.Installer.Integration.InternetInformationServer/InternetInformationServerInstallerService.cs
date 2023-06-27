@@ -1,3 +1,4 @@
+// ReSharper disable StringLiteralTypo
 namespace Atc.Installer.Integration.InternetInformationServer;
 
 /// <summary>
@@ -12,6 +13,7 @@ namespace Atc.Installer.Integration.InternetInformationServer;
 public sealed class InternetInformationServerInstallerService : IInternetInformationServerInstallerService
 {
     private const string IisComponentsRegistryPath = @"SOFTWARE\Microsoft\InetStp\Components";
+    private readonly FileInfo appCmdFile = new(@"C:\Windows\System32\inetsrv\appcmd.exe");
 
     private readonly IInstalledAppsInstallerService iaInstallerService;
 
@@ -70,7 +72,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         => iaInstallerService.IsMicrosoftDonNet7();
 
     public bool IsNodeJs18()
-        => iaInstallerService.IsNodeJs18();
+        => TaskHelper.RunSync(() => iaInstallerService.IsNodeJs18());
 
     public bool IsInstalledManagementConsole()
     {
@@ -119,6 +121,49 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
            GetWwwRootPath() is not null
             ? folder.Replace(@".\", GetWwwRootPath()!.FullName + @"\", StringComparison.Ordinal)
             : folder;
+
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> UnlockConfigSectionSystemWebServerModules()
+    {
+        var (isSuccessful, output) = await ProcessHelper
+            .Execute(
+                appCmdFile,
+                arguments: "unlock config -section:\"system.webServer/modules\"")
+            .ConfigureAwait(false);
+
+        if (isSuccessful && output is not null)
+        {
+            return (IsSucceeded: false, ErrorMessage: null);
+        }
+
+        if (!string.IsNullOrEmpty(output))
+        {
+            output = output.IndentEachLineWith("    ");
+        }
+
+        return (IsSucceeded: false, ErrorMessage: $"Unlock config -section:\"system.webServer/modules\"{Environment.NewLine}{output}");
+    }
+
+    public async Task<(bool IsSucceeded, string? ErrorMessage)> EnsureSettingsForComponentUrlRewriteModule2(
+        DirectoryInfo installationPath)
+    {
+        ArgumentNullException.ThrowIfNull(installationPath);
+
+        var webConfigFile = new FileInfo(Path.Combine(installationPath.FullName, "web.config"));
+
+        if (webConfigFile.Exists)
+        {
+            // TODO: Ensure xml contains rewrite-section
+            return (IsSucceeded: false, ErrorMessage: "Not implemented yet");
+        }
+
+        var defaultXml = GetResourceDefaultNodeJsUrlWebConfig()!;
+
+        await FileHelper
+            .WriteAllTextAsync(webConfigFile, defaultXml)
+            .ConfigureAwait(false);
+
+        return (IsSucceeded: true, ErrorMessage: null);
+    }
 
     public ComponentRunningState GetApplicationPoolState(
         string applicationPoolName)
@@ -504,4 +549,23 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         CancellationToken cancellationToken = default)
         => await StartApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
            await StartWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
+
+    private string? GetResourceDefaultNodeJsUrlWebConfig()
+        => GetResourceTextFile("default-nodejs-urlrewrite-webconfig");
+
+    private string? GetResourceTextFile(
+        string resourceName)
+    {
+        using var stream = this.GetType()
+            .Assembly
+            .GetManifestResourceStream("Atc.Installer.Integration.InternetInformationServer.Resources." + resourceName);
+
+        if (stream is null)
+        {
+            return null;
+        }
+
+        using var streamReader = new StreamReader(stream);
+        return streamReader.ReadToEnd();
+    }
 }
