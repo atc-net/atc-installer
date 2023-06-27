@@ -10,7 +10,6 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly IWindowsApplicationInstallerService waInstallerService;
     private readonly IAzureStorageAccountInstallerService azureStorageAccountInstallerService;
     private readonly ToastNotificationManager notificationManager = new();
-    private readonly DirectoryInfo installerTempDirectory = new(Path.Combine(Path.GetTempPath(), "atc-installer"));
     private DirectoryInfo? installationDirectory;
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
@@ -29,7 +28,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         this.azureStorageAccountInstallerService = new AzureStorageAccountInstallerService();
 
-        this.installationDirectory = new DirectoryInfo(Path.Combine(installerTempDirectory.FullName, "InstallationFiles"));
+        this.installationDirectory = new DirectoryInfo(Path.Combine(App.InstallerTempDirectory.FullName, "InstallationFiles"));
 
         ApplicationOptions = new ApplicationOptionsViewModel(new ApplicationOptions());
 
@@ -44,7 +43,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 waInstallerService,
                 networkShellService,
                 new ObservableCollectionEx<ComponentProviderViewModel>(),
-                installerTempDirectory,
+                App.InstallerTempDirectory,
                 installationDirectory,
                 ProjectName,
                 new Dictionary<string, object>(StringComparer.Ordinal),
@@ -59,7 +58,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 iisInstallerService,
                 networkShellService,
                 ComponentProviders,
-                installerTempDirectory,
+                App.InstallerTempDirectory,
                 installationDirectory,
                 ProjectName,
                 new Dictionary<string, object>(StringComparer.Ordinal),
@@ -89,7 +88,6 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         this.azureStorageAccountInstallerService = azureStorageAccountInstallerService ?? throw new ArgumentNullException(nameof(azureStorageAccountInstallerService));
 
-        applicationOptionsValue = RestoreCustomAppSettingsIfNeeded(applicationOptionsValue);
         LoadRecentOpenFiles();
 
         ApplicationOptions = new ApplicationOptionsViewModel(applicationOptionsValue);
@@ -174,27 +172,9 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         cancellationTokenSource?.Cancel();
     }
 
-    private ApplicationOptions RestoreCustomAppSettingsIfNeeded(
-        ApplicationOptions applicationOptions)
-    {
-        var currentFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json"));
-        var backupFile = new FileInfo(Path.Combine(installerTempDirectory.FullName, "appsettings.custom.json"));
-        if (!currentFile.Exists ||
-            !backupFile.Exists ||
-            currentFile.LastWriteTime == backupFile.LastWriteTime)
-        {
-            return applicationOptions;
-        }
-
-        File.Copy(backupFile.FullName, currentFile.FullName, overwrite: true);
-
-        var wrapperModel = FileHelper<ApplicationOptionsWrapper>.ReadJsonFileToModel(fileInfo: backupFile)!;
-        return wrapperModel.Application;
-    }
-
     private void LoadRecentOpenFiles()
     {
-        var recentOpenFilesFile = Path.Combine(installerTempDirectory.FullName, "RecentOpenFiles.json");
+        var recentOpenFilesFile = Path.Combine(App.InstallerTempDirectory.FullName, "RecentOpenFiles.json");
         if (!File.Exists(recentOpenFilesFile))
         {
             return;
@@ -256,10 +236,10 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             recentOpenFilesOption.RecentOpenFiles.Add(item);
         }
 
-        var recentOpenFilesFilePath = Path.Combine(installerTempDirectory.FullName, "RecentOpenFiles.json");
-        if (!Directory.Exists(installerTempDirectory.FullName))
+        var recentOpenFilesFilePath = Path.Combine(App.InstallerTempDirectory.FullName, "RecentOpenFiles.json");
+        if (!Directory.Exists(App.InstallerTempDirectory.FullName))
         {
-            Directory.CreateDirectory(installerTempDirectory.FullName);
+            Directory.CreateDirectory(App.InstallerTempDirectory.FullName);
         }
 
         var json = JsonSerializer.Serialize(
@@ -343,7 +323,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             waInstallerService,
             networkShellService,
             ComponentProviders,
-            installerTempDirectory,
+            App.InstallerTempDirectory,
             installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,
@@ -364,7 +344,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             networkShellService,
             waInstallerService,
             ComponentProviders,
-            installerTempDirectory,
+            App.InstallerTempDirectory,
             installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,
@@ -384,7 +364,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             iisInstallerService,
             networkShellService,
             ComponentProviders,
-            installerTempDirectory,
+            App.InstallerTempDirectory,
             installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,
@@ -405,7 +385,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             networkShellService,
             waInstallerService,
             ComponentProviders,
-            installerTempDirectory,
+            App.InstallerTempDirectory,
             installationDirectory,
             ProjectName!,
             DefaultApplicationSettings,

@@ -9,8 +9,12 @@ public partial class App
     private readonly IHost host;
     private IConfiguration? configuration;
 
+    public static DirectoryInfo InstallerTempDirectory => new(Path.Combine(Path.GetTempPath(), "atc-installer"));
+
     public App()
     {
+        RestoreCustomAppSettingsIfNeeded();
+
         host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(
                 configurationBuilder =>
@@ -88,5 +92,19 @@ public partial class App
             .ConfigureAwait(false);
 
         host.Dispose();
+    }
+
+    private static void RestoreCustomAppSettingsIfNeeded()
+    {
+        var currentFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json"));
+        var backupFile = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, "appsettings.custom.json"));
+        if (!currentFile.Exists ||
+            !backupFile.Exists ||
+            currentFile.LastWriteTime == backupFile.LastWriteTime)
+        {
+            return;
+        }
+
+        File.Copy(backupFile.FullName, currentFile.FullName, overwrite: true);
     }
 }
