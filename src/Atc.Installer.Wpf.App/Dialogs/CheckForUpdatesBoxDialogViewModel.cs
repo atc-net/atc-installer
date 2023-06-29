@@ -1,8 +1,9 @@
 namespace Atc.Installer.Wpf.App.Dialogs;
 
-public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdatesBoxDialogViewModel
+public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdatesBoxDialogViewModel, IDisposable
 {
     private readonly IGitHubReleaseService gitHubReleaseService;
+    private readonly CancellationTokenSource? cancellationTokenSource;
     private string latestVersion = string.Empty;
     private string latestLink = string.Empty;
     private bool hasNewVersion;
@@ -16,11 +17,27 @@ public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdates
             .GetExecutingAssembly()
             .GetName()
             .Version!
-            .ToString();
+        .ToString();
 
         LatestVersion = CurrentVersion;
 
-        TaskHelper.RunSync(RetrieveLatestFromGitHubHandler);
+        cancellationTokenSource = new CancellationTokenSource();
+        Task.Run(
+        async () =>
+        {
+            while (!cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                if (NetworkInformationHelper.HasConnection())
+                {
+                    TaskHelper.RunSync(RetrieveLatestFromGitHubHandler);
+                }
+
+                await Task
+                    .Delay(TimeSpan.FromHours(1), CancellationToken.None)
+                    .ConfigureAwait(true);
+            }
+        },
+        cancellationTokenSource.Token);
     }
 
     public IRelayCommandAsync DownloadLatestCommand
@@ -110,5 +127,16 @@ public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdates
                     .ConfigureAwait(true);
             }
         }
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        cancellationTokenSource?.Dispose();
     }
 }
