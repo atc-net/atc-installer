@@ -31,8 +31,9 @@ public partial class MainWindowViewModel
     {
         var openFileDialog = new OpenFileDialog
         {
+            InitialDirectory = App.InstallerProgramDataProjectsDirectory.FullName,
             Multiselect = false,
-            Filter = "Configuration Files(.json)|*.json",
+            Filter = "Configuration Files|*InstallationSettings.json",
         };
 
         if (openFileDialog.ShowDialog() != true)

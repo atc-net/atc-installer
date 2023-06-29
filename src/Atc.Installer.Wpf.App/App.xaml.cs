@@ -13,16 +13,17 @@ public partial class App
 
     public static DirectoryInfo InstallerProgramDataDirectory => new(Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "ATC"), "atc-installer"));
 
+    public static DirectoryInfo InstallerProgramDataProjectsDirectory => new(Path.Combine(InstallerProgramDataDirectory.FullName, "Projects"));
+
     public App()
     {
-        if (!InstallerProgramDataDirectory.Exists)
-        {
-            Directory.CreateDirectory(InstallerProgramDataDirectory.FullName);
-        }
+        EnsureInstallerDirectoriesIsCreated();
 
-        FixLegacyFileLocations();
+        FixLegacyInstallerFilesLocation();
 
-        RestoreCustomAppSettingsIfNeeded();
+        RestoreInstallerCustomAppSettingsIfNeeded();
+
+        UpdateProjectsInstallerFilesIfNeeded();
 
         host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(
@@ -103,7 +104,25 @@ public partial class App
         host.Dispose();
     }
 
-    private static void FixLegacyFileLocations()
+    private static void EnsureInstallerDirectoriesIsCreated()
+    {
+        if (!InstallerTempDirectory.Exists)
+        {
+            Directory.CreateDirectory(InstallerTempDirectory.FullName);
+        }
+
+        if (!InstallerProgramDataDirectory.Exists)
+        {
+            Directory.CreateDirectory(InstallerProgramDataDirectory.FullName);
+        }
+
+        if (!InstallerProgramDataProjectsDirectory.Exists)
+        {
+            Directory.CreateDirectory(InstallerProgramDataProjectsDirectory.FullName);
+        }
+    }
+
+    private static void FixLegacyInstallerFilesLocation()
     {
         var customAppSettings = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, Constants.CustomAppSettingsFileName));
         if (customAppSettings.Exists)
@@ -118,7 +137,7 @@ public partial class App
         }
     }
 
-    private static void RestoreCustomAppSettingsIfNeeded()
+    private static void RestoreInstallerCustomAppSettingsIfNeeded()
     {
         var currentFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.CustomAppSettingsFileName));
         var backupFile = new FileInfo(Path.Combine(InstallerProgramDataDirectory.FullName, Constants.CustomAppSettingsFileName));
@@ -130,5 +149,57 @@ public partial class App
         }
 
         File.Copy(backupFile.FullName, currentFile.FullName, overwrite: true);
+    }
+
+    private static void UpdateProjectsInstallerFilesIfNeeded()
+    {
+        foreach (var projectDirectory in Directory.GetDirectories(InstallerProgramDataProjectsDirectory.FullName))
+        {
+            var customSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.CustomSettingsFileName));
+            var templateSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.TemplateSettingsFileName));
+            if (!customSettingsFile.Exists ||
+                !templateSettingsFile.Exists)
+            {
+                continue;
+            }
+
+            var customSettings = JsonSerializer.Deserialize<InstallationOption>(
+                File.ReadAllText(customSettingsFile.FullName),
+                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {customSettingsFile.FullName}");
+
+            var templateSettings = JsonSerializer.Deserialize<InstallationOption>(
+                File.ReadAllText(templateSettingsFile.FullName),
+                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {templateSettingsFile.FullName}");
+
+            templateSettings.Azure = customSettings.Azure;
+            foreach (var item in customSettings.DefaultApplicationSettings)
+            {
+                if (templateSettings.DefaultApplicationSettings.ContainsKey(item.Key))
+                {
+                    templateSettings.DefaultApplicationSettings[item.Key] = item.Value;
+                }
+            }
+
+            var installationSettingsJson = JsonSerializer.Serialize(
+                templateSettings,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                });
+
+            var installationSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.InstallationSettingsFileName));
+            if (installationSettingsFile.Exists)
+            {
+                var oldInstallationSettings = File.ReadAllText(installationSettingsFile.FullName);
+                if (oldInstallationSettings.Equals(installationSettingsJson, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                File.Delete(installationSettingsFile.FullName);
+            }
+
+            File.WriteAllText(installationSettingsFile.FullName, installationSettingsJson);
+        }
     }
 }

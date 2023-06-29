@@ -4,7 +4,7 @@ public class InstallationOption
 {
     public string Name { get; set; } = string.Empty;
 
-    public AzureOptions Azure { get; init; } = new();
+    public AzureOptions Azure { get; set; } = new();
 
     public IDictionary<string, object> DefaultApplicationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
 

@@ -40,7 +40,7 @@
                                 <MenuItem
                                     Command="{Binding Path=DataContext.OpenRecentConfigurationFileCommand, RelativeSource={RelativeSource AncestorType={x:Type Menu}}}"
                                     CommandParameter="{Binding Path=File}"
-                                    Header="{Binding Path=File}" />
+                                    Header="{Binding Path=FileDisplay}" />
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>

@@ -198,7 +198,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                     continue;
                 }
 
-                RecentOpenFiles.Add(new RecentOpenFileViewModel(recentOpenFile.TimeStamp, recentOpenFile.FilePath));
+                RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, recentOpenFile.TimeStamp, recentOpenFile.FilePath));
             }
 
             RecentOpenFiles.SuppressOnChangedNotification = false;
@@ -212,7 +212,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private void AddLoadedFileToRecentOpenFiles(
         FileInfo file)
     {
-        RecentOpenFiles.Add(new RecentOpenFileViewModel(DateTime.Now, file.FullName));
+        RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, DateTime.Now, file.FullName));
 
         var recentOpenFilesOption = new RecentOpenFilesOption();
         foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
