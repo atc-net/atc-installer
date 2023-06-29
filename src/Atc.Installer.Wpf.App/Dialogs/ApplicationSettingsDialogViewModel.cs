@@ -37,7 +37,7 @@ public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSet
         {
             ApplicationOptions.Theme = ThemeManager.Current.DetectTheme(Application.Current)!.Name;
 
-            var file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json"));
+            var file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.CustomAppSettingsFileName));
             if (file.Exists)
             {
                 var dynamicJson = new DynamicJson(file);
@@ -47,7 +47,7 @@ public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSet
 
                 File.Copy(
                     file.FullName,
-                    Path.Combine(installerTempDirectory.FullName, "appsettings.custom.json"),
+                    Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.CustomAppSettingsFileName),
                     overwrite: true);
 
                 window.DialogResult = true;

@@ -11,8 +11,17 @@ public partial class App
 
     public static DirectoryInfo InstallerTempDirectory => new(Path.Combine(Path.GetTempPath(), "atc-installer"));
 
+    public static DirectoryInfo InstallerProgramDataDirectory => new(Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "ATC"), "atc-installer"));
+
     public App()
     {
+        if (!InstallerProgramDataDirectory.Exists)
+        {
+            Directory.CreateDirectory(InstallerProgramDataDirectory.FullName);
+        }
+
+        FixLegacyFileLocations();
+
         RestoreCustomAppSettingsIfNeeded();
 
         host = Host.CreateDefaultBuilder()
@@ -22,7 +31,7 @@ public partial class App
                     configuration = configurationBuilder
                         .SetBasePath(Directory.GetCurrentDirectory())
                         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                        .AddJsonFile("appsettings.custom.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile(Constants.CustomAppSettingsFileName, optional: true, reloadOnChange: true)
                         .AddEnvironmentVariables()
                         .Build();
                 })
@@ -94,10 +103,25 @@ public partial class App
         host.Dispose();
     }
 
+    private static void FixLegacyFileLocations()
+    {
+        var customAppSettings = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, Constants.CustomAppSettingsFileName));
+        if (customAppSettings.Exists)
+        {
+            File.Move(customAppSettings.FullName, Path.Combine(InstallerProgramDataDirectory.FullName, Constants.CustomAppSettingsFileName));
+        }
+
+        var recentOpenFilesFile = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, Constants.RecentOpenFilesFileName));
+        if (recentOpenFilesFile.Exists)
+        {
+            File.Move(recentOpenFilesFile.FullName, Path.Combine(InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName));
+        }
+    }
+
     private static void RestoreCustomAppSettingsIfNeeded()
     {
-        var currentFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json"));
-        var backupFile = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, "appsettings.custom.json"));
+        var currentFile = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.CustomAppSettingsFileName));
+        var backupFile = new FileInfo(Path.Combine(InstallerProgramDataDirectory.FullName, Constants.CustomAppSettingsFileName));
         if (!currentFile.Exists ||
             !backupFile.Exists ||
             currentFile.LastWriteTime == backupFile.LastWriteTime)

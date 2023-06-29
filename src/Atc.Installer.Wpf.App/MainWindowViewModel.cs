@@ -174,7 +174,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
     private void LoadRecentOpenFiles()
     {
-        var recentOpenFilesFile = Path.Combine(App.InstallerTempDirectory.FullName, "RecentOpenFiles.json");
+        var recentOpenFilesFile = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
         if (!File.Exists(recentOpenFilesFile))
         {
             return;
@@ -236,10 +236,10 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             recentOpenFilesOption.RecentOpenFiles.Add(item);
         }
 
-        var recentOpenFilesFilePath = Path.Combine(App.InstallerTempDirectory.FullName, "RecentOpenFiles.json");
-        if (!Directory.Exists(App.InstallerTempDirectory.FullName))
+        var recentOpenFilesFilePath = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
+        if (!Directory.Exists(App.InstallerProgramDataDirectory.FullName))
         {
-            Directory.CreateDirectory(App.InstallerTempDirectory.FullName);
+            Directory.CreateDirectory(App.InstallerProgramDataDirectory.FullName);
         }
 
         var json = JsonSerializer.Serialize(
