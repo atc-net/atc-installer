@@ -51,6 +51,7 @@ public partial class App
             .AddOptions<ApplicationOptions>()
             .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName));
 
+        services.AddSingleton<IGitHubReleaseService, GitHubReleaseService>();
         services.AddSingleton<INetworkShellService, NetworkShellService>();
         services.AddSingleton<IInstalledAppsInstallerService, InstalledAppsInstallerService>();
 
@@ -60,7 +61,7 @@ public partial class App
         services.AddSingleton<IWindowsApplicationInstallerService, WindowsApplicationInstallerService>();
         services.AddSingleton<IAzureStorageAccountInstallerService, AzureStorageAccountInstallerService>();
 
-        services.AddSingleton<IApplicationSettingsDialogViewModel, ApplicationSettingsDialogViewModel>();
+        services.AddSingleton<ICheckForUpdatesBoxDialogViewModel, CheckForUpdatesBoxDialogViewModel>();
         services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
     }

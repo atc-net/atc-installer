@@ -1,14 +1,17 @@
 // ReSharper disable SuggestBaseTypeForParameter
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace Atc.Installer.Wpf.App;
 
 public partial class MainWindowViewModel : MainWindowViewModelBase
 {
+    private readonly IGitHubReleaseService gitHubReleaseService;
     private readonly INetworkShellService networkShellService;
     private readonly IElasticSearchServerInstallerService esInstallerService;
     private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
     private readonly IWindowsApplicationInstallerService waInstallerService;
     private readonly IAzureStorageAccountInstallerService azureStorageAccountInstallerService;
+    private readonly ICheckForUpdatesBoxDialogViewModel checkForUpdatesBoxDialogViewModel;
     private readonly ToastNotificationManager notificationManager = new();
     private DirectoryInfo? installationDirectory;
     private string? projectName;
@@ -17,6 +20,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
     public MainWindowViewModel()
     {
+        this.gitHubReleaseService = new GitHubReleaseService();
+
         var installedAppsInstallerService = new InstalledAppsInstallerService();
         this.networkShellService = new NetworkShellService();
 
@@ -27,6 +32,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
 
         this.azureStorageAccountInstallerService = new AzureStorageAccountInstallerService();
+
+        this.checkForUpdatesBoxDialogViewModel = new CheckForUpdatesBoxDialogViewModel(gitHubReleaseService);
 
         this.installationDirectory = new DirectoryInfo(Path.Combine(App.InstallerTempDirectory.FullName, "InstallationFiles"));
 
@@ -70,23 +77,27 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     }
 
     public MainWindowViewModel(
+        IGitHubReleaseService gitHubReleaseService,
         INetworkShellService networkShellService,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         IAzureStorageAccountInstallerService azureStorageAccountInstallerService,
+        ICheckForUpdatesBoxDialogViewModel checkForUpdatesBoxDialogViewModel,
         IOptions<ApplicationOptions> applicationOptions)
     {
         ArgumentNullException.ThrowIfNull(applicationOptions);
         var applicationOptionsValue = applicationOptions.Value;
 
+        this.gitHubReleaseService = gitHubReleaseService ?? throw new ArgumentNullException(nameof(gitHubReleaseService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
         this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
         this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         this.azureStorageAccountInstallerService = azureStorageAccountInstallerService ?? throw new ArgumentNullException(nameof(azureStorageAccountInstallerService));
+        this.checkForUpdatesBoxDialogViewModel = checkForUpdatesBoxDialogViewModel ?? throw new ArgumentNullException(nameof(checkForUpdatesBoxDialogViewModel));
 
         LoadRecentOpenFiles();
 

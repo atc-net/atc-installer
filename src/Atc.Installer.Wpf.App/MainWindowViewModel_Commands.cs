@@ -23,9 +23,10 @@ public partial class MainWindowViewModel
             DownloadInstallationFilesFromAzureStorageAccountCommandHandler,
             CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
-    public static IRelayCommand OpenApplicationCheckForUpdatesCommand
+    public IRelayCommand OpenApplicationCheckForUpdatesCommand
         => new RelayCommand(
-            OpenApplicationCheckForUpdatesCommandHandler);
+            OpenApplicationCheckForUpdatesCommandHandler,
+            CanOpenApplicationCheckForUpdatesCommandHandler);
 
     public static IRelayCommand OpenApplicationAboutCommand
         => new RelayCommand(
@@ -53,9 +54,7 @@ public partial class MainWindowViewModel
     private void OpenApplicationSettingsCommandHandler()
     {
         new ApplicationSettingsDialog(
-            new ApplicationSettingsDialogViewModel(
-                ApplicationOptions,
-                App.InstallerProgramDataDirectory)).ShowDialog();
+            new ApplicationSettingsDialogViewModel(ApplicationOptions)).ShowDialog();
     }
 
     private Task OpenRecentConfigurationFileCommandHandler(
@@ -108,8 +107,11 @@ public partial class MainWindowViewModel
         IsBusy = false;
     }
 
-    private static void OpenApplicationCheckForUpdatesCommandHandler()
-        => new CheckForUpdatesBoxDialog().ShowDialog();
+    private static bool CanOpenApplicationCheckForUpdatesCommandHandler()
+        => NetworkInformationHelper.HasConnection();
+
+    private void OpenApplicationCheckForUpdatesCommandHandler()
+        => new CheckForUpdatesBoxDialog(checkForUpdatesBoxDialogViewModel).ShowDialog();
 
     private static void OpenApplicationAboutCommandHandler()
         => new AboutBoxDialog().ShowDialog();

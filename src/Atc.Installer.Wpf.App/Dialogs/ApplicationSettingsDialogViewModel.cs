@@ -2,21 +2,16 @@ namespace Atc.Installer.Wpf.App.Dialogs;
 
 public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSettingsDialogViewModel
 {
-    private readonly DirectoryInfo installerTempDirectory;
-
     public IRelayCommand<NiceWindow> OkCommand
         => new RelayCommand<NiceWindow>(
             OkCommandCommandHandler);
 
     public ApplicationSettingsDialogViewModel(
-        ApplicationOptionsViewModel applicationOptionsViewModel,
-        DirectoryInfo installerTempDirectory)
+        ApplicationOptionsViewModel applicationOptionsViewModel)
     {
         ArgumentNullException.ThrowIfNull(applicationOptionsViewModel);
-        ArgumentNullException.ThrowIfNull(installerTempDirectory);
 
         this.ApplicationOptions = applicationOptionsViewModel;
-        this.installerTempDirectory = installerTempDirectory;
 
         ThemeManager.Current.ThemeChanged += OnThemeChanged;
     }

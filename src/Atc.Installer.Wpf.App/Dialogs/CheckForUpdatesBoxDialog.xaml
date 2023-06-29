@@ -3,18 +3,25 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialogs="clr-namespace:Atc.Installer.Wpf.App.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Check for updates"
-    Width="300"
+    Width="350"
     Height="250"
-    Background="{DynamicResource AtcApps.Brushes.Dialog.Background}"
+    d:DataContext="{d:DesignInstance Type=dialogs:CheckForUpdatesBoxDialogViewModel}"
     ShowCloseButton="False"
     ShowMaxRestoreButton="False"
     ShowMinButton="False"
     WindowStartupLocation="CenterScreen"
     WindowStyle="SingleBorderWindow"
     mc:Ignorable="d">
+
+    <atc:NiceWindow.Resources>
+        <atcValueConverters:BoolToVisibilityVisibleValueConverter x:Key="BoolToVisibilityVisibleValueConverter" />
+        <atcValueConverters:BoolToVisibilityCollapsedValueConverter x:Key="BoolToVisibilityCollapsedValueConverter" />
+    </atc:NiceWindow.Resources>
 
     <atc:GridEx Margin="20" Rows="*,Auto">
         <atc:UniformSpacingPanel
@@ -26,43 +33,34 @@
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Version: " />
-                <TextBlock x:Name="VersionTextBlock" Text="1.0.0.0" />
+                <TextBlock Text="{Binding Path=CurrentVersion}" />
             </StackPanel>
 
-            <StackPanel x:Name="NoVersionUpdatesContainer" Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Visibility="{Binding Path=HasNewVersion, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}, FallbackValue=True}">
                 <TextBlock Text="No new updates." />
             </StackPanel>
 
-            <atc:UniformSpacingPanel
-                x:Name="LatestVersionContainer"
-                Orientation="Vertical"
-                Spacing="20">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Foreground="DarkOrange" Text="Latest version: " />
-                    <TextBlock
-                        x:Name="LatestVersionTextBlock"
-                        Foreground="DarkOrange"
-                        Text="1.0.0.0" />
-                </StackPanel>
-                <TextBlock x:Name="LatestLinkTextBlock" HorizontalAlignment="Right">
-                    <Hyperlink
-                        x:Name="LatestVersionHyperlink"
-                        Click="OnLatestVersionHyperlinkClick"
-                        NavigateUri="...">
-                        <Run Text="Download latest MSI file" />
-                    </Hyperlink>
-                </TextBlock>
-            </atc:UniformSpacingPanel>
+            <StackPanel Orientation="Horizontal" Visibility="{Binding Path=HasNewVersion, Converter={StaticResource BoolToVisibilityVisibleValueConverter}}">
+                <TextBlock Foreground="DarkOrange" Text="Latest version: " />
+                <TextBlock Foreground="DarkOrange" Text="{Binding Path=LatestVersion}" />
+            </StackPanel>
 
         </atc:UniformSpacingPanel>
-        <Button
+
+        <atc:GridEx
             Grid.Row="1"
-            Width="100"
             Margin="10"
-            HorizontalAlignment="Right"
-            Click="OnOk"
-            Content="OK" />
+            Columns="*,10,*">
+            <Button
+                Grid.Column="0"
+                Command="{Binding Path=DownloadLatestCommand}"
+                Content="Download Latest" />
+            <Button
+                Grid.Column="2"
+                Click="OnOk"
+                Content="OK" />
+        </atc:GridEx>
+
     </atc:GridEx>
 
 </atc:NiceWindow>
-
