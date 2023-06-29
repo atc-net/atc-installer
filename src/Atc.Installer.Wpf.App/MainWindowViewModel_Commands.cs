@@ -50,7 +50,7 @@ public partial class MainWindowViewModel
         new ApplicationSettingsDialog(
             new ApplicationSettingsDialogViewModel(
                 ApplicationOptions,
-                App.InstallerTempDirectory)).ShowDialog();
+                App.InstallerProgramDataDirectory)).ShowDialog();
     }
 
     private Task OpenRecentConfigurationFileCommandHandler(
