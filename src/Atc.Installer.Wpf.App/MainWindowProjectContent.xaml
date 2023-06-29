@@ -106,12 +106,12 @@
                             <TextBlock
                                 Margin="20,0,0,0"
                                 FontSize="18"
-                                Foreground="Gold"
+                                Foreground="DarkOrange"
                                 Text="New version available" />
                             <TextBlock
                                 Margin="10,0,0,0"
                                 FontSize="18"
-                                Foreground="Gold"
+                                Foreground="DarkOrange"
                                 Text="{Binding Path=SelectedComponentProvider.InstallationVersion}" />
                         </StackPanel>
                     </StackPanel>

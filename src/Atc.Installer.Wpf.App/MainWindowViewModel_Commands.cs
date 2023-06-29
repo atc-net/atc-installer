@@ -23,6 +23,10 @@ public partial class MainWindowViewModel
             DownloadInstallationFilesFromAzureStorageAccountCommandHandler,
             CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
+    public static IRelayCommand OpenApplicationCheckForUpdatesCommand
+        => new RelayCommand(
+            OpenApplicationCheckForUpdatesCommandHandler);
+
     public static IRelayCommand OpenApplicationAboutCommand
         => new RelayCommand(
             OpenApplicationAboutCommandHandler);
@@ -103,6 +107,9 @@ public partial class MainWindowViewModel
 
         IsBusy = false;
     }
+
+    private static void OpenApplicationCheckForUpdatesCommandHandler()
+        => new CheckForUpdatesBoxDialog().ShowDialog();
 
     private static void OpenApplicationAboutCommandHandler()
         => new AboutBoxDialog().ShowDialog();

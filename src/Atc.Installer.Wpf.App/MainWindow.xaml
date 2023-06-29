@@ -53,6 +53,7 @@
                     <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount" />
                 </MenuItem>
                 <MenuItem Header="_Help">
+                    <MenuItem Command="{Binding Path=OpenApplicationCheckForUpdatesCommand}" Header="_Check for updates" />
                     <MenuItem Command="{Binding Path=OpenApplicationAboutCommand}" Header="_About" />
                 </MenuItem>
             </Menu>
