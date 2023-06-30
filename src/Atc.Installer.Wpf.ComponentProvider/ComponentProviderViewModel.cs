@@ -61,7 +61,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
         InstallationFile = applicationOption.InstallationFile;
-        InstallationFolderPath = applicationOption.InstallationPath;
+        InstallationFolderPath = ResolveTemplateIfNeededByApplicationSettingsLookup(applicationOption.InstallationPath);
         ResolveInstalledMainFile(applicationOption);
 
         foreach (var dependentServiceName in applicationOption.DependentServices)

@@ -388,7 +388,8 @@ public partial class ComponentProviderViewModel
     }
 
     protected string ResolveTemplateIfNeededByApplicationSettingsLookup(
-        string value)
+        string value,
+        int recursiveCallCount = 0)
     {
         if (value.ContainsTemplateKeyBrackets())
         {
@@ -413,6 +414,12 @@ public partial class ComponentProviderViewModel
                     value = value.ReplaceTemplateWithKey(key, resultValue);
                 }
             }
+        }
+
+        if (recursiveCallCount <= 3 &&
+            value.ContainsTemplateKeyBrackets())
+        {
+            value = ResolveTemplateIfNeededByApplicationSettingsLookup(value, recursiveCallCount + 1);
         }
 
         return value;
@@ -495,17 +502,7 @@ public partial class ComponentProviderViewModel
                 folder = ResolvedVirtuelRootFolder(folder);
             }
 
-            if (folder.ContainsTemplateKeyBrackets())
-            {
-                var keys = folder.GetTemplateKeys();
-                foreach (var key in keys)
-                {
-                    if (TryGetStringFromApplicationSettings(key, out var resultValue))
-                    {
-                        folder = folder.ReplaceTemplateWithKey(key, resultValue);
-                    }
-                }
-            }
+            folder = ResolveTemplateIfNeededByApplicationSettingsLookup(folder);
 
             vm.Directory = new DirectoryInfo(folder);
         }

@@ -123,7 +123,7 @@ public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdates
             if (saveFileDialog.ShowDialog() == true)
             {
                 await File
-                    .WriteAllBytesAsync(saveFileDialog.FileName, downloadBytes)
+                    .WriteAllBytesAsync(saveFileDialog.FileName, downloadBytes, CancellationToken.None)
                     .ConfigureAwait(true);
             }
         }

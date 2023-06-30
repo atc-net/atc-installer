@@ -163,7 +163,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     await Task
-                        .Delay(3_000, CancellationToken.None)
+                        .Delay(TimeSpan.FromSeconds(3), CancellationToken.None)
                         .ConfigureAwait(true);
 
                     foreach (var vm in ComponentProviders)

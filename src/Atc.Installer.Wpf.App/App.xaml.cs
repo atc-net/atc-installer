@@ -19,8 +19,6 @@ public partial class App
     {
         EnsureInstallerDirectoriesIsCreated();
 
-        FixLegacyInstallerFilesLocation();
-
         RestoreInstallerCustomAppSettingsIfNeeded();
 
         UpdateProjectsInstallerFilesIfNeeded();
@@ -120,21 +118,6 @@ public partial class App
         if (!InstallerProgramDataProjectsDirectory.Exists)
         {
             Directory.CreateDirectory(InstallerProgramDataProjectsDirectory.FullName);
-        }
-    }
-
-    private static void FixLegacyInstallerFilesLocation()
-    {
-        var customAppSettings = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, Constants.CustomAppSettingsFileName));
-        if (customAppSettings.Exists)
-        {
-            File.Move(customAppSettings.FullName, Path.Combine(InstallerProgramDataDirectory.FullName, Constants.CustomAppSettingsFileName));
-        }
-
-        var recentOpenFilesFile = new FileInfo(Path.Combine(InstallerTempDirectory.FullName, Constants.RecentOpenFilesFileName));
-        if (recentOpenFilesFile.Exists)
-        {
-            File.Move(recentOpenFilesFile.FullName, Path.Combine(InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName));
         }
     }
 
