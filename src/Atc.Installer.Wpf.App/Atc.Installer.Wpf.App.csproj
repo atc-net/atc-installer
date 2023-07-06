@@ -40,10 +40,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc.Wpf" Version="2.0.178" />
-    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.178" />
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.178" />
-    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.178" />
+    <PackageReference Include="Atc.Wpf" Version="2.0.195" />
+    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.195" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.195" />
+    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.195" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />

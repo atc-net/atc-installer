@@ -23,6 +23,8 @@ public partial class ElasticSearchServerComponentProviderViewModel
     {
         LogItems.Add(LogItemFactory.CreateTrace("Test connection"));
 
+        IsBusy = true;
+
         var (isSucceeded, errorMessage) = await esInstallerService
             .TestConnection(
                 ElasticSearchConnection.WebProtocol!,
@@ -32,6 +34,8 @@ public partial class ElasticSearchServerComponentProviderViewModel
                 ElasticSearchConnection.Password!,
                 ElasticSearchConnection.Index)
             .ConfigureAwait(true);
+
+        IsBusy = false;
 
         if (isSucceeded)
         {
