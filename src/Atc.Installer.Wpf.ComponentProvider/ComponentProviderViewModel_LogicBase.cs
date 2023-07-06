@@ -228,6 +228,12 @@ public partial class ComponentProviderViewModel
         string key,
         out string resultValue)
     {
+        if (TryGetStringFromApplicationSettings(key, out var value))
+        {
+            resultValue = value;
+            return true;
+        }
+
         resultValue = string.Empty;
         return false;
     }
@@ -401,11 +407,11 @@ public partial class ComponentProviderViewModel
                     var sa = key.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     if (sa.Length == 2)
                     {
-                        var refComponentProvider = refComponentProviders.First(x => x.Name == sa[0]);
+                        var refComponentProvider = refComponentProviders.FirstOrDefault(x => x.Name.Equals(sa[0], StringComparison.OrdinalIgnoreCase));
                         if (refComponentProvider is not null &&
                             refComponentProvider.TryGetStringFromApplicationSetting(sa[1], out var resultValue))
                         {
-                            value = resultValue;
+                            value = value.ReplaceTemplateWithKey(key, resultValue);
                         }
                     }
                 }
