@@ -23,6 +23,8 @@ public partial class PostgreSqlServerComponentProviderViewModel
     {
         LogItems.Add(LogItemFactory.CreateTrace("Test connection"));
 
+        IsBusy = true;
+
         var (isSucceeded, errorMessage) = await pgInstallerService
             .TestConnection(
                 PostgreSqlConnection.HostName!,
@@ -31,6 +33,8 @@ public partial class PostgreSqlServerComponentProviderViewModel
                 PostgreSqlConnection.Username!,
                 PostgreSqlConnection.Password!)
             .ConfigureAwait(true);
+
+        IsBusy = false;
 
         if (isSucceeded)
         {
