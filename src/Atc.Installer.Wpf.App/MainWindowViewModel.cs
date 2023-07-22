@@ -197,7 +197,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
             var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
                 json,
-                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
+                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
 
             RecentOpenFiles.Clear();
 
@@ -255,7 +255,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         var json = JsonSerializer.Serialize(
             recentOpenFilesOption,
-            Serialization.JsonSerializerOptionsFactory.Create());
+            JsonSerializerOptionsFactory.Create());
         File.WriteAllText(recentOpenFilesFilePath, json);
 
         LoadRecentOpenFiles();
@@ -275,7 +275,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
             var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
                 json,
-                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
+                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
 
             installationDirectory = new DirectoryInfo(file.Directory!.FullName);
 

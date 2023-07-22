@@ -11,6 +11,12 @@ namespace Atc.Installer.Wpf.ComponentProvider;
 [SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "OK - ByDesign.")]
 public partial class ComponentProviderViewModel
 {
+    public void SetFilterTextForMenu(
+        string filterText)
+    {
+        FilterTextForMenu = filterText;
+    }
+
     public bool TryGetStringFromApplicationSettings(
         string key,
         out string value)
@@ -519,6 +525,12 @@ public partial class ComponentProviderViewModel
         InstallationState = ComponentInstallationState.Checking;
 
         InstallationPrerequisites.Clear();
+
+        if (!string.IsNullOrEmpty(RawInstallationPath) &&
+            Directory.Exists(RawInstallationPath))
+        {
+            UnpackedZipFolderPath = RawInstallationPath;
+        }
 
         if (UnpackedZipFolderPath is null)
         {

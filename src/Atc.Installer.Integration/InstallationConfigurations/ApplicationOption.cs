@@ -14,6 +14,8 @@ public class ApplicationOption
 
     public string InstallationPath { get; set; } = string.Empty;
 
+    public string? RawInstallationPath { get; set; }
+
     public IList<string> DependentComponents { get; init; } = new List<string>();
 
     public IList<string> DependentServices { get; init; } = new List<string>();

@@ -6,6 +6,7 @@
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fontIcons="clr-namespace:Atc.Wpf.FontIcons;assembly=Atc.Wpf.FontIcons"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="MainWindowControl"
     Title="{Binding Path=ApplicationOptions.Title, Mode=OneWay, StringFormat='..:: {0} ::..', FallbackValue='..:: Atc.Installer ::..'}"
@@ -23,6 +24,10 @@
     <atc:NiceWindow.Resources>
         <atcValueConverters:StringNullOrEmptyToVisibilityCollapsedValueConverter x:Key="StringNullOrEmptyToVisibilityCollapsedValueConverter" />
         <atcValueConverters:StringNullOrEmptyToVisibilityVisibleValueConverter x:Key="StringNullOrEmptyToVisibilityVisibleValueConverter" />
+        <atcValueConverters:FontIconImageSourceValueConverter x:Key="FontIconImageSourceValueConverter" />
+        <SolidColorBrush x:Key="BlueBrush" Color="Blue" />
+        <SolidColorBrush x:Key="RoyalBlueBrush" Color="RoyalBlue" />
+        <SolidColorBrush x:Key="RedBrush" Color="Red" />
     </atc:NiceWindow.Resources>
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
@@ -30,7 +35,11 @@
             <!--  Menu  -->
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file" />
+                    <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.File}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="_Recent Files">
                         <MenuItem.ItemsSource>
                             <Binding Path="RecentOpenFiles" />
@@ -45,16 +54,36 @@
                         </MenuItem.ItemTemplate>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="{Binding Path=OpenApplicationSettingsCommand}" Header="Application settings" />
+                    <MenuItem Command="{Binding Path=OpenApplicationSettingsCommand}" Header="Application settings">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:IcoFontType.UiSettings}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
-                    <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit" />
+                    <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:IcoFontType.Close}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RedBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Installation">
-                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount" />
+                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontMaterialDesignType.Azure}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource BlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Help">
-                    <MenuItem Command="{Binding Path=OpenApplicationCheckForUpdatesCommand}" Header="_Check for updates" />
-                    <MenuItem Command="{Binding Path=OpenApplicationAboutCommand}" Header="_About" />
+                    <MenuItem Command="{Binding Path=OpenApplicationCheckForUpdatesCommand}" Header="_Check for updates">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.Download}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Command="{Binding Path=OpenApplicationAboutCommand}" Header="_About">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontAwesomeSolidType.InfoCircle}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
             </Menu>
 

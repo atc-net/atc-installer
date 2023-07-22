@@ -7,6 +7,7 @@ global using System.IO.Compression;
 global using System.Security.AccessControl;
 global using System.Windows;
 global using System.Windows.Data;
+global using System.Windows.Documents;
 global using System.Windows.Media;
 global using System.Xml;
 
@@ -22,5 +23,7 @@ global using Atc.Serialization;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;
 global using Atc.Wpf.Controls.Notifications;
+global using Atc.Wpf.Controls.Notifications.Messages;
+global using Atc.Wpf.Extensions;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;

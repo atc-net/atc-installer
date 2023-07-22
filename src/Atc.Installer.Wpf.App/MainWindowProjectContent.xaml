@@ -25,12 +25,12 @@
     <UserControl.Resources>
         <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
+        <atcValueConverters:IntegerGreaterThenZeroToVisibilityVisibleValueConverter x:Key="IntegerGreaterThenZeroToVisibilityVisibleValueConverter" />
+        <atcValueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
         <atcValueConverters:StringNullOrEmptyToVisibilityCollapsedValueConverter x:Key="StringNullOrEmptyToVisibilityCollapsedValueConverter" />
         <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
         <valueConverters:ComponentProviderVersionCompareVisibilityVisibleValueConverter x:Key="ComponentProviderVersionCompareVisibilityVisibleValueConverter" />
-        <valueConverters:IntGreaterThenZeroToVisibilityVisibleValueConverter x:Key="IntGreaterThenZeroToVisibilityVisibleValueConverter" />
-        <valueConverters:LogCategoryTypeToBrushValueConverter x:Key="LogCategoryTypeToBrushValueConverter" />
     </UserControl.Resources>
 
     <atc:GridEx
@@ -55,25 +55,44 @@
                 Grid.Column="0"
                 Padding="0"
                 Header="Components">
-                <ListBox ItemsSource="{Binding Path=ComponentProviders}" SelectedItem="{Binding Path=SelectedComponentProvider}">
-                    <ListBox.Resources>
-                        <DataTemplate DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">
-                            <componentProvider:ComponentProviderMenuItemView />
-                        </DataTemplate>
+                <StackPanel Orientation="Vertical">
+                    <TextBox
+                        Margin="5"
+                        atc:TextBoxHelper.ClearTextButton="True"
+                        atc:TextBoxHelper.Watermark="Filter"
+                        Focusable="True"
+                        TextChanged="OnFilterTextChanged" />
+                    <ListBox
+                        x:Name="LbComponents"
+                        ItemsSource="{Binding Path=ComponentProviders}"
+                        SelectedItem="{Binding Path=SelectedComponentProvider}">
+                        <ListBox.Resources>
+                            <Style BasedOn="{StaticResource AtcApps.Styles.ListBoxItem}" TargetType="{x:Type ListBoxItem}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=(componentProvider:ComponentProviderViewModel.HideMenuItem)}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
 
-                        <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
-                            <componentProvider:ComponentProviderMenuItemView />
-                        </DataTemplate>
+                            <DataTemplate DataType="{x:Type componentProviderEs:ElasticSearchServerComponentProviderViewModel}">
+                                <componentProvider:ComponentProviderMenuItemView />
+                            </DataTemplate>
 
-                        <DataTemplate DataType="{x:Type componentProviderPgSql:PostgreSqlServerComponentProviderViewModel}">
-                            <componentProvider:ComponentProviderMenuItemView />
-                        </DataTemplate>
+                            <DataTemplate DataType="{x:Type componentProviderIis:InternetInformationServerComponentProviderViewModel}">
+                                <componentProvider:ComponentProviderMenuItemView />
+                            </DataTemplate>
 
-                        <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
-                            <componentProvider:ComponentProviderMenuItemView />
-                        </DataTemplate>
-                    </ListBox.Resources>
-                </ListBox>
+                            <DataTemplate DataType="{x:Type componentProviderPgSql:PostgreSqlServerComponentProviderViewModel}">
+                                <componentProvider:ComponentProviderMenuItemView />
+                            </DataTemplate>
+
+                            <DataTemplate DataType="{x:Type componentProviderWa:WindowsApplicationComponentProviderViewModel}">
+                                <componentProvider:ComponentProviderMenuItemView />
+                            </DataTemplate>
+                        </ListBox.Resources>
+                    </ListBox>
+                </StackPanel>
             </GroupBox>
         </atc:GridEx>
 
@@ -214,7 +233,7 @@
                                     Width="20"
                                     Height="20"
                                     Margin="5,0,0,0"
-                                    Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.InstallationPrerequisiteIssueCount, Converter={StaticResource IntGreaterThenZeroToVisibilityVisibleValueConverter}}">
+                                    Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.InstallationPrerequisiteIssueCount, Converter={StaticResource IntegerGreaterThenZeroToVisibilityVisibleValueConverter}}">
                                     <Ellipse Fill="Red" />
                                     <TextBlock
                                         HorizontalAlignment="Center"
@@ -258,7 +277,7 @@
                                     Width="20"
                                     Height="20"
                                     Margin="5,0,0,0"
-                                    Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.DependentServicesIssueCount, Converter={StaticResource IntGreaterThenZeroToVisibilityVisibleValueConverter}}">
+                                    Visibility="{Binding ElementName=NamePrerequisites, Path=DataContext.SelectedComponentProvider.DependentServicesIssueCount, Converter={StaticResource IntegerGreaterThenZeroToVisibilityVisibleValueConverter}}">
                                     <Ellipse Fill="Red" />
                                     <TextBlock
                                         HorizontalAlignment="Center"

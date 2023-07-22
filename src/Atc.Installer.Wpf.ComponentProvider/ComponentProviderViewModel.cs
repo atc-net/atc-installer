@@ -7,12 +7,15 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
+    private string? rawInstallationPath;
     private string? installationFile;
     private string? unpackedZipFolderPath;
     private string? installationFolderPath;
     private string? installedMainFilePath;
     private string? installedVersion;
     private string? installationVersion;
+    private string filterTextForMenu = string.Empty;
+    private bool hideMenuItem;
 
     public ComponentProviderViewModel()
     {
@@ -57,9 +60,16 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         FolderPermissions.Populate(applicationOption.FolderPermissions);
         ConfigurationSettingsFiles.Populate(applicationOption.ConfigurationSettingsFiles);
         Name = applicationOption.Name;
+        SetFilterTextForMenu(string.Empty);
+
         ComponentType = applicationOption.ComponentType;
         HostingFramework = applicationOption.HostingFramework;
         IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
+        if (!string.IsNullOrEmpty(applicationOption.RawInstallationPath))
+        {
+            RawInstallationPath = ResolveTemplateIfNeededByApplicationSettingsLookup(applicationOption.RawInstallationPath);
+        }
+
         InstallationFile = applicationOption.InstallationFile;
         InstallationFolderPath = ResolveTemplateIfNeededByApplicationSettingsLookup(applicationOption.InstallationPath);
         ResolveInstalledMainFile(applicationOption);
@@ -86,6 +96,36 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public ConfigurationSettingsFilesViewModel ConfigurationSettingsFiles { get; } = new();
 
+    public string FilterTextForMenu
+    {
+        get => filterTextForMenu;
+        set
+        {
+            filterTextForMenu = value;
+            RaisePropertyChanged();
+
+            HideMenuItem = !Name.Contains(filterTextForMenu, StringComparison.OrdinalIgnoreCase);
+
+            HighlightedMenuName.HighlightText(
+                Name,
+                FilterTextForMenu,
+                Brushes.Goldenrod,
+                useBoldOnHighlightText: true);
+        }
+    }
+
+    public ObservableCollection<Run> HighlightedMenuName { get; } = new();
+
+    public bool HideMenuItem
+    {
+        get => hideMenuItem;
+        set
+        {
+            hideMenuItem = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public string Name { get; }
 
     public string? ServiceName { get; set; }
@@ -95,6 +135,16 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public HostingFrameworkType HostingFramework { get; }
 
     public bool IsService { get; }
+
+    public string? RawInstallationPath
+    {
+        get => rawInstallationPath;
+        protected set
+        {
+            rawInstallationPath = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public string? InstallationFile
     {

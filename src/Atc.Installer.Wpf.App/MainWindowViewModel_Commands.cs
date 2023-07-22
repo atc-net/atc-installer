@@ -127,8 +127,7 @@ public partial class MainWindowViewModel
             }
             else
             {
-                var existingInstallationFileInfo =
-                    new FileInfo(Path.Combine(vm.InstallationDirectory.FullName, vm.InstallationFile));
+                var existingInstallationFileInfo = new FileInfo(Path.Combine(vm.InstallationDirectory.FullName, vm.InstallationFile));
                 if (existingInstallationFileInfo.Exists)
                 {
                     var calculateMd5 = CalculateMd5(existingInstallationFileInfo);
