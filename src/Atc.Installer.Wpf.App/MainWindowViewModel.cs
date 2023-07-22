@@ -304,7 +304,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 errors.Add($"{nameof(applicationOption.Name)} is missing");
             }
 
-            if (string.IsNullOrEmpty(applicationOption.InstallationFile) &&
+            if (string.IsNullOrEmpty(applicationOption.RawInstallationPath) &&
+                string.IsNullOrEmpty(applicationOption.InstallationFile) &&
                 applicationOption.HostingFramework != HostingFrameworkType.NativeNoSettings)
             {
                 errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationFile)} is invalid");

@@ -55,11 +55,12 @@
                 Grid.Column="0"
                 Padding="0"
                 Header="Components">
-                <StackPanel Orientation="Vertical">
+                <DockPanel>
                     <TextBox
                         Margin="5"
                         atc:TextBoxHelper.ClearTextButton="True"
                         atc:TextBoxHelper.Watermark="Filter"
+                        DockPanel.Dock="Top"
                         Focusable="True"
                         TextChanged="OnFilterTextChanged" />
                     <ListBox
@@ -92,7 +93,7 @@
                             </DataTemplate>
                         </ListBox.Resources>
                     </ListBox>
-                </StackPanel>
+                </DockPanel>
             </GroupBox>
         </atc:GridEx>
 
