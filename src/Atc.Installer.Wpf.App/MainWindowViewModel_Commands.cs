@@ -32,6 +32,21 @@ public partial class MainWindowViewModel
         => new RelayCommand(
             OpenApplicationAboutCommandHandler);
 
+    public IRelayCommandAsync ServiceStopAllCommand
+        => new RelayCommandAsync(
+            ServiceStopAllCommandHandler,
+            CanServiceStopAllCommandHandler);
+
+    public IRelayCommandAsync ServiceDeployAllCommand
+        => new RelayCommandAsync(
+            ServiceDeployAllCommandHandler,
+            CanServiceDeployAllCommandHandler);
+
+    public IRelayCommandAsync ServiceStartAllCommand
+        => new RelayCommandAsync(
+            ServiceStartAllCommandHandler,
+            CanServiceStartAllCommandHandler);
+
     private async Task OpenConfigurationFileCommandHandler()
     {
         var openFileDialog = new OpenFileDialog
@@ -115,6 +130,54 @@ public partial class MainWindowViewModel
 
     private static void OpenApplicationAboutCommandHandler()
         => new AboutBoxDialog().ShowDialog();
+
+    private bool CanServiceStopAllCommandHandler()
+        => ComponentProviders.Any(x => x.CanServiceStopCommandHandler());
+
+    private async Task ServiceStopAllCommandHandler()
+    {
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.CanServiceStopCommandHandler())
+            {
+                await vm.ServiceStopCommand
+                    .ExecuteAsync(this)
+                    .ConfigureAwait(false);
+            }
+        }
+    }
+
+    private bool CanServiceDeployAllCommandHandler()
+        => ComponentProviders.Any(x => x.CanServiceDeployCommandHandler());
+
+    private async Task ServiceDeployAllCommandHandler()
+    {
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.CanServiceDeployCommandHandler())
+            {
+                await vm.ServiceDeployCommand
+                    .ExecuteAsync(this)
+                    .ConfigureAwait(false);
+            }
+        }
+    }
+
+    private bool CanServiceStartAllCommandHandler()
+        => ComponentProviders.Any(x => x.CanServiceStartCommandHandler());
+
+    private async Task ServiceStartAllCommandHandler()
+    {
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.CanServiceStartCommandHandler())
+            {
+                await vm.ServiceStartCommand
+                    .ExecuteAsync(this)
+                    .ConfigureAwait(false);
+            }
+        }
+    }
 
     private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
     {
