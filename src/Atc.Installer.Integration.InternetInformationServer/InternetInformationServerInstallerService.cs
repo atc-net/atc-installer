@@ -113,7 +113,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public bool IsComponentInstalledUrlRewriteModule2()
         => iaInstallerService.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2");
 
-    public string? ResolvedVirtuelRootFolder(
+    public string? ResolvedVirtualRootFolder(
         string folder)
         => folder is not null &&
            folder.StartsWith(@".\", StringComparison.Ordinal) &&

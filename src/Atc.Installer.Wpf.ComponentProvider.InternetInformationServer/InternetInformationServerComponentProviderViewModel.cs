@@ -174,7 +174,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
     }
 
-    public override string ResolvedVirtuelRootFolder(
+    public override string ResolvedVirtualRootFolder(
         string folder)
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);
@@ -310,12 +310,12 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         if (InstallationFolderPath is not null)
         {
-            InstallationFolderPath = iisInstallerService.ResolvedVirtuelRootFolder(InstallationFolderPath)!;
+            InstallationFolderPath = iisInstallerService.ResolvedVirtualRootFolder(InstallationFolderPath)!;
         }
 
         if (InstalledMainFilePath is not null)
         {
-            InstalledMainFilePath = iisInstallerService.ResolvedVirtuelRootFolder(InstalledMainFilePath);
+            InstalledMainFilePath = iisInstallerService.ResolvedVirtualRootFolder(InstalledMainFilePath);
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);

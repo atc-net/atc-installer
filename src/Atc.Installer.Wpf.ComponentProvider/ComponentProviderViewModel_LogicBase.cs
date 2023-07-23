@@ -249,7 +249,7 @@ public partial class ComponentProviderViewModel
         DynamicJson dynamicJson)
     { }
 
-    public virtual string ResolvedVirtuelRootFolder(
+    public virtual string ResolvedVirtualRootFolder(
         string folder)
     {
         return string.Empty;
@@ -511,7 +511,7 @@ public partial class ComponentProviderViewModel
 
             if (folder.StartsWith(@".\", StringComparison.Ordinal))
             {
-                folder = ResolvedVirtuelRootFolder(folder);
+                folder = ResolvedVirtualRootFolder(folder);
             }
 
             folder = ResolveTemplateIfNeededByApplicationSettingsLookup(folder);

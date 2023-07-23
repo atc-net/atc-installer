@@ -280,7 +280,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
     }
 
-    public override string ResolvedVirtuelRootFolder(
+    public override string ResolvedVirtualRootFolder(
         string folder)
     {
         ArgumentException.ThrowIfNullOrEmpty(folder);

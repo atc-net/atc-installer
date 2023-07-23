@@ -24,7 +24,7 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     bool IsComponentInstalledUrlRewriteModule2();
 
-    string? ResolvedVirtuelRootFolder(
+    string? ResolvedVirtualRootFolder(
         string folder);
 
     Task<(bool IsSucceeded, string? ErrorMessage)> UnlockConfigSectionSystemWebServerModules();
