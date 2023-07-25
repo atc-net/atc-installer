@@ -64,7 +64,8 @@
                         Focusable="True"
                         TextChanged="OnFilterTextChanged" />
                     <Border
-                        Padding="10"
+                        Padding="20"
+                        Background="{DynamicResource AtcApps.Brushes.ThemeBackgroundLight}"
                         BorderBrush="{DynamicResource AtcApps.Brushes.Accent}"
                         BorderThickness="0,1,0,0"
                         DockPanel.Dock="Bottom">
