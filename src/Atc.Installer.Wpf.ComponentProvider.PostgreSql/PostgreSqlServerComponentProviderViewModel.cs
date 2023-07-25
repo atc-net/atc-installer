@@ -7,6 +7,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     private string? testConnectionResult;
 
     public PostgreSqlServerComponentProviderViewModel(
+        ILogger<ComponentProviderViewModel> logger,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         INetworkShellService networkShellService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
@@ -17,6 +18,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            logger,
             networkShellService,
             refComponentProviders,
             installerTempDirectory,

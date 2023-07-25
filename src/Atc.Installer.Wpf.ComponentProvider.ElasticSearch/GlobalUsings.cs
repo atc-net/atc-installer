@@ -12,3 +12,5 @@ global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;
 global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Mvvm;
+
+global using Microsoft.Extensions.Logging;

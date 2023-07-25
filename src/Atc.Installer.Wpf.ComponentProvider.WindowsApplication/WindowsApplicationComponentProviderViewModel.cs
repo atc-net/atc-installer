@@ -9,6 +9,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     private readonly IWindowsApplicationInstallerService waInstallerService;
 
     public WindowsApplicationComponentProviderViewModel(
+        ILogger<ComponentProviderViewModel> logger,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
@@ -18,6 +19,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            logger,
             networkShellService,
             refComponentProviders,
             installerTempDirectory,
@@ -231,7 +233,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                     value = ResolveTemplateIfNeededByApplicationSettingsLookup(jsonElement.GetString()!);
                 }
 
-                dynamicJson.SetValue(setting.Key, value);
+                var (isSucceeded, errorMessage) = dynamicJson.SetValue(setting.Key, value);
+                if (!isSucceeded)
+                {
+                    Logger.LogWarning($"UpdateConfiguration for {fileName} on key={setting.Key} - {errorMessage}");
+                }
             }
         }
     }

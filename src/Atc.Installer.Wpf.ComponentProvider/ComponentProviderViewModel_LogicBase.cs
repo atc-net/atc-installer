@@ -96,6 +96,8 @@ public partial class ComponentProviderViewModel
             return;
         }
 
+        ConfigurationJsonFiles.Clear();
+
         switch (HostingFramework)
         {
             case HostingFrameworkType.DonNetFramework48:

@@ -27,3 +27,6 @@ global using Atc.Wpf.Controls.Notifications.Messages;
 global using Atc.Wpf.Extensions;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
+
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Logging.Abstractions;

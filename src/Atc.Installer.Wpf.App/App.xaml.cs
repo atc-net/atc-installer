@@ -149,11 +149,11 @@ public partial class App
 
             var customSettings = JsonSerializer.Deserialize<InstallationOption>(
                 File.ReadAllText(customSettingsFile.FullName),
-                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {customSettingsFile.FullName}");
+                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {customSettingsFile.FullName}");
 
             var templateSettings = JsonSerializer.Deserialize<InstallationOption>(
                 File.ReadAllText(templateSettingsFile.FullName),
-                Serialization.JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {templateSettingsFile.FullName}");
+                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {templateSettingsFile.FullName}");
 
             templateSettings.Azure = customSettings.Azure;
             foreach (var item in customSettings.DefaultApplicationSettings)

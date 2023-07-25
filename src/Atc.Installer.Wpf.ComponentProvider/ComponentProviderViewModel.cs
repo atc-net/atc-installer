@@ -21,6 +21,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     {
         if (IsInDesignMode)
         {
+            Logger = NullLogger<ComponentProviderViewModel>.Instance;
             networkShellService = new NetworkShellService();
             refComponentProviders = new ObservableCollectionEx<ComponentProviderViewModel>();
             InstallationState = ComponentInstallationState.Checking;
@@ -37,6 +38,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public ComponentProviderViewModel(
+        ILogger<ComponentProviderViewModel> logger,
         INetworkShellService networkShellService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
@@ -50,6 +52,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationOption);
 
+        this.Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
         this.refComponentProviders = refComponentProviders;
         InstallerTempDirectory = installerTempDirectory;
@@ -81,6 +84,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         Messenger.Default.Register<UpdateDependentServiceStateMessage>(this, HandleDependentServiceState);
     }
+
+    public ILogger<ComponentProviderViewModel> Logger { get; }
 
     public DirectoryInfo InstallerTempDirectory { get; }
 

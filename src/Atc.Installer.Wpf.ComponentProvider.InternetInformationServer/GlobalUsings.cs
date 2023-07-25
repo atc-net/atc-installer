@@ -11,3 +11,5 @@ global using Atc.Installer.Wpf.ComponentProvider.ViewModels;
 global using Atc.Serialization;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Controls.Notifications;
+
+global using Microsoft.Extensions.Logging;

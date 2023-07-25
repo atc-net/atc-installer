@@ -7,6 +7,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
     private string? testConnectionResult;
 
     public ElasticSearchServerComponentProviderViewModel(
+        ILogger<ComponentProviderViewModel> logger,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         INetworkShellService networkShellService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
@@ -17,6 +18,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            logger,
             networkShellService,
             refComponentProviders,
             installerTempDirectory,

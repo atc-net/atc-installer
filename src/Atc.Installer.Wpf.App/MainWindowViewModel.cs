@@ -4,6 +4,7 @@ namespace Atc.Installer.Wpf.App;
 
 public partial class MainWindowViewModel : MainWindowViewModelBase
 {
+    private readonly ILogger<ComponentProviderViewModel> loggerComponentProvider;
     private readonly IGitHubReleaseService gitHubReleaseService;
     private readonly INetworkShellService networkShellService;
     private readonly IElasticSearchServerInstallerService esInstallerService;
@@ -20,6 +21,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
     public MainWindowViewModel()
     {
+        this.loggerComponentProvider = NullLogger<ComponentProviderViewModel>.Instance;
+
         this.gitHubReleaseService = new GitHubReleaseService();
 
         var installedAppsInstallerService = new InstalledAppsInstallerService();
@@ -47,6 +50,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ProjectName = "MyProject";
         ComponentProviders.Add(
             new WindowsApplicationComponentProviderViewModel(
+                NullLogger<ComponentProviderViewModel>.Instance,
                 waInstallerService,
                 networkShellService,
                 new ObservableCollectionEx<ComponentProviderViewModel>(),
@@ -62,6 +66,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         ComponentProviders.Add(
             new InternetInformationServerComponentProviderViewModel(
+                NullLogger<ComponentProviderViewModel>.Instance,
                 iisInstallerService,
                 networkShellService,
                 ComponentProviders,
@@ -77,6 +82,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     }
 
     public MainWindowViewModel(
+        ILogger<ComponentProviderViewModel> loggerComponentProvider,
         IGitHubReleaseService gitHubReleaseService,
         INetworkShellService networkShellService,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
@@ -90,6 +96,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ArgumentNullException.ThrowIfNull(applicationOptions);
         var applicationOptionsValue = applicationOptions.Value;
 
+        this.loggerComponentProvider = loggerComponentProvider ?? throw new ArgumentNullException(nameof(loggerComponentProvider));
         this.gitHubReleaseService = gitHubReleaseService ?? throw new ArgumentNullException(nameof(gitHubReleaseService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
         this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
@@ -332,6 +339,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
 
         var vm = new WindowsApplicationComponentProviderViewModel(
+            loggerComponentProvider,
             waInstallerService,
             networkShellService,
             ComponentProviders,
@@ -352,6 +360,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
 
         var vm = new ElasticSearchServerComponentProviderViewModel(
+            loggerComponentProvider,
             esInstallerService,
             networkShellService,
             waInstallerService,
@@ -373,6 +382,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
 
         var vm = new InternetInformationServerComponentProviderViewModel(
+            loggerComponentProvider,
             iisInstallerService,
             networkShellService,
             ComponentProviders,
@@ -393,6 +403,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
 
         var vm = new PostgreSqlServerComponentProviderViewModel(
+            loggerComponentProvider,
             pgSqlInstallerService,
             networkShellService,
             waInstallerService,
@@ -415,6 +426,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ComponentProviders.Clear();
 
         ComponentProviders.SuppressOnChangedNotification = true;
+        ////foreach (var appInstallationOption in installationOptions.Applications.Take(1)) // TODO:...
         foreach (var appInstallationOption in installationOptions.Applications)
         {
             switch (appInstallationOption.ComponentType)

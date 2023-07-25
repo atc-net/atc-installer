@@ -7,6 +7,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     private readonly IInternetInformationServerInstallerService iisInstallerService;
 
     public InternetInformationServerComponentProviderViewModel(
+        ILogger<ComponentProviderViewModel> logger,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         INetworkShellService networkShellService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
@@ -16,6 +17,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         IDictionary<string, object> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
+            logger,
             networkShellService,
             refComponentProviders,
             installerTempDirectory,
@@ -125,7 +127,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     value = ResolveTemplateIfNeededByApplicationSettingsLookup(jsonElement.GetString()!);
                 }
 
-                dynamicJson.SetValue(setting.Key, value);
+                var (isSucceeded, errorMessage) = dynamicJson.SetValue(setting.Key, value);
+                if (!isSucceeded)
+                {
+                    Logger.LogWarning($"UpdateConfiguration for {fileName} on key={setting.Key} - {errorMessage}");
+                }
             }
         }
     }
