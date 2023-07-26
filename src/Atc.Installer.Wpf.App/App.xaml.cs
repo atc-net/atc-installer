@@ -13,6 +13,8 @@ public partial class App
 
     public static DirectoryInfo InstallerProgramDataDirectory => new(Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "ATC"), "atc-installer"));
 
+    public static DirectoryInfo InstallerProgramDataLogsDirectory => new(Path.Combine(InstallerProgramDataDirectory.FullName, "Logs"));
+
     public static DirectoryInfo InstallerProgramDataProjectsDirectory => new(Path.Combine(InstallerProgramDataDirectory.FullName, "Projects"));
 
     public App()
@@ -24,6 +26,12 @@ public partial class App
         UpdateProjectsInstallerFilesIfNeeded();
 
         host = Host.CreateDefaultBuilder()
+            .ConfigureLogging((_, logging) =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                    logging.AddDebug();
+                    logging.AddSerilog(CreateLoggerConfigurationForSerilogFileLog());
+                })
             .ConfigureAppConfiguration(
                 configurationBuilder =>
                 {
@@ -185,5 +193,23 @@ public partial class App
 
             File.WriteAllText(installationSettingsFile.FullName, installationSettingsJson);
         }
+    }
+
+    private static Serilog.ILogger CreateLoggerConfigurationForSerilogFileLog()
+    {
+        var systemName = AssemblyHelper.GetSystemNameAsKebabCasing();
+        var loggerConfig = new LoggerConfiguration();
+        return loggerConfig
+            .MinimumLevel.Is(LogEventLevel.Verbose)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("System", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("System", systemName)
+            .Enrich.WithExceptionDetails()
+            .WriteTo.File(
+                path: Path.Combine(InstallerProgramDataLogsDirectory.FullName, $"{systemName}-.log"),
+                rollingInterval: RollingInterval.Day,
+                formatProvider: GlobalizationConstants.EnglishCultureInfo)
+            .CreateLogger();
     }
 }

@@ -133,7 +133,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Stop"));
+        AddLogItem(LogLevel.Trace, "Stop service");
 
         var isStopped = await waInstallerService
             .StopService(ServiceName!)
@@ -170,7 +170,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+        AddLogItem(LogLevel.Trace, "Start service");
 
         var isStarted = await waInstallerService
             .StartService(ServiceName!)

@@ -205,7 +205,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Stop service"));
+        AddLogItem(LogLevel.Trace, "Stop service");
 
         var isStopped = false;
         if (RunningState == ComponentRunningState.PartiallyRunning)
@@ -264,7 +264,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+        AddLogItem(LogLevel.Trace, "Start service");
 
         var isStarted = await iisInstallerService
             .StartWebsiteAndApplicationPool(Name, Name)
@@ -385,7 +385,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Deploy"));
+        AddLogItem(LogLevel.Trace, "Deploy");
 
         var isDone = false;
 
@@ -536,7 +536,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return isDone;
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Create Website"));
+        AddLogItem(LogLevel.Trace, "Create Website");
 
         var isWebsiteCreated = await iisInstallerService
             .CreateWebsite(
@@ -552,7 +552,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (isWebsiteCreated)
         {
-            LogItems.Add(LogItemFactory.CreateInformation("Website is created"));
+            AddLogItem(LogLevel.Information, "Website is created");
 
             await iisInstallerService
                 .StopApplicationPool(Name)
@@ -564,7 +564,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError("Website is not created"));
+            AddLogItem(LogLevel.Error, "Website is not created");
         }
 
         return isDone;
@@ -626,11 +626,16 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (useAutoStart)
         {
-            LogItems.Add(LogItemFactory.CreateTrace("Auto starting website"));
+            AddLogItem(LogLevel.Trace, "Auto starting website");
             await ServiceDeployWebsiteStart().ConfigureAwait(true);
-            LogItems.Add(RunningState == ComponentRunningState.Running
-                ? LogItemFactory.CreateInformation("Website is started")
-                : LogItemFactory.CreateWarning("Website is not started"));
+            if (RunningState == ComponentRunningState.Running)
+            {
+                AddLogItem(LogLevel.Information, "Website is started");
+            }
+            else
+            {
+                AddLogItem(LogLevel.Warning, "Website is not started");
+            }
         }
         else
         {
@@ -658,7 +663,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
             if (!isWebsiteStarted)
             {
-                LogItems.Add(LogItemFactory.CreateWarning("Website have some problem with startup"));
+                AddLogItem(LogLevel.Warning, "Website have some problem with startup");
             }
 
             RunningState = iisInstallerService.GetWebsiteState(Name);

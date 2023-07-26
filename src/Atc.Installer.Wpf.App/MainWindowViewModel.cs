@@ -106,6 +106,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.azureStorageAccountInstallerService = azureStorageAccountInstallerService ?? throw new ArgumentNullException(nameof(azureStorageAccountInstallerService));
         this.checkForUpdatesBoxDialogViewModel = checkForUpdatesBoxDialogViewModel ?? throw new ArgumentNullException(nameof(checkForUpdatesBoxDialogViewModel));
 
+        loggerComponentProvider.Log(LogLevel.Trace, $"Starting {AssemblyHelper.GetSystemName()} - Version: {AssemblyHelper.GetSystemVersion()}");
+
         LoadRecentOpenFiles();
 
         ApplicationOptions = new ApplicationOptionsViewModel(applicationOptionsValue);
@@ -113,6 +115,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
+
+        loggerComponentProvider.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
     }
 
     public ApplicationOptionsViewModel ApplicationOptions { get; init; }
@@ -274,6 +278,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     {
         try
         {
+            loggerComponentProvider.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
+
             StopMonitoringServices();
 
             var json = await File
@@ -293,9 +299,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             AddLoadedFileToRecentOpenFiles(file);
 
             StartMonitoringServices();
+
+            loggerComponentProvider.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
         }
         catch (Exception ex)
         {
+            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
         }
     }

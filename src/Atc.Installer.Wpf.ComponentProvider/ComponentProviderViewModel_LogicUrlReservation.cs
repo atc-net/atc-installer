@@ -112,6 +112,7 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:Parameter should not span multiple lines", Justification = "OK.")]
     private void LogUrlReservationEntryResultForAdded(
         bool isHttps,
         ushort port,
@@ -124,15 +125,19 @@ public partial class ComponentProviderViewModel
         {
             if (useWildcard)
             {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateInformation($"Url reservation entry is added: https://+:{port}")
-                    : LogItemFactory.CreateInformation($"Url reservation entry is added: http://+:{port}"));
+                AddLogItem(
+                    LogLevel.Information,
+                    isHttps
+                        ? $"Url reservation entry is added: https://+:{port}"
+                        : $"Url reservation entry is added: http://+:{port}");
             }
             else
             {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateInformation($"Url reservation entry is added: https://{hostName}:{port}")
-                    : LogItemFactory.CreateInformation($"Url reservation entry is added: http://{hostName}:{port}"));
+                AddLogItem(
+                    LogLevel.Information,
+                    isHttps
+                        ? $"Url reservation entry is added: https://{hostName}:{port}"
+                        : $"Url reservation entry is added: http://{hostName}:{port}");
             }
         }
         else
@@ -144,19 +149,24 @@ public partial class ComponentProviderViewModel
 
             if (useWildcard)
             {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateWarning($"Url reservation entry is not added: https://+:{port}{Environment.NewLine}{errorMessage}")
-                    : LogItemFactory.CreateWarning($"Url reservation entry is not added: http://+:{port}{Environment.NewLine}{errorMessage}"));
+                AddLogItem(
+                    LogLevel.Warning,
+                    isHttps
+                        ? $"Url reservation entry is not added: https://+:{port}{Environment.NewLine}{errorMessage}"
+                        : $"Url reservation entry is not added: http://+:{port}{Environment.NewLine}{errorMessage}");
             }
             else
             {
-                LogItems.Add(isHttps
-                    ? LogItemFactory.CreateWarning($"Url reservation entry is not added: https://{hostName}:{port}{Environment.NewLine}{errorMessage}")
-                    : LogItemFactory.CreateWarning($"Url reservation entry is not added: http://{hostName}:{port}{Environment.NewLine}{errorMessage}"));
+                AddLogItem(
+                    LogLevel.Warning,
+                    isHttps
+                        ? $"Url reservation entry is not added: https://{hostName}:{port}{Environment.NewLine}{errorMessage}"
+                        : $"Url reservation entry is not added: http://{hostName}:{port}{Environment.NewLine}{errorMessage}");
             }
         }
     }
 
+    [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:Parameter should not span multiple lines", Justification = "OK.")]
     private void LogUrlReservationEntryResultForRemoved(
         bool isHttps,
         ushort port,
@@ -165,9 +175,11 @@ public partial class ComponentProviderViewModel
     {
         if (isSucceeded)
         {
-            LogItems.Add(isHttps
-                ? LogItemFactory.CreateInformation($"Url reservation entry is removed: protocol=https, port={port}")
-                : LogItemFactory.CreateInformation($"Url reservation entry is removed: protocol=http, port={port}"));
+            AddLogItem(
+                LogLevel.Information,
+                isHttps
+                ? $"Url reservation entry is removed: protocol=https, port={port}"
+                : $"Url reservation entry is removed: protocol=http, port={port}");
         }
         else
         {
@@ -176,9 +188,11 @@ public partial class ComponentProviderViewModel
                 errorMessage = errorMessage.IndentEachLineWith("    ");
             }
 
-            LogItems.Add(isHttps
-                ? LogItemFactory.CreateWarning($"Url reservation entry is not removed: protocol=https, port={port}{Environment.NewLine}{errorMessage}")
-                : LogItemFactory.CreateWarning($"Url reservation entry is not removed: protocol=http, port={port}{Environment.NewLine}{errorMessage}"));
+            AddLogItem(
+                LogLevel.Warning,
+                isHttps
+                ? $"Url reservation entry is not removed: protocol=https, port={port}{Environment.NewLine}{errorMessage}"
+                : $"Url reservation entry is not removed: protocol=http, port={port}{Environment.NewLine}{errorMessage}");
         }
     }
 }

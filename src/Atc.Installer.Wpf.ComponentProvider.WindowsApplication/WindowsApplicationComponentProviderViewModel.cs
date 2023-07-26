@@ -73,10 +73,10 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Stop"));
-
         if (IsWindowsService)
         {
+            AddLogItem(LogLevel.Trace, "Stop service");
+
             var isStopped = await waInstallerService
                 .StopService(ServiceName!)
                 .ConfigureAwait(true);
@@ -99,6 +99,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
         else
         {
+            AddLogItem(LogLevel.Trace, "Stop application");
+
             var isStopped = waInstallerService
                 .StopApplication(InstalledMainFilePath!);
 
@@ -134,7 +136,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+        AddLogItem(LogLevel.Trace, "Start service");
 
         if (IsWindowsService)
         {
@@ -432,7 +434,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Deploy"));
+        AddLogItem(LogLevel.Trace, "Deploy");
 
         var isDone = false;
 
@@ -556,22 +558,27 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
             if (isInstalled)
             {
-                LogItems.Add(LogItemFactory.CreateInformation("Service is installed"));
+                AddLogItem(LogLevel.Information, "Service is installed");
                 RunningState = waInstallerService.GetServiceState(ServiceName!);
             }
             else
             {
-                LogItems.Add(LogItemFactory.CreateError("Service is not installed"));
+                AddLogItem(LogLevel.Error, "Service is not installed");
             }
         }
 
         if (useAutoStart)
         {
-            LogItems.Add(LogItemFactory.CreateTrace("Auto starting service"));
+            AddLogItem(LogLevel.Trace, "Auto starting service");
             await ServiceDeployWindowServiceStart().ConfigureAwait(true);
-            LogItems.Add(RunningState == ComponentRunningState.Running
-                ? LogItemFactory.CreateInformation("Service is started")
-                : LogItemFactory.CreateWarning("Service is not started"));
+            if (RunningState == ComponentRunningState.Running)
+            {
+                AddLogItem(LogLevel.Information, "Service is started");
+            }
+            else
+            {
+                AddLogItem(LogLevel.Warning, "Service is not started");
+            }
         }
 
         WorkOnAnalyzeAndUpdateStatesForVersion();
@@ -593,7 +600,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
             if (!isWebsiteStarted)
             {
-                LogItems.Add(LogItemFactory.CreateWarning("Website have some problem with startup"));
+                AddLogItem(LogLevel.Warning, "Website have some problem with startup");
             }
 
             RunningState = waInstallerService.GetServiceState(Name);

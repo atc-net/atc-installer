@@ -45,3 +45,7 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Logging.Abstractions;
 global using Microsoft.Extensions.Options;
 global using Microsoft.Win32;
+
+global using Serilog;
+global using Serilog.Events;
+global using Serilog.Exceptions;

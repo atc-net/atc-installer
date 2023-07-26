@@ -99,6 +99,8 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
+        loggerComponentProvider.Log(LogLevel.Trace, "Downloading installation files from Azure StorageAccount");
+
         var files = await azureStorageAccountInstallerService
             .DownloadLatestFilesByNames(
                 AzureOptions!.StorageConnectionString,
@@ -117,7 +119,11 @@ public partial class MainWindowViewModel
 
             vm.PrepareInstallationFiles(unpackIfExist: true);
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
+
+            loggerComponentProvider.Log(LogLevel.Information, $"Downloaded installation file: {fileInfo.Name}");
         }
+
+        loggerComponentProvider.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
 
         IsBusy = false;
     }

@@ -69,13 +69,13 @@ public partial class ComponentProviderViewModel
         {
             case ToastNotificationType.Success:
             case ToastNotificationType.Information:
-                LogItems.Add(LogItemFactory.CreateInformation(message));
+                AddLogItem(LogLevel.Information, message);
                 break;
             case ToastNotificationType.Warning:
-                LogItems.Add(LogItemFactory.CreateWarning(message));
+                AddLogItem(LogLevel.Warning, message);
                 break;
             case ToastNotificationType.Error:
-                LogItems.Add(LogItemFactory.CreateError(message));
+                AddLogItem(LogLevel.Error, message);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(toastNotificationType), toastNotificationType, message: null);
@@ -262,6 +262,42 @@ public partial class ComponentProviderViewModel
         XmlDocument xmlDocument)
     { }
 
+    protected void AddLogItem(
+        LogLevel logLevel,
+        string message)
+    {
+        var logMessage = $"Component: {Name} -> {message}";
+        switch (logLevel)
+        {
+            case LogLevel.Trace:
+                LogItems.Add(LogItemFactory.CreateTrace(message));
+                Logger.Log(logLevel, logMessage);
+                break;
+            case LogLevel.Debug:
+                LogItems.Add(LogItemFactory.CreateDebug(message));
+                Logger.Log(logLevel, logMessage);
+                break;
+            case LogLevel.Information:
+                LogItems.Add(LogItemFactory.CreateInformation(message));
+                Logger.Log(logLevel, logMessage);
+                break;
+            case LogLevel.Warning:
+                LogItems.Add(LogItemFactory.CreateWarning(message));
+                Logger.Log(logLevel, logMessage);
+                break;
+            case LogLevel.Error:
+                LogItems.Add(LogItemFactory.CreateError(message));
+                Logger.Log(logLevel, logMessage);
+                break;
+            case LogLevel.Critical:
+                LogItems.Add(LogItemFactory.CreateCritical(message));
+                Logger.Log(logLevel, logMessage);
+                break;
+            default:
+                throw new SwitchCaseDefaultException(logLevel);
+        }
+    }
+
     protected void BackupConfigurationFilesAndLog()
     {
         if (InstallationFolderPath is null)
@@ -269,7 +305,7 @@ public partial class ComponentProviderViewModel
             return;
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Backup files"));
+        AddLogItem(LogLevel.Trace, "Backup files");
 
         var timestamp = DateTime.Now.ToString("yyyyMMdd_hhmmss", GlobalizationConstants.EnglishCultureInfo);
         var backupFolder = Path.Combine(InstallerTempDirectory.FullName, @$"{ProjectName}\Backup\{Name}");
@@ -283,7 +319,7 @@ public partial class ComponentProviderViewModel
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"env_{timestamp}.json");
             File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
-            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+            AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
         sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "appsettings.json");
@@ -291,7 +327,7 @@ public partial class ComponentProviderViewModel
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"appsettings_{timestamp}.json");
             File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
-            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+            AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
         sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "web.config");
@@ -299,7 +335,7 @@ public partial class ComponentProviderViewModel
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"web_{timestamp}.config");
             File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
-            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+            AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
         sourceAppSettingsFile = Path.Combine(InstallationFolderPath, $"{Name}.exe.config");
@@ -307,7 +343,7 @@ public partial class ComponentProviderViewModel
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"{Name}.exe_{timestamp}.config");
             File.Copy(sourceAppSettingsFile, destinationAppSettingsFile, overwrite: true);
-            LogItems.Add(LogItemFactory.CreateTrace($"Backup file: {destinationAppSettingsFile}"));
+            AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
     }
 
@@ -319,7 +355,7 @@ public partial class ComponentProviderViewModel
             return;
         }
 
-        LogItems.Add(LogItemFactory.CreateTrace("Copy files"));
+        AddLogItem(LogLevel.Trace, "Copy files");
 
         ResolveDirectoriesForFolderPermissions();
 
@@ -349,12 +385,12 @@ public partial class ComponentProviderViewModel
             directoryUnpackedZip.CopyAll(directoryInstallation, useRecursive: true, deleteAllFromDestinationBeforeCopy: false);
         }
 
-        LogItems.Add(LogItemFactory.CreateInformation("Files is copied"));
+        AddLogItem(LogLevel.Information, "Files is copied");
     }
 
     protected void UpdateConfigurationFiles()
     {
-        LogItems.Add(LogItemFactory.CreateTrace("Update configuration files"));
+        AddLogItem(LogLevel.Trace, "Update configuration files");
 
         LoadConfigurationFiles();
 
@@ -382,12 +418,12 @@ public partial class ComponentProviderViewModel
             }
         }
 
-        LogItems.Add(LogItemFactory.CreateInformation("Configuration files is updated copied"));
+        AddLogItem(LogLevel.Information, "Configuration files is updated copied");
     }
 
     protected void EnsureFolderPermissions()
     {
-        LogItems.Add(LogItemFactory.CreateTrace("Ensure folder permissions"));
+        AddLogItem(LogLevel.Trace, "Ensure folder permissions");
 
         ResolveDirectoriesForFolderPermissions();
 
@@ -398,7 +434,7 @@ public partial class ComponentProviderViewModel
                 vm.FileSystemRights);
         }
 
-        LogItems.Add(LogItemFactory.CreateInformation("Folder permissions is ensured"));
+        AddLogItem(LogLevel.Information, "Folder permissions is ensured");
     }
 
     protected string ResolveTemplateIfNeededByApplicationSettingsLookup(
