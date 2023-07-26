@@ -21,7 +21,7 @@ public partial class ElasticSearchServerComponentProviderViewModel
 
     private async Task TestConnectionCommandHandler()
     {
-        LogItems.Add(LogItemFactory.CreateTrace("Test connection"));
+        AddLogItem(LogLevel.Trace, "Test connection");
 
         IsBusy = true;
 
@@ -39,12 +39,12 @@ public partial class ElasticSearchServerComponentProviderViewModel
 
         if (isSucceeded)
         {
-            LogItems.Add(LogItemFactory.CreateInformation("Test connection succeeded"));
+            AddLogItem(LogLevel.Information, "Test connection succeeded");
             TestConnectionResult = "Succeeded";
         }
         else
         {
-            LogItems.Add(LogItemFactory.CreateError($"Test connection failed: {errorMessage}"));
+            AddLogItem(LogLevel.Error, $"Test connection failed: {errorMessage}");
             TestConnectionResult = "Failed";
         }
     }

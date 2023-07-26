@@ -106,7 +106,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Stop"));
+        AddLogItem(LogLevel.Trace, "Stop service");
 
         var isStopped = await waInstallerService
             .StopService(ServiceName!)
@@ -143,7 +143,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
 
         IsBusy = true;
 
-        LogItems.Add(LogItemFactory.CreateTrace("Start"));
+        AddLogItem(LogLevel.Trace, "Start service");
 
         var isStarted = await waInstallerService
             .StartService(ServiceName!)
