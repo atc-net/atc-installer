@@ -108,10 +108,64 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET AppHost Pack - 7.");
 
     public bool IsComponentInstalledMicrosoftAspNetCoreModule2()
-        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft ASP.NET Core Module V2");
+    {
+        if (!iaInstallerService.IsAppInstalledByDisplayName("Microsoft ASP.NET Core Module V2"))
+        {
+            return false;
+        }
+
+        var applicationHostConfigFile = Environment.ExpandEnvironmentVariables(@"%windir%\System32\inetsrv\config\applicationHost.config");
+
+        if (!File.Exists(applicationHostConfigFile))
+        {
+            return false;
+        }
+
+        var doc = XDocument.Load(applicationHostConfigFile);
+        if (doc.Root is null)
+        {
+            return false;
+        }
+
+        var moduleElement = doc.Root
+            .Element("system.webServer")!
+            .Element("globalModules")!
+            .Elements("add")
+            .FirstOrDefault(e =>
+                (string)e.Attribute("name")! == "AspNetCoreModuleV2" ||
+                (string)e.Attribute("name")! == "AspNetCoreModule");
+
+        return moduleElement != null;
+    }
 
     public bool IsComponentInstalledUrlRewriteModule2()
-        => iaInstallerService.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2");
+    {
+        if (!iaInstallerService.IsAppInstalledByDisplayName("IIS URL Rewrite Module 2"))
+        {
+            return false;
+        }
+
+        var applicationHostConfigFile = Environment.ExpandEnvironmentVariables(@"%windir%\System32\inetsrv\config\applicationHost.config");
+
+        if (!File.Exists(applicationHostConfigFile))
+        {
+            return false;
+        }
+
+        var doc = XDocument.Load(applicationHostConfigFile);
+        if (doc.Root is null)
+        {
+            return false;
+        }
+
+        var moduleElement = doc.Root
+            .Element("system.webServer")!
+            .Element("globalModules")!
+            .Elements("add")
+            .FirstOrDefault(e => (string)e.Attribute("name")! == "RewriteModule");
+
+        return moduleElement != null;
+    }
 
     public string? ResolvedVirtualRootFolder(
         string folder)
