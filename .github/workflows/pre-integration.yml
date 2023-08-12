@@ -1,15 +1,11 @@
 name: "Pre-Integration"
 
 on:
-  push:
-    branches:
-      - main
-# on:
-#   pull_request:
-#     types:
-#       - opened
-#       - synchronize
-#       - reopened
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   dotnet-build:
