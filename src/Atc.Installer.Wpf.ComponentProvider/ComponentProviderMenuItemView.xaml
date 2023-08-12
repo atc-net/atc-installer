@@ -20,13 +20,13 @@
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
     </UserControl.Resources>
 
-    <atc:GridEx Columns="20,*" Rows="Auto">
+    <atc:GridEx Columns="30,*" Rows="Auto">
         <atc:LoadingIndicator
             Grid.Row="0"
             Grid.Column="0"
             Width="24"
             Height="24"
-            Foreground="{DynamicResource AtcApps.Brushes.Text}"
+            Foreground="{DynamicResource AtcApps.Brushes.ThemeForeground}"
             IsActive="{Binding Path=IsBusy}"
             Mode="ArcsRing" />
 

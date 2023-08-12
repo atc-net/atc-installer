@@ -36,7 +36,7 @@
                 <TextBlock Text="{Binding Path=CurrentVersion}" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Visibility="{Binding Path=HasNewVersion, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}, FallbackValue=True}">
+            <StackPanel Orientation="Horizontal" Visibility="{Binding Path=HasNewVersion, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                 <TextBlock Text="No new updates." />
             </StackPanel>
 

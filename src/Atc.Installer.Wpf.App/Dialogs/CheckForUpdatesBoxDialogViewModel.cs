@@ -23,21 +23,21 @@ public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdates
 
         cancellationTokenSource = new CancellationTokenSource();
         Task.Run(
-        async () =>
-        {
-            while (!cancellationTokenSource.Token.IsCancellationRequested)
+            async () =>
             {
-                if (NetworkInformationHelper.HasConnection())
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    TaskHelper.RunSync(RetrieveLatestFromGitHubHandler);
-                }
+                    if (NetworkInformationHelper.HasConnection())
+                    {
+                        TaskHelper.RunSync(RetrieveLatestFromGitHubHandler);
+                    }
 
-                await Task
-                    .Delay(TimeSpan.FromHours(1), CancellationToken.None)
-                    .ConfigureAwait(true);
-            }
-        },
-        cancellationTokenSource.Token);
+                    await Task
+                        .Delay(TimeSpan.FromHours(1), CancellationToken.None)
+                        .ConfigureAwait(true);
+                }
+            },
+            cancellationTokenSource.Token);
     }
 
     public IRelayCommandAsync DownloadLatestCommand

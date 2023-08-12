@@ -14,6 +14,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly IAzureStorageAccountInstallerService azureStorageAccountInstallerService;
     private readonly ICheckForUpdatesBoxDialogViewModel checkForUpdatesBoxDialogViewModel;
     private readonly ToastNotificationManager notificationManager = new();
+    private string? newVersionIsAvailable;
     private DirectoryInfo? installationDirectory;
     private string? projectName;
     private ComponentProviderViewModel? selectedComponentProvider;
@@ -117,6 +118,22 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
 
         loggerComponentProvider.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
+
+        Task.Factory.StartNew(
+            async () => await CheckForUpdates().ConfigureAwait(false),
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+    }
+
+    public string? NewVersionIsAvailable
+    {
+        get => newVersionIsAvailable;
+        set
+        {
+            newVersionIsAvailable = value;
+            OnPropertyChanged();
+        }
     }
 
     public ApplicationOptionsViewModel ApplicationOptions { get; init; }
@@ -164,6 +181,36 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private void HandleRefreshSelectedComponentProviderMessage(
         RefreshSelectedComponentProviderMessage obj)
         => RaisePropertyChanged(nameof(SelectedComponentProvider));
+
+    private async Task CheckForUpdates()
+    {
+        if (!NetworkInformationHelper.HasConnection())
+        {
+            return;
+        }
+
+        var currentVersion = Assembly
+                .GetExecutingAssembly()
+                .GetName()
+                .Version!
+                .ToString();
+
+        var latestVersion = await gitHubReleaseService
+            .GetLatestVersion()
+            .ConfigureAwait(false);
+
+        if (latestVersion is null)
+        {
+            return;
+        }
+
+        if (Version.TryParse(currentVersion, out var cv) &&
+            Version.TryParse(latestVersion.ToString(), out var lv) &&
+            lv.GreaterThan(cv))
+        {
+            NewVersionIsAvailable = "New version of the installer is available";
+        }
+    }
 
     private void StartMonitoringServices()
     {

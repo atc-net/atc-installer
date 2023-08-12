@@ -88,16 +88,72 @@
             </Menu>
 
             <!--  Main-Content  -->
-            <atc:GridEx Rows="*">
-                <Grid Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
-                    <TextBlock
+            <atc:GridEx Rows="Auto,*">
+
+                <StackPanel
+                    Grid.Row="0"
+                    Background="DarkOrange"
+                    Visibility="{Binding Path=NewVersionIsAvailable, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <atc:ImageButton Command="{Binding Path=OpenApplicationCheckForUpdatesCommand}" Content="{Binding Path=NewVersionIsAvailable, FallbackValue='New version of the installer is available'}">
+                            <atc:ImageButton.Resources>
+                                <Style TargetType="{x:Type atc:ImageButton}">
+                                    <Setter Property="Margin" Value="0,5" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type atc:ImageButton}">
+                                                <Border x:Name="Border" Background="Transparent">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Border" Property="Opacity" Value="0.5" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </atc:ImageButton.Resources>
+                        </atc:ImageButton>
+                    </StackPanel>
+                </StackPanel>
+
+                <!--<atc:ImageButton.ContentTemplate>
+                    <ContentPresenter
+                        x:Name="PART_ContentPresenter"
+                        Grid.Row="1"
+                        Grid.Column="1"
                         HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="{TemplateBinding Content}" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_ContentPresenter" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="False">
+                            <Setter TargetName="PART_ContentPresenter" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="PART_ContentPresenter" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </atc:ImageButton.ContentTemplate>-->
+
+                <Grid Grid.Row="1" Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="161*" />
+                        <ColumnDefinition Width="319*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="149,0,0,0"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         FontSize="24"
                         Text="Please open a configuration file" />
                 </Grid>
-
-                <app:MainWindowProjectContent Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}" />
+                <app:MainWindowProjectContent Grid.Row="1" Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}" />
             </atc:GridEx>
 
         </DockPanel>
