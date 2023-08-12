@@ -467,13 +467,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 break;
 
             case HostingFrameworkType.DotNet7:
-                if (iisInstallerService.IsComponentInstalledMicrosoftNetAppHostPack7())
+                if (iisInstallerService.IsComponentInstalledMicrosoftNetHost7())
                 {
-                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetAppHostPack7", LogCategoryType.Information, "IIS module 'Microsoft .NET AppHost Pack - 7' is installed");
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost7", LogCategoryType.Information, "IIS module 'Microsoft .NET Host - 7' is installed");
                 }
                 else
                 {
-                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetAppHostPack7", LogCategoryType.Warning, "IIS module 'Microsoft .NET AppHost Pack - 7' is not installed");
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost7", LogCategoryType.Warning, "IIS module 'Microsoft .NET Host - 7' is not installed");
                 }
 
                 if (iisInstallerService.IsComponentInstalledMicrosoftAspNetCoreModule2())

@@ -47,7 +47,7 @@ Each component can or will have `pre-requisites` of `dependent services` before 
 
 Examples on `pre-requisites` could be:
 * The fronend needs NodeJs, IIS module "URL rewrite" to be installed.
-* The backend needs IIS module "Microsoft .NET AppHost Pack" and "Microsoft ASP.NET Core" to be installed.
+* The backend needs IIS module "Microsoft .NET Host" and "Microsoft ASP.NET Core" to be installed.
 
 Examples on `dependent services` could be:
 * The fronend is dependet on the backend.

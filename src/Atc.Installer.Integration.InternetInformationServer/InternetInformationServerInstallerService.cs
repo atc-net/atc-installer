@@ -104,8 +104,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         }
     }
 
-    public bool IsComponentInstalledMicrosoftNetAppHostPack7()
-        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET AppHost Pack - 7.");
+    public bool IsComponentInstalledMicrosoftNetHost7()
+        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET Host - 7.");
 
     public bool IsComponentInstalledMicrosoftAspNetCoreModule2()
     {

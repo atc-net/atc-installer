@@ -18,7 +18,7 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     bool IsComponentInstalledWebSockets();
 
-    bool IsComponentInstalledMicrosoftNetAppHostPack7();
+    bool IsComponentInstalledMicrosoftNetHost7();
 
     bool IsComponentInstalledMicrosoftAspNetCoreModule2();
 
