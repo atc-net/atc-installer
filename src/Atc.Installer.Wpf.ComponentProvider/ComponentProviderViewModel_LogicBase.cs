@@ -437,6 +437,68 @@ public partial class ComponentProviderViewModel
         AddLogItem(LogLevel.Information, "Folder permissions is ensured");
     }
 
+    protected void EnsureFirewallRules()
+    {
+        AddLogItem(LogLevel.Trace, "Ensure firewall rules");
+
+        foreach (var vm in FirewallRules.Items)
+        {
+            if (windowsFirewallService.DoesRuleExist(vm.Name))
+            {
+                if (!windowsFirewallService.IsRuleEnabled(vm.Name))
+                {
+                    windowsFirewallService.EnableRule(vm.Name);
+                }
+            }
+            else
+            {
+                switch (vm.Direction)
+                {
+                    case FirewallDirectionType.Inbound when vm.Protocol == FirewallProtocolType.Any:
+                        windowsFirewallService.AddInboundRuleForAllowAny(
+                            vm.Name,
+                            vm.Name,
+                            vm.Port);
+                        break;
+                    case FirewallDirectionType.Inbound when vm.Protocol == FirewallProtocolType.Tcp:
+                        windowsFirewallService.AddInboundRuleForAllowTcp(
+                            vm.Name,
+                            vm.Name,
+                            vm.Port);
+                        break;
+                    case FirewallDirectionType.Inbound when vm.Protocol == FirewallProtocolType.Udp:
+                        windowsFirewallService.AddInboundRuleForAllowUdp(
+                            vm.Name,
+                            vm.Name,
+                            vm.Port);
+                        break;
+                    case FirewallDirectionType.Outbound when vm.Protocol == FirewallProtocolType.Any:
+                        windowsFirewallService.AddOutboundRuleForAllowAny(
+                            vm.Name,
+                            vm.Name,
+                            vm.Port);
+                        break;
+                    case FirewallDirectionType.Outbound when vm.Protocol == FirewallProtocolType.Tcp:
+                        windowsFirewallService.AddOutboundRuleForAllowTcp(
+                            vm.Name,
+                            vm.Name,
+                            vm.Port);
+                        break;
+                    case FirewallDirectionType.Outbound when vm.Protocol == FirewallProtocolType.Udp:
+                        windowsFirewallService.AddOutboundRuleForAllowUdp(
+                            vm.Name,
+                            vm.Name,
+                            vm.Port);
+                        break;
+                    default:
+                        throw new SwitchCaseDefaultException(vm.Direction);
+                }
+            }
+        }
+
+        AddLogItem(LogLevel.Information, "firewall rules is ensured");
+    }
+
     protected string ResolveTemplateIfNeededByApplicationSettingsLookup(
         string value,
         int recursiveCallCount = 0)

@@ -59,6 +59,7 @@ public partial class App
 
         services.AddSingleton<IGitHubReleaseService, GitHubReleaseService>();
         services.AddSingleton<INetworkShellService, NetworkShellService>();
+        services.AddSingleton<IWindowsFirewallService, WindowsFirewallService>();
         services.AddSingleton<IInstalledAppsInstallerService, InstalledAppsInstallerService>();
 
         services.AddSingleton<IElasticSearchServerInstallerService, ElasticSearchServerInstallerService>();

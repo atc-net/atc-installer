@@ -12,6 +12,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         ILogger<ComponentProviderViewModel> logger,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
@@ -21,6 +22,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         : base(
             logger,
             networkShellService,
+            windowsFirewallService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -45,17 +47,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         base.CheckServiceState();
 
-        if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.Running)
-        {
-            RunningState = ComponentRunningState.Checking;
-        }
-
         RunningState = IsWindowsService
             ? waInstallerService.GetServiceState(ServiceName!)
             : waInstallerService.GetApplicationState(Name);
 
-        if (RunningState == ComponentRunningState.Checking)
+        if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
@@ -532,6 +528,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         UpdateConfigurationFiles();
 
         EnsureFolderPermissions();
+
+        EnsureFirewallRules();
 
         if (TryGetStringFromApplicationSettings("WebProtocol", out _))
         {

@@ -26,7 +26,7 @@
 
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
-        <atc:GridEx Columns="50,200,50,*" Rows="Auto">
+        <atc:GridEx Columns="0,200,20,*" Rows="Auto">
             <atc:UniformSpacingPanel
                 Grid.Row="0"
                 Grid.Column="1"
@@ -53,6 +53,11 @@
                 <GroupBox Header="Folder Permissions">
                     <Expander>
                         <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissions}" />
+                    </Expander>
+                </GroupBox>
+                <GroupBox Header="Firewall Rules">
+                    <Expander>
+                        <controls:FirewallRulesView DataContext="{Binding Path=FirewallRules}" />
                     </Expander>
                 </GroupBox>
                 <GroupBox Header="Configuration Settings Files">

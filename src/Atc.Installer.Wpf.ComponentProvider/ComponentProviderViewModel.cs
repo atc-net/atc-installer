@@ -4,6 +4,7 @@ namespace Atc.Installer.Wpf.ComponentProvider;
 public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 {
     private readonly INetworkShellService networkShellService;
+    private readonly IWindowsFirewallService windowsFirewallService;
     private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
@@ -23,6 +24,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         {
             Logger = NullLogger<ComponentProviderViewModel>.Instance;
             networkShellService = new NetworkShellService();
+            windowsFirewallService = new WindowsFirewallService();
             refComponentProviders = new ObservableCollectionEx<ComponentProviderViewModel>();
             InstallationState = ComponentInstallationState.Checking;
             InstallerTempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "atc-installer"));
@@ -40,6 +42,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public ComponentProviderViewModel(
         ILogger<ComponentProviderViewModel> logger,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
@@ -54,6 +57,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         this.Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
+        this.windowsFirewallService = windowsFirewallService ?? throw new ArgumentNullException(nameof(windowsFirewallService));
         this.refComponentProviders = refComponentProviders;
         InstallerTempDirectory = installerTempDirectory;
         InstallationDirectory = installationDirectory;
@@ -61,13 +65,17 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         DefaultApplicationSettings.Populate(defaultApplicationSettings);
         ApplicationSettings.Populate(applicationOption.ApplicationSettings);
         FolderPermissions.Populate(applicationOption.FolderPermissions);
+        FirewallRules.Populate(applicationOption.FirewallRules);
         ConfigurationSettingsFiles.Populate(applicationOption.ConfigurationSettingsFiles);
         Name = applicationOption.Name;
         SetFilterTextForMenu(string.Empty);
 
         ComponentType = applicationOption.ComponentType;
         HostingFramework = applicationOption.HostingFramework;
-        IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
+        IsService = applicationOption.ComponentType
+            is ComponentType.PostgreSqlServer
+            or ComponentType.InternetInformationService
+            or ComponentType.WindowsService;
         if (!string.IsNullOrEmpty(applicationOption.RawInstallationPath))
         {
             RawInstallationPath = ResolveTemplateIfNeededByApplicationSettingsLookup(applicationOption.RawInstallationPath);
@@ -98,6 +106,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public ApplicationSettingsViewModel ApplicationSettings { get; } = new();
 
     public FolderPermissionsViewModel FolderPermissions { get; } = new();
+
+    public FirewallRulesViewModel FirewallRules { get; } = new();
 
     public ConfigurationSettingsFilesViewModel ConfigurationSettingsFiles { get; } = new();
 

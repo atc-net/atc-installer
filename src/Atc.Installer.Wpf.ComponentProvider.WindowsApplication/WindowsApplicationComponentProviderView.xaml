@@ -55,6 +55,11 @@
                         <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissions}" />
                     </Expander>
                 </GroupBox>
+                <GroupBox Header="Firewall Rules">
+                    <Expander>
+                        <controls:FirewallRulesView DataContext="{Binding Path=FirewallRules}" />
+                    </Expander>
+                </GroupBox>
                 <GroupBox Header="Configuration Settings Files">
                     <Expander>
                         <controls:ConfigurationSettingsFilesView DataContext="{Binding Path=ConfigurationSettingsFiles}" />

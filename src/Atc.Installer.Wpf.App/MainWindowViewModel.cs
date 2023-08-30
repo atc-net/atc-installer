@@ -7,6 +7,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private readonly ILogger<ComponentProviderViewModel> loggerComponentProvider;
     private readonly IGitHubReleaseService gitHubReleaseService;
     private readonly INetworkShellService networkShellService;
+    private readonly IWindowsFirewallService windowsFirewallService;
     private readonly IElasticSearchServerInstallerService esInstallerService;
     private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
@@ -20,6 +21,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     public MainWindowViewModel()
     {
         this.loggerComponentProvider = NullLogger<ComponentProviderViewModel>.Instance;
@@ -28,6 +30,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         var installedAppsInstallerService = new InstalledAppsInstallerService();
         this.networkShellService = new NetworkShellService();
+        this.windowsFirewallService = new WindowsFirewallService();
 
         this.waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
         this.iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
@@ -54,6 +57,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 NullLogger<ComponentProviderViewModel>.Instance,
                 waInstallerService,
                 networkShellService,
+                windowsFirewallService,
                 new ObservableCollectionEx<ComponentProviderViewModel>(),
                 App.InstallerTempDirectory,
                 installationDirectory,
@@ -70,6 +74,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 NullLogger<ComponentProviderViewModel>.Instance,
                 iisInstallerService,
                 networkShellService,
+                windowsFirewallService,
                 ComponentProviders,
                 App.InstallerTempDirectory,
                 installationDirectory,
@@ -86,6 +91,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ILogger<ComponentProviderViewModel> loggerComponentProvider,
         IGitHubReleaseService gitHubReleaseService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
@@ -100,6 +106,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.loggerComponentProvider = loggerComponentProvider ?? throw new ArgumentNullException(nameof(loggerComponentProvider));
         this.gitHubReleaseService = gitHubReleaseService ?? throw new ArgumentNullException(nameof(gitHubReleaseService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
+        this.windowsFirewallService = windowsFirewallService ?? throw new ArgumentNullException(nameof(windowsFirewallService));
         this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
@@ -398,6 +405,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             waInstallerService,
             networkShellService,
+            windowsFirewallService,
             ComponentProviders,
             App.InstallerTempDirectory,
             installationDirectory,
@@ -419,6 +427,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             esInstallerService,
             networkShellService,
+            windowsFirewallService,
             waInstallerService,
             ComponentProviders,
             App.InstallerTempDirectory,
@@ -441,6 +450,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             iisInstallerService,
             networkShellService,
+            windowsFirewallService,
             ComponentProviders,
             App.InstallerTempDirectory,
             installationDirectory,
@@ -462,6 +472,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             pgSqlInstallerService,
             networkShellService,
+            windowsFirewallService,
             waInstallerService,
             ComponentProviders,
             App.InstallerTempDirectory,
@@ -482,7 +493,6 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ComponentProviders.Clear();
 
         ComponentProviders.SuppressOnChangedNotification = true;
-        ////foreach (var appInstallationOption in installationOptions.Applications.Take(1)) // TODO:...
         foreach (var appInstallationOption in installationOptions.Applications)
         {
             switch (appInstallationOption.ComponentType)

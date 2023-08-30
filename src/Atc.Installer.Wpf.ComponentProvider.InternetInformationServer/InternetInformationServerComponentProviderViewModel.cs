@@ -10,6 +10,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         ILogger<ComponentProviderViewModel> logger,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
@@ -19,6 +20,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         : base(
             logger,
             networkShellService,
+            windowsFirewallService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -81,13 +83,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return;
         }
 
-        if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartiallyRunning &&
-            RunningState != ComponentRunningState.Running)
-        {
-            RunningState = ComponentRunningState.Checking;
-        }
-
         var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
         var websiteState = iisInstallerService.GetWebsiteState(Name);
 
@@ -100,7 +95,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 : ComponentRunningState.NotAvailable,
         };
 
-        if (RunningState == ComponentRunningState.Checking)
+        if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
@@ -598,6 +593,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         UpdateConfigurationFiles();
 
         EnsureFolderPermissions();
+
+        EnsureFirewallRules();
 
         if (HostingFramework == HostingFrameworkType.NodeJs)
         {

@@ -10,6 +10,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         ILogger<ComponentProviderViewModel> logger,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
@@ -20,6 +21,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         : base(
             logger,
             networkShellService,
+            windowsFirewallService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -81,17 +83,14 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
             return;
         }
 
-        if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartiallyRunning &&
-            RunningState != ComponentRunningState.Running)
-        {
-            RunningState = ComponentRunningState.Checking;
-        }
-
-        var isRunning = esInstallerService.IsRunning;
-        RunningState = isRunning
+        RunningState = esInstallerService.IsRunning
             ? ComponentRunningState.Running
             : ComponentRunningState.Stopped;
+
+        if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
+        {
+            RunningState = ComponentRunningState.NotAvailable;
+        }
     }
 
     public override bool CanServiceStopCommandHandler()

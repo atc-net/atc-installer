@@ -24,6 +24,8 @@ public class ApplicationOption
 
     public IList<FolderPermissionOption> FolderPermissions { get; init; } = new List<FolderPermissionOption>();
 
+    public IList<FirewallRuleOption> FirewallRules { get; init; } = new List<FirewallRuleOption>();
+
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; init; } = new List<ConfigurationSettingsFileOption>();
 
     public IList<EndpointOption> Endpoints { get; init; } = new List<EndpointOption>();

@@ -10,6 +10,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         ILogger<ComponentProviderViewModel> logger,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
@@ -20,6 +21,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         : base(
             logger,
             networkShellService,
+            windowsFirewallService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -90,17 +92,14 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
             return;
         }
 
-        if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartiallyRunning &&
-            RunningState != ComponentRunningState.Running)
-        {
-            RunningState = ComponentRunningState.Checking;
-        }
-
-        var isRunning = pgInstallerService.IsRunning;
-        RunningState = isRunning
+        RunningState = pgInstallerService.IsRunning
             ? ComponentRunningState.Running
             : ComponentRunningState.Stopped;
+
+        if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
+        {
+            RunningState = ComponentRunningState.NotAvailable;
+        }
     }
 
     public override bool TryGetStringFromApplicationSetting(
