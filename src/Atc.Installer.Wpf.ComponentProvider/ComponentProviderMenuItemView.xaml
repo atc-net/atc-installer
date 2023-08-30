@@ -8,10 +8,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters"
-    d:Background="AntiqueWhite"
+    d:Background="White"
     d:DataContext="{d:DesignInstance Type=componentProvider:ComponentProviderViewModel}"
-    d:DesignHeight="80"
-    d:DesignWidth="400"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -20,21 +18,36 @@
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
     </UserControl.Resources>
 
-    <atc:GridEx Columns="30,*" Rows="Auto">
+    <atc:GridEx
+        Margin="10"
+        Columns="35,*,160"
+        Rows="Auto">
+
         <atc:LoadingIndicator
             Grid.Row="0"
             Grid.Column="0"
             Width="24"
             Height="24"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
             Foreground="{DynamicResource AtcApps.Brushes.ThemeForeground}"
             IsActive="{Binding Path=IsBusy}"
             Mode="ArcsRing" />
 
-        <atc:GridEx
+        <TextBlock
             Grid.Row="0"
             Grid.Column="1"
+            VerticalAlignment="Center"
+            atc:TextBlockHelper.Inlines="{Binding HighlightedMenuName}"
+            Text="Component Name" />
+
+        <atc:GridEx
+            Grid.Row="0"
+            Grid.Column="2"
+            VerticalAlignment="Center"
             Columns="*"
-            Rows="Auto,Auto,Auto">
+            Rows="Auto,5,Auto">
+
             <StackPanel
                 Grid.Row="0"
                 Grid.Column="0"
@@ -44,7 +57,8 @@
                 <Label
                     Background="Transparent"
                     Content="{Binding Path=InstallationState, FallbackValue='Installed with newest version', Converter={StaticResource EnumDescriptionToStringValueConverter}}"
-                    FontSize="10" />
+                    FontSize="10"
+                    FontWeight="Light" />
                 <Ellipse
                     Width="20"
                     Height="20"
@@ -52,7 +66,7 @@
             </StackPanel>
 
             <StackPanel
-                Grid.Row="1"
+                Grid.Row="2"
                 Grid.Column="0"
                 Margin="0,0,5,2"
                 HorizontalAlignment="Right"
@@ -60,19 +74,14 @@
                 <Label
                     Background="Transparent"
                     Content="{Binding Path=RunningState, FallbackValue='Running state', Converter={StaticResource EnumDescriptionToStringValueConverter}}"
-                    FontSize="10" />
+                    FontSize="10"
+                    FontWeight="Light" />
                 <Ellipse
                     Width="20"
                     Height="20"
                     Fill="{Binding Path=RunningState, FallbackValue=Red, Converter={StaticResource ComponentRunningStateToBrushValueConverter}}" />
             </StackPanel>
 
-            <TextBlock
-                Grid.Row="2"
-                Grid.Column="0"
-                Margin="0,0,0,10"
-                atc:TextBlockHelper.Inlines="{Binding HighlightedMenuName}"
-                Background="Transparent" />
         </atc:GridEx>
 
     </atc:GridEx>
