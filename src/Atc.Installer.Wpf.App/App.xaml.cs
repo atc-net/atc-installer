@@ -55,7 +55,9 @@ public partial class App
     {
         services
             .AddOptions<ApplicationOptions>()
-            .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName));
+            .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddSingleton<IGitHubReleaseService, GitHubReleaseService>();
         services.AddSingleton<INetworkShellService, NetworkShellService>();
