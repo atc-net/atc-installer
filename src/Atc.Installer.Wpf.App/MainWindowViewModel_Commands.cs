@@ -1,3 +1,4 @@
+// ReSharper disable LoopCanBeConvertedToQuery
 namespace Atc.Installer.Wpf.App;
 
 [SuppressMessage("Design", "MA0048:File name must match type name", Justification = "OK - partial class")]
@@ -140,49 +141,52 @@ public partial class MainWindowViewModel
     private bool CanServiceStopAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStopCommandHandler());
 
-    private async Task ServiceStopAllCommandHandler()
+    private Task ServiceStopAllCommandHandler()
     {
+        var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
             if (vm.CanServiceStopCommandHandler())
             {
-                await vm.ServiceStopCommand
-                    .ExecuteAsync(this)
-                    .ConfigureAwait(false);
+                tasks.Add(vm.ServiceStopCommand.ExecuteAsync(this));
             }
         }
+
+        return TaskHelper.WhenAll(tasks);
     }
 
     private bool CanServiceDeployAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceDeployCommandHandler());
 
-    private async Task ServiceDeployAllCommandHandler()
+    private Task ServiceDeployAllCommandHandler()
     {
+        var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
             if (vm.CanServiceDeployCommandHandler())
             {
-                await vm.ServiceDeployCommand
-                    .ExecuteAsync(this)
-                    .ConfigureAwait(false);
+                tasks.Add(vm.ServiceDeployCommand.ExecuteAsync(this));
             }
         }
+
+        return TaskHelper.WhenAll(tasks);
     }
 
     private bool CanServiceStartAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStartCommandHandler());
 
-    private async Task ServiceStartAllCommandHandler()
+    private Task ServiceStartAllCommandHandler()
     {
+        var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
             if (vm.CanServiceStartCommandHandler())
             {
-                await vm.ServiceStartCommand
-                    .ExecuteAsync(this)
-                    .ConfigureAwait(false);
+                tasks.Add(vm.ServiceStartCommand.ExecuteAsync(this));
             }
         }
+
+        return TaskHelper.WhenAll(tasks);
     }
 
     private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
