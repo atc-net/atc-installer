@@ -6,7 +6,7 @@ public class ComponentInstallationStateToBrushValueConverter : IValueConverter
     public object Convert(
         object? value,
         Type targetType,
-        object parameter,
+        object? parameter,
         CultureInfo culture)
     {
         if (value is null)
@@ -33,9 +33,9 @@ public class ComponentInstallationStateToBrushValueConverter : IValueConverter
     }
 
     public object ConvertBack(
-        object value,
+        object? value,
         Type targetType,
-        object parameter,
+        object? parameter,
         CultureInfo culture)
         => ComponentInstallationState.Unknown;
 }

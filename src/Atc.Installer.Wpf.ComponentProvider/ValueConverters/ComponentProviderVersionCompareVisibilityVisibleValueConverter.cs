@@ -4,9 +4,9 @@ namespace Atc.Installer.Wpf.ComponentProvider.ValueConverters;
 public class ComponentProviderVersionCompareVisibilityVisibleValueConverter : IValueConverter
 {
     public object Convert(
-        object value,
+        object? value,
         Type targetType,
-        object parameter,
+        object? parameter,
         CultureInfo culture)
     {
         if (value is not ComponentProviderViewModel vm)
@@ -26,9 +26,9 @@ public class ComponentProviderVersionCompareVisibilityVisibleValueConverter : IV
     }
 
     public object? ConvertBack(
-        object value,
+        object? value,
         Type targetType,
-        object parameter,
+        object? parameter,
         CultureInfo culture) => null;
 
     private static Visibility AnalyzeForJsVersion(
