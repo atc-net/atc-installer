@@ -77,4 +77,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
         value = default;
         return false;
     }
+
+    public override string ToString()
+        => string.Join("; ", Items);
 }
