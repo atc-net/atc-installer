@@ -1,12 +1,14 @@
-<atc:NiceWindow
+<atcDialogs:NiceDialogBox
     x:Class="Atc.Installer.Wpf.App.Dialogs.CheckForUpdatesBoxDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:atcDialogs="clr-namespace:Atc.Wpf.Theming.Themes.Dialogs;assembly=Atc.Wpf.Theming"
     xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dialogs="clr-namespace:Atc.Installer.Wpf.App.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="DialogCheckForUpdates"
     Title="Check for updates"
     Width="350"
     Height="250"
@@ -23,9 +25,40 @@
         <atcValueConverters:BoolToVisibilityCollapsedValueConverter x:Key="BoolToVisibilityCollapsedValueConverter" />
     </atc:NiceWindow.Resources>
 
-    <atc:GridEx Margin="20" Rows="*,Auto">
+    <DockPanel>
+
+        <Border
+            Height="50"
+            Background="{DynamicResource AtcApps.Brushes.ThemeBackground1}"
+            BorderBrush="{DynamicResource AtcApps.Brushes.Accent}"
+            BorderThickness="0,1,0,0"
+            DockPanel.Dock="Bottom">
+            <atc:UniformSpacingPanel
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="20">
+                <Button
+                    Width="100"
+                    Height="30"
+                    Background="{DynamicResource AtcApps.Brushes.ThemeBackground}"
+                    Command="{Binding Path=DownloadLatestCommand}"
+                    Content="Download Latest"
+                    Foreground="{DynamicResource AtcApps.Brushes.Text}"
+                    IsDefault="True" />
+                <Button
+                    Width="100"
+                    Height="30"
+                    Background="{DynamicResource AtcApps.Brushes.ThemeBackground}"
+                    Command="{Binding Path=CancelCommand}"
+                    CommandParameter="{Binding ElementName=DialogCheckForUpdates}"
+                    Content="Cancel"
+                    Foreground="{DynamicResource AtcApps.Brushes.Text}"
+                    IsCancel="True" />
+            </atc:UniformSpacingPanel>
+        </Border>
+
         <atc:UniformSpacingPanel
-            Grid.Row="0"
+            Margin="20"
             Orientation="Vertical"
             Spacing="20">
 
@@ -47,20 +80,6 @@
 
         </atc:UniformSpacingPanel>
 
-        <atc:GridEx
-            Grid.Row="1"
-            Margin="10"
-            Columns="*,10,*">
-            <Button
-                Grid.Column="0"
-                Command="{Binding Path=DownloadLatestCommand}"
-                Content="Download Latest" />
-            <Button
-                Grid.Column="2"
-                Click="OnOk"
-                Content="OK" />
-        </atc:GridEx>
+    </DockPanel>
 
-    </atc:GridEx>
-
-</atc:NiceWindow>
+</atcDialogs:NiceDialogBox>
