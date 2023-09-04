@@ -34,8 +34,8 @@ global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Controls.Notifications.Messages;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
-global using Atc.Wpf.Theming.Controls.Windows;
 global using Atc.Wpf.Theming.Themes.Dialogs;
+
 global using ControlzEx.Theming;
 
 global using Microsoft.Extensions.Configuration;

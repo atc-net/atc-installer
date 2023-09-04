@@ -16,7 +16,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
-        IDictionary<string, object> defaultApplicationSettings,
+        ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             logger,
@@ -40,7 +40,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
     private void InitializeFromApplicationOptions()
     {
-        InstalledMainFilePath = pgInstallerService.GetInstalledMainFile()?.FullName;
+        InstalledMainFilePath = new ValueTemplateItemViewModel(pgInstallerService.GetInstalledMainFile()?.FullName!, template: null, templateLocations: null);
         ServiceName = pgInstallerService.GetServiceName();
 
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))

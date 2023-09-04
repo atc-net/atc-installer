@@ -19,6 +19,11 @@ public partial class MainWindowViewModel
         => new RelayCommandAsync<string>(
             OpenRecentConfigurationFileCommandHandler);
 
+    public IRelayCommandAsync SaveConfigurationFileCommand
+        => new RelayCommandAsync(
+            SaveConfigurationFileCommandHandler,
+            CanSaveConfigurationFileCommandHandler);
+
     public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand
         => new RelayCommandAsync(
             DownloadInstallationFilesFromAzureStorageAccountCommandHandler,
@@ -69,15 +74,92 @@ public partial class MainWindowViewModel
 
     private void OpenApplicationSettingsCommandHandler()
     {
-        new ApplicationSettingsDialog(
-            new ApplicationSettingsDialogViewModel(ApplicationOptions)).ShowDialog();
+        var vm = new ApplicationSettingsDialogViewModel(ApplicationOptions);
+        var dialogResult = new ApplicationSettingsDialog(vm).ShowDialog();
+        if (!dialogResult.HasValue)
+        {
+            return;
+        }
+
+        if (dialogResult.Value)
+        {
+            ApplicationOptions = vm.ApplicationOptions.Clone();
+        }
     }
+
+    private bool CanOpenRecentConfigurationFileCommandHandler()
+        => RecentOpenFiles is not null &&
+           RecentOpenFiles.Count != 0;
 
     private Task OpenRecentConfigurationFileCommandHandler(
         string filePath)
         => LoadConfigurationFile(
             new FileInfo(filePath),
             CancellationToken.None);
+
+    private bool CanSaveConfigurationFileCommandHandler()
+    {
+        return ApplicationOptions.EnableEditingMode;
+
+        // TODO:
+        return ApplicationOptions.EnableEditingMode &&
+               InstallationFile is not null &&
+               (IsDirty ||
+                ComponentProviders.Any(x => x.IsDirty ||
+                                            x.DefaultApplicationSettings.IsDirty ||
+                                            x.ApplicationSettings.IsDirty ||
+                                            x.FolderPermissions.IsDirty ||
+                                            x.FirewallRules.IsDirty ||
+                                            x.ConfigurationSettingsFiles.IsDirty));
+    }
+
+    private async Task SaveConfigurationFileCommandHandler()
+    {
+        // TODO: Use InstallationFile
+        var file = new FileInfo(@"C:\Temp\test.json");
+        try
+        {
+            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {file.FullName}");
+
+            var installationOption = new InstallationOption();
+            if (ProjectName is not null)
+            {
+                installationOption.Name = ProjectName;
+            }
+
+            if (AzureOptions is not null)
+            {
+                installationOption.Azure = new AzureOptions
+                {
+                    StorageConnectionString = AzureOptions.StorageConnectionString,
+                    BlobContainerName = AzureOptions.BlobContainerName,
+                };
+            }
+
+            foreach (var keyValueTemplateItem in DefaultApplicationSettings)
+            {
+                installationOption.DefaultApplicationSettings.Add(
+                    new KeyValuePair<string, object>(keyValueTemplateItem.Key, keyValueTemplateItem.Value));
+            }
+
+            foreach (var componentProvider in ComponentProviders)
+            {
+                var applicationOption = CreateApplicationOption(componentProvider);
+
+                installationOption.Applications.Add(applicationOption);
+            }
+
+            var json = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
+            await FileHelper.WriteAllTextAsync(file, json, cancellationTokenSource!.Token).ConfigureAwait(true);
+
+            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {file.FullName}");
+        }
+        catch (Exception ex)
+        {
+            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
+            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+        }
+    }
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
         => AzureOptions is not null &&
@@ -187,43 +269,5 @@ public partial class MainWindowViewModel
         }
 
         return TaskHelper.WhenAll(tasks);
-    }
-
-    private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
-    {
-        var components = new List<(string ComponentName, string? ContentHash)>();
-        foreach (var vm in ComponentProviders)
-        {
-            if (vm.InstallationFile is null)
-            {
-                components.Add((vm.Name, ContentHash: null));
-            }
-            else
-            {
-                var existingInstallationFileInfo = new FileInfo(Path.Combine(vm.InstallationDirectory.FullName, vm.InstallationFile));
-                if (existingInstallationFileInfo.Exists)
-                {
-                    var calculateMd5 = CalculateMd5(existingInstallationFileInfo);
-                    components.Add((vm.Name, ContentHash: calculateMd5));
-                }
-                else
-                {
-                    components.Add((vm.Name, ContentHash: null));
-                }
-            }
-        }
-
-        return components;
-    }
-
-    public static string CalculateMd5(
-        FileInfo file)
-    {
-        ArgumentNullException.ThrowIfNull(file);
-
-        using var md5 = MD5.Create();
-        using var stream = File.OpenRead(file.FullName);
-        var hash = md5.ComputeHash(stream);
-        return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
     }
 }

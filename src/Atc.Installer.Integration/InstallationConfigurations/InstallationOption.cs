@@ -6,7 +6,7 @@ public class InstallationOption
 
     public AzureOptions Azure { get; set; } = new();
 
-    public IDictionary<string, object> DefaultApplicationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public IDictionary<string, object> DefaultApplicationSettings { get; set; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
-    public IList<ApplicationOption> Applications { get; init; } = new List<ApplicationOption>();
+    public IList<ApplicationOption> Applications { get; set; } = new List<ApplicationOption>();
 }

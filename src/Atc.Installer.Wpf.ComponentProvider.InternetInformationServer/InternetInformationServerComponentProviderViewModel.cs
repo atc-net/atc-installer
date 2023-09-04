@@ -15,7 +15,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
-        IDictionary<string, object> defaultApplicationSettings,
+        ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             logger,
@@ -151,11 +151,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 {
                     var attributeKey = setting.Attributes.FirstOrDefault(x => x.Key == "key");
                     var attributeValue = setting.Attributes.FirstOrDefault(x => x.Key == "value");
-                    if (!string.IsNullOrEmpty(attributeKey?.Value?.ToString()) &&
-                        !string.IsNullOrEmpty(attributeValue?.Value?.ToString()))
+                    if (!string.IsNullOrEmpty(attributeKey?.GetValueAsString()) &&
+                        !string.IsNullOrEmpty(attributeValue?.GetValueAsString()))
                     {
-                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value.ToString()!);
-                        xmlDocument.SetAppSettings(attributeKey.Value.ToString()!, value);
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.GetValueAsString());
+                        xmlDocument.SetAppSettings(attributeKey.GetValueAsString(), value);
                     }
                 }
                 else
@@ -167,7 +167,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                             continue;
                         }
 
-                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.Value.ToString()!);
+                        var value = ResolveTemplateIfNeededByApplicationSettingsLookup(settingAttribute.GetValueAsString());
                         xmlDocument.SetValue(setting.Path, setting.Element, settingAttribute.Key, value);
                     }
                 }
@@ -182,7 +182,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         if (InstallationFolderPath is not null)
         {
-            folder = folder.Replace(".", InstallationFolderPath, StringComparison.Ordinal);
+            folder = folder.Replace(".", InstallationFolderPath.GetValueAsString(), StringComparison.Ordinal);
         }
 
         return folder;
@@ -306,17 +306,38 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public override Task ServiceDeployAndStartCommandHandler()
         => ServiceDeployAndStart(useAutoStart: true);
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void InitializeFromApplicationOptions(
         ApplicationOption applicationOption)
     {
         if (InstallationFolderPath is not null)
         {
-            InstallationFolderPath = iisInstallerService.ResolvedVirtualRootFolder(InstallationFolderPath)!;
+            var folderPath = InstallationFolderPath.GetValueAsString();
+            if (folderPath.StartsWith('.'))
+            {
+                InstallationFolderPath.Template = folderPath;
+                InstallationFolderPath.TemplateLocations = new ObservableCollectionEx<string>
+                {
+                    "WwwRoot",
+                };
+
+                InstallationFolderPath.Value = iisInstallerService.ResolvedVirtualRootFolder(folderPath)!;
+            }
         }
 
         if (InstalledMainFilePath is not null)
         {
-            InstalledMainFilePath = iisInstallerService.ResolvedVirtualRootFolder(InstalledMainFilePath);
+            var folderPath = InstalledMainFilePath.GetValueAsString();
+            if (folderPath.StartsWith('.'))
+            {
+                InstalledMainFilePath.Template = folderPath;
+                InstalledMainFilePath.TemplateLocations = new ObservableCollectionEx<string>
+                {
+                    "WwwRoot",
+                };
+
+                InstalledMainFilePath.Value = iisInstallerService.ResolvedVirtualRootFolder(folderPath)!;
+            }
         }
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
@@ -334,11 +355,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
                     swaggerEnabledValue)
                 {
-                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}/swagger"));
+                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}/swagger", null, null));
                 }
                 else
                 {
-                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}"));
+                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}", null, null));
                 }
             }
         }
@@ -351,22 +372,55 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
                     swaggerEnabledValue)
                 {
-                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}/swagger"));
+                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}/swagger", null, null));
                 }
                 else
                 {
-                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}"));
+                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}", null, null));
                 }
             }
         }
 
         foreach (var endpoint in applicationOption.Endpoints)
         {
-            Endpoints.Add(
-                new EndpointViewModel(
-                    endpoint.Name,
-                    endpoint.EndpointType,
-                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
+            var endpointType = endpoint.EndpointType;
+            if (endpointType == ComponentEndpointType.Unknown)
+            {
+                if (endpoint.Name.Equals("AssemblyInfo", StringComparison.Ordinal))
+                {
+                    endpointType = ComponentEndpointType.ReportingAssemblyInfo;
+                }
+                else if (endpoint.Name.Equals("HealthCheck", StringComparison.Ordinal))
+                {
+                    endpointType = ComponentEndpointType.ReportingHealthCheck;
+                }
+            }
+
+            if (endpoint.Endpoint.ContainsTemplateKeyBrackets())
+            {
+                var (resolvedValue, templateLocations) = ResolveValueAndTemplateLocations(endpoint.Endpoint);
+
+                if (templateLocations.Count > 0)
+                {
+                    Endpoints.Add(
+                        new EndpointViewModel(
+                            endpoint.Name,
+                            endpointType,
+                            resolvedValue,
+                            template: endpoint.Endpoint,
+                            templateLocations));
+                }
+            }
+            else
+            {
+                Endpoints.Add(
+                    new EndpointViewModel(
+                        endpoint.Name,
+                        endpointType,
+                        endpoint.Endpoint,
+                        template: null,
+                        templateLocations: null));
+            }
         }
     }
 
@@ -538,7 +592,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 Name,
                 Name,
                 setApplicationPoolToUseDotNetClr: true,
-                new DirectoryInfo(InstallationFolderPath),
+                new DirectoryInfo(InstallationFolderPath.GetValueAsString()),
                 HttpPort.Value,
                 HttpsPort,
                 HostName,
@@ -603,7 +657,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .ConfigureAwait(true);
 
             await iisInstallerService
-                .EnsureSettingsForComponentUrlRewriteModule2(new DirectoryInfo(InstallationFolderPath!))
+                .EnsureSettingsForComponentUrlRewriteModule2(new DirectoryInfo(InstallationFolderPath!.GetValueAsString()))
                 .ConfigureAwait(true);
         }
 

@@ -2,7 +2,8 @@
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace Atc.Installer.Wpf.App;
 
-public partial class MainWindowViewModel : MainWindowViewModelBase
+[SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowViewModel
 {
     private readonly ILogger<ComponentProviderViewModel> loggerComponentProvider;
     private readonly IGitHubReleaseService gitHubReleaseService;
@@ -21,7 +22,6 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
 
-    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     public MainWindowViewModel()
     {
         this.loggerComponentProvider = NullLogger<ComponentProviderViewModel>.Instance;
@@ -62,7 +62,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 App.InstallerTempDirectory,
                 installationDirectory,
                 ProjectName,
-                new Dictionary<string, object>(StringComparer.Ordinal),
+                new ObservableCollectionEx<KeyValueTemplateItemViewModel>(),
                 new ApplicationOption
                 {
                     Name = "My-NT-Service",
@@ -79,7 +79,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 App.InstallerTempDirectory,
                 installationDirectory,
                 ProjectName,
-                new Dictionary<string, object>(StringComparer.Ordinal),
+                new ObservableCollectionEx<KeyValueTemplateItemViewModel>(),
                 new ApplicationOption
                 {
                     Name = "My-WebApi",
@@ -143,11 +143,13 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
     }
 
-    public ApplicationOptionsViewModel ApplicationOptions { get; init; }
+    public ApplicationOptionsViewModel ApplicationOptions { get; set; }
 
     public AzureOptionsViewModel? AzureOptions { get; set; }
 
-    public IDictionary<string, object> DefaultApplicationSettings { get; private set; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public ObservableCollectionEx<KeyValueTemplateItemViewModel> DefaultApplicationSettings { get; private set; } = new();
+
+    public FileInfo? InstallationFile { get; private set; }
 
     public string? ProjectName
     {
@@ -170,6 +172,38 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         {
             selectedComponentProvider = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public new void OnKeyDown(
+        object sender,
+        KeyEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        base.OnKeyDown(sender, e);
+
+        if (!e.Handled &&
+            Keyboard.Modifiers == ModifierKeys.Control &&
+            e.Key == Key.O)
+        {
+            OpenConfigurationFileCommandHandler().ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        if (!e.Handled &&
+            Keyboard.Modifiers == ModifierKeys.Control &&
+            e.Key == Key.R &&
+            CanOpenRecentConfigurationFileCommandHandler())
+        {
+            OpenRecentConfigurationFileCommandHandler(RecentOpenFiles[0].File).ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        if (!e.Handled &&
+            Keyboard.Modifiers == ModifierKeys.Control &&
+            e.Key == Key.S &&
+            CanSaveConfigurationFileCommandHandler())
+        {
+            SaveConfigurationFileCommandHandler().ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 
@@ -262,7 +296,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
             var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
                 json,
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
+                App.JsonSerializerOptions) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
 
             RecentOpenFiles.Clear();
 
@@ -318,9 +352,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             Directory.CreateDirectory(App.InstallerProgramDataDirectory.FullName);
         }
 
-        var json = JsonSerializer.Serialize(
-            recentOpenFilesOption,
-            JsonSerializerOptionsFactory.Create());
+        var json = JsonSerializer.Serialize(recentOpenFilesOption, App.JsonSerializerOptions);
         File.WriteAllText(recentOpenFilesFilePath, json);
 
         LoadRecentOpenFiles();
@@ -342,13 +374,13 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
             var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
                 json,
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
+                App.JsonSerializerOptions) ?? throw new IOException($"Invalid format in {file}");
 
             installationDirectory = new DirectoryInfo(file.Directory!.FullName);
 
             ValidateConfigurationFile(installationOptions);
 
-            Populate(installationOptions);
+            Populate(file, installationOptions);
 
             AddLoadedFileToRecentOpenFiles(file);
 
@@ -484,11 +516,22 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     }
 
     private void Populate(
+        FileInfo installationFile,
         InstallationOption installationOptions)
     {
+        InstallationFile = installationFile;
         ProjectName = installationOptions.Name;
         AzureOptions = new AzureOptionsViewModel(installationOptions.Azure);
-        DefaultApplicationSettings = installationOptions.DefaultApplicationSettings;
+        DefaultApplicationSettings = new ObservableCollectionEx<KeyValueTemplateItemViewModel>();
+        foreach (var item in installationOptions.DefaultApplicationSettings)
+        {
+            DefaultApplicationSettings.Add(
+                new KeyValueTemplateItemViewModel(
+                    item.Key,
+                    item.Value,
+                    template: null,
+                    templateLocations: new List<string> { nameof(DefaultApplicationSettings) }));
+        }
 
         ComponentProviders.Clear();
 

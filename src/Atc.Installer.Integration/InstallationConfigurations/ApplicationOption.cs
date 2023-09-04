@@ -16,17 +16,17 @@ public class ApplicationOption
 
     public string? RawInstallationPath { get; set; }
 
-    public IList<string> DependentComponents { get; init; } = new List<string>();
+    public IList<string> DependentComponents { get; set; } = new List<string>();
 
     public IList<string> DependentServices { get; init; } = new List<string>();
 
-    public IDictionary<string, object> ApplicationSettings { get; init; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public IDictionary<string, object> ApplicationSettings { get; set; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
-    public IList<FolderPermissionOption> FolderPermissions { get; init; } = new List<FolderPermissionOption>();
+    public IList<FolderPermissionOption> FolderPermissions { get; set; } = new List<FolderPermissionOption>();
 
-    public IList<FirewallRuleOption> FirewallRules { get; init; } = new List<FirewallRuleOption>();
+    public IList<FirewallRuleOption> FirewallRules { get; set; } = new List<FirewallRuleOption>();
 
-    public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; init; } = new List<ConfigurationSettingsFileOption>();
+    public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; set; } = new List<ConfigurationSettingsFileOption>();
 
     public IList<EndpointOption> Endpoints { get; init; } = new List<EndpointOption>();
 

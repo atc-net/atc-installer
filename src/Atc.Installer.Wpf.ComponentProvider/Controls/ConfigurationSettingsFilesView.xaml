@@ -12,83 +12,203 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
 
-    <Grid>
-        <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
+    <StackPanel Orientation="Vertical">
+        <ItemsControl ItemsSource="{Binding Path=JsonItems}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <Button
+                            Margin="7"
+                            HorizontalAlignment="Left"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Path=DataContext.NewJsonCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}"
+                            IsEnabled="{Binding Path=DataContext.EnableEditingMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+                            <StackPanel Orientation="Horizontal">
+                                <atc:SvgImage
+                                    Width="16"
+                                    Height="16"
+                                    ControlSizeType="ContentToSizeNoStretch"
+                                    OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                    Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/new.svg" />
+                                <TextBlock Margin="10,0,0,0" Text="New" />
+                            </StackPanel>
+                        </Button>
 
-            <ItemsControl ItemsSource="{Binding Path=JsonItems}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Vertical">
-                            <atc:LabelTextInfo
-                                HideAreas="All"
-                                LabelText="File"
-                                Style="{DynamicResource AtcApps.Styles.LabelTextInfo}"
-                                Text="{Binding Path=FileName}" />
-                            <ListView ItemsSource="{Binding Path=Settings}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn
-                                            Width="200"
-                                            DisplayMemberBinding="{Binding Path=Key}"
-                                            Header="Key" />
-                                        <GridViewColumn
-                                            Width="500"
-                                            DisplayMemberBinding="{Binding Path=Value}"
-                                            Header="Value" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                        <atc:LabelTextInfo
+                            HideAreas="All"
+                            LabelText="File"
+                            Style="{DynamicResource AtcApps.Styles.LabelTextInfo}"
+                            Text="{Binding Path=FileName}" />
 
-            <ItemsControl ItemsSource="{Binding Path=XmlItems}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Vertical">
-                            <atc:LabelTextInfo
-                                HideAreas="All"
-                                LabelText="File"
-                                Style="{DynamicResource AtcApps.Styles.LabelTextInfo}"
-                                Text="{Binding Path=FileName}" />
-                            <ListView ItemsSource="{Binding Path=Settings}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn
-                                            Width="180"
-                                            DisplayMemberBinding="{Binding Path=Path}"
-                                            Header="Path" />
-                                        <GridViewColumn
-                                            Width="100"
-                                            DisplayMemberBinding="{Binding Path=Element}"
-                                            Header="Element" />
-                                        <GridViewColumn Width="Auto" Header="Attributes">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <ItemsControl d:DataContext="{d:DesignInstance Type=viewModels:XmlElementViewModel}" ItemsSource="{Binding Path=Attributes}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Path=Key}" />
-                                                                    <TextBlock Text="=" />
-                                                                    <TextBlock Text="{Binding Path=Value}" />
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                        <ListView ItemsSource="{Binding Path=Settings}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Width="Auto" Header="Actions">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <atc:UniformSpacingPanel
+                                                    IsEnabled="{Binding Path=DataContext.EnableEditingMode, RelativeSource={RelativeSource AncestorType=controls:ConfigurationSettingsFilesView}}"
+                                                    Orientation="Horizontal"
+                                                    Spacing="10">
+                                                    <Button
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{Binding Path=DataContext.EditJsonCommand, RelativeSource={RelativeSource AncestorType=controls:ConfigurationSettingsFilesView}}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip="Edit">
+                                                        <atc:SvgImage
+                                                            Width="16"
+                                                            Height="16"
+                                                            ControlSizeType="ContentToSizeNoStretch"
+                                                            OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                                            Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/edit.svg" />
+                                                    </Button>
+                                                    <Button
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{Binding Path=DataContext.DeleteJsonCommand, RelativeSource={RelativeSource AncestorType=controls:ConfigurationSettingsFilesView}}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip="Delete">
+                                                        <atc:SvgImage
+                                                            Width="16"
+                                                            Height="16"
+                                                            ControlSizeType="ContentToSizeNoStretch"
+                                                            OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                                            Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/delete.svg" />
+                                                    </Button>
+                                                </atc:UniformSpacingPanel>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn
+                                        Width="200"
+                                        DisplayMemberBinding="{Binding Path=Key}"
+                                        Header="Key" />
+                                    <GridViewColumn
+                                        Width="500"
+                                        DisplayMemberBinding="{Binding Path=Value}"
+                                        Header="Value" />
+                                    <GridViewColumn
+                                        Width="Auto"
+                                        DisplayMemberBinding="{Binding Path=Template}"
+                                        Header="Template" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
-        </atc:UniformSpacingPanel>
-    </Grid>
+        <ItemsControl ItemsSource="{Binding Path=XmlItems}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <Button
+                            Margin="7"
+                            HorizontalAlignment="Left"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Path=DataContext.NewXmlCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}"
+                            IsEnabled="{Binding Path=DataContext.EnableEditingMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+                            <StackPanel Orientation="Horizontal">
+                                <atc:SvgImage
+                                    Width="16"
+                                    Height="16"
+                                    ControlSizeType="ContentToSizeNoStretch"
+                                    OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                    Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/new.svg" />
+                                <TextBlock Margin="10,0,0,0" Text="New" />
+                            </StackPanel>
+                        </Button>
+
+                        <atc:LabelTextInfo
+                            HideAreas="All"
+                            LabelText="File"
+                            Style="{DynamicResource AtcApps.Styles.LabelTextInfo}"
+                            Text="{Binding Path=FileName}" />
+
+                        <ListView ItemsSource="{Binding Path=Settings}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Width="Auto" Header="Actions">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <atc:UniformSpacingPanel
+                                                    IsEnabled="{Binding Path=DataContext.EnableEditingMode, RelativeSource={RelativeSource AncestorType=controls:ConfigurationSettingsFilesView}}"
+                                                    Orientation="Horizontal"
+                                                    Spacing="10">
+                                                    <Button
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{Binding Path=DataContext.EditXmlCommand, RelativeSource={RelativeSource AncestorType=controls:ConfigurationSettingsFilesView}}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip="Edit">
+                                                        <atc:SvgImage
+                                                            Width="16"
+                                                            Height="16"
+                                                            ControlSizeType="ContentToSizeNoStretch"
+                                                            OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                                            Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/edit.svg" />
+                                                    </Button>
+                                                    <Button
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{Binding Path=DataContext.DeleteXmlCommand, RelativeSource={RelativeSource AncestorType=controls:ConfigurationSettingsFilesView}}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip="Delete">
+                                                        <atc:SvgImage
+                                                            Width="16"
+                                                            Height="16"
+                                                            ControlSizeType="ContentToSizeNoStretch"
+                                                            OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                                            Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/delete.svg" />
+                                                    </Button>
+                                                </atc:UniformSpacingPanel>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn
+                                        Width="180"
+                                        DisplayMemberBinding="{Binding Path=Path}"
+                                        Header="Path" />
+                                    <GridViewColumn
+                                        Width="100"
+                                        DisplayMemberBinding="{Binding Path=Element}"
+                                        Header="Element" />
+                                    <GridViewColumn Width="Auto" Header="Attributes">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ItemsControl d:DataContext="{d:DesignInstance Type=viewModels:XmlElementViewModel}" ItemsSource="{Binding Path=Attributes}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Path=Key}" />
+                                                                <TextBlock Text="=" />
+                                                                <TextBlock Text="{Binding Path=Value}" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
 
 </UserControl>

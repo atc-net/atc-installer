@@ -16,7 +16,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
-        IDictionary<string, object> defaultApplicationSettings,
+        ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             logger,
@@ -169,7 +169,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
 
     private void InitializeFromApplicationOptions(ApplicationOption applicationOption)
     {
-        InstalledMainFilePath = esInstallerService.GetInstalledMainFile()?.FullName;
+        InstalledMainFilePath = new ValueTemplateItemViewModel(esInstallerService.GetInstalledMainFile()?.FullName!, template: null, templateLocations: null);
         ServiceName = esInstallerService.GetServiceName();
 
         IsRequiredJava = applicationOption.DependentComponents.Contains("Java", StringComparer.Ordinal);

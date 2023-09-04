@@ -17,6 +17,16 @@ public partial class App
 
     public static DirectoryInfo InstallerProgramDataProjectsDirectory => new(Path.Combine(InstallerProgramDataDirectory.FullName, "Projects"));
 
+    public static JsonSerializerOptions JsonSerializerOptions
+    {
+        get
+        {
+            var jsonSerializerOptions = JsonSerializerOptionsFactory.Create();
+            jsonSerializerOptions.PropertyNamingPolicy = null;
+            return jsonSerializerOptions;
+        }
+    }
+
     public App()
     {
         EnsureInstallerDirectoriesIsCreated();
@@ -71,7 +81,7 @@ public partial class App
         services.AddSingleton<IAzureStorageAccountInstallerService, AzureStorageAccountInstallerService>();
 
         services.AddSingleton<ICheckForUpdatesBoxDialogViewModel, CheckForUpdatesBoxDialogViewModel>();
-        services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();
+        services.AddSingleton<IMainWindowViewModel, MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
     }
 
@@ -160,11 +170,11 @@ public partial class App
 
             var customSettings = JsonSerializer.Deserialize<InstallationOption>(
                 File.ReadAllText(customSettingsFile.FullName),
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {customSettingsFile.FullName}");
+                JsonSerializerOptions) ?? throw new IOException($"Invalid format in {customSettingsFile.FullName}");
 
             var templateSettings = JsonSerializer.Deserialize<InstallationOption>(
                 File.ReadAllText(templateSettingsFile.FullName),
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {templateSettingsFile.FullName}");
+                JsonSerializerOptions) ?? throw new IOException($"Invalid format in {templateSettingsFile.FullName}");
 
             templateSettings.Azure = customSettings.Azure;
             foreach (var item in customSettings.DefaultApplicationSettings)
@@ -177,10 +187,7 @@ public partial class App
 
             var installationSettingsJson = JsonSerializer.Serialize(
                 templateSettings,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                });
+                JsonSerializerOptions);
 
             var installationSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.InstallationSettingsFileName));
             if (installationSettingsFile.Exists)

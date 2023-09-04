@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\delete.svg" />
+    <None Remove="Resources\edit.svg" />
+    <None Remove="Resources\new.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Atc" Version="2.0.349" />
     <PackageReference Include="Atc.Wpf" Version="2.0.260" />
     <PackageReference Include="Atc.Wpf.Controls" Version="2.0.260" />
@@ -23,6 +29,12 @@
     <Page Update="Styles.xaml">
       <SubType>Designer</SubType>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\delete.svg" />
+    <Resource Include="Resources\edit.svg" />
+    <Resource Include="Resources\new.svg" />
   </ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 namespace Atc.Installer.Wpf.ComponentProvider.ViewModels;
 
 public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
@@ -9,9 +10,10 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
     }
 
     public ConfigurationSettingsJsonFileViewModel(
+        ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
-        Populate(configurationSettingsFileOption);
+        Populate(refComponentProviderViewModel, configurationSettingsFileOption);
     }
 
     public string FileName
@@ -24,11 +26,13 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollectionEx<KeyValueItemViewModel> Settings { get; init; } = new();
+    public ObservableCollectionEx<KeyValueTemplateItemViewModel> Settings { get; init; } = new();
 
     public void Populate(
+        ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
+        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
         ArgumentNullException.ThrowIfNull(configurationSettingsFileOption);
 
         FileName = configurationSettingsFileOption.FileName;
@@ -39,7 +43,30 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
 
         foreach (var keyValuePair in configurationSettingsFileOption.JsonSettings)
         {
-            Settings.Add(new KeyValueItemViewModel(keyValuePair));
+            var value = keyValuePair.Value.ToString()!;
+            if (value.ContainsTemplateKeyBrackets())
+            {
+                var (resolvedValue, templateLocations) = refComponentProviderViewModel.ResolveValueAndTemplateLocations(value);
+
+                if (templateLocations.Count > 0)
+                {
+                    Settings.Add(
+                        new KeyValueTemplateItemViewModel(
+                            keyValuePair.Key,
+                            resolvedValue,
+                            template: keyValuePair.Value.ToString(),
+                            templateLocations));
+                }
+            }
+            else
+            {
+                Settings.Add(
+                    new KeyValueTemplateItemViewModel(
+                        keyValuePair.Key,
+                        keyValuePair.Value,
+                        template: null,
+                        templateLocations: null));
+            }
         }
 
         Settings.SuppressOnChangedNotification = false;

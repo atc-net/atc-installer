@@ -35,12 +35,15 @@
             <!--  Menu  -->
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file">
+                    <MenuItem
+                        Command="{Binding Path=OpenConfigurationFileCommand}"
+                        Header="_Open configuration file"
+                        InputGestureText="Ctrl+O">
                         <MenuItem.Icon>
                             <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.File}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Recent Files">
+                    <MenuItem Header="_Recent Files" InputGestureText="Ctrl+R">
                         <MenuItem.ItemsSource>
                             <Binding Path="RecentOpenFiles" />
                         </MenuItem.ItemsSource>
@@ -53,6 +56,14 @@
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
+                    <MenuItem
+                        Command="{Binding Path=SaveConfigurationFileCommand}"
+                        Header="_Save configuration file"
+                        InputGestureText="Ctrl+S">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.File}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
                     <MenuItem Command="{Binding Path=OpenApplicationSettingsCommand}" Header="Application settings">
                         <MenuItem.Icon>
@@ -60,7 +71,10 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit">
+                    <MenuItem
+                        Command="{Binding Path=ApplicationExitCommand}"
+                        Header="_Exit"
+                        InputGestureText="Alt+F4">
                         <MenuItem.Icon>
                             <Image Source="{Binding Source={x:Static fontIcons:IcoFontType.Close}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RedBrush}}" />
                         </MenuItem.Icon>

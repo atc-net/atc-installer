@@ -6,7 +6,7 @@ namespace Atc.Installer.Wpf.App;
 public partial class MainWindow
 {
     public MainWindow(
-        IMainWindowViewModelBase viewModel)
+        IMainWindowViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;
@@ -21,7 +21,7 @@ public partial class MainWindow
         object sender,
         RoutedEventArgs e)
     {
-        var vm = DataContext as IMainWindowViewModelBase;
+        var vm = DataContext as IMainWindowViewModel;
         vm!.OnLoaded(this, e);
     }
 
@@ -29,7 +29,7 @@ public partial class MainWindow
         object? sender,
         CancelEventArgs e)
     {
-        var vm = DataContext as IMainWindowViewModelBase;
+        var vm = DataContext as IMainWindowViewModel;
         vm!.OnClosing(this, e);
     }
 
@@ -37,7 +37,7 @@ public partial class MainWindow
         object sender,
         KeyEventArgs e)
     {
-        var vm = DataContext as IMainWindowViewModelBase;
+        var vm = DataContext as IMainWindowViewModel;
         vm!.OnKeyDown(this, e);
     }
 

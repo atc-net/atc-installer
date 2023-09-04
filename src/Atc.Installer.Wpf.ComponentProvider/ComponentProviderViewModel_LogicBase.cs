@@ -17,6 +17,14 @@ public partial class ComponentProviderViewModel
         FilterTextForMenu = filterText;
     }
 
+    public bool IsKeyInDefaultApplicationSettings(
+        string key)
+        => DefaultApplicationSettings.Items.Any(item => item.Key.Equals(key, StringComparison.Ordinal));
+
+    public bool IsKeyInApplicationSettings(
+        string key)
+        => ApplicationSettings.Items.Any(item => item.Key.Equals(key, StringComparison.Ordinal));
+
     public bool TryGetStringFromApplicationSettings(
         string key,
         out string value)
@@ -114,7 +122,7 @@ public partial class ComponentProviderViewModel
                     }
                 }
 
-                var appConfigFile = new FileInfo(Path.Combine(InstallationFolderPath, "app.config"));
+                var appConfigFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "app.config"));
                 if (appConfigFile.Exists)
                 {
                     var xml = FileHelper.ReadAllText(appConfigFile);
@@ -123,7 +131,7 @@ public partial class ComponentProviderViewModel
                     ConfigurationXmlFiles.Add(appConfigFile, xmlDocument);
                 }
 
-                var webConfigFile = new FileInfo(Path.Combine(InstallationFolderPath, "web.config"));
+                var webConfigFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "web.config"));
                 if (webConfigFile.Exists)
                 {
                     var xml = FileHelper.ReadAllText(webConfigFile);
@@ -137,14 +145,14 @@ public partial class ComponentProviderViewModel
 
             case HostingFrameworkType.DotNet7:
             {
-                var appSettingsFile = new FileInfo(Path.Combine(InstallationFolderPath, "appsettings.json"));
+                var appSettingsFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json"));
                 if (appSettingsFile.Exists)
                 {
                     var dynamicJson = new DynamicJson(appSettingsFile);
                     ConfigurationJsonFiles.Add(appSettingsFile, dynamicJson);
                 }
 
-                var webConfigFile = new FileInfo(Path.Combine(InstallationFolderPath, "web.config"));
+                var webConfigFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "web.config"));
                 if (webConfigFile.Exists)
                 {
                     var xml = FileHelper.ReadAllText(webConfigFile);
@@ -158,7 +166,7 @@ public partial class ComponentProviderViewModel
 
             case HostingFrameworkType.NodeJs:
             {
-                var envFile = new FileInfo(Path.Combine(InstallationFolderPath, "env.json"));
+                var envFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "env.json"));
                 if (envFile.Exists)
                 {
                     var dynamicJson = new DynamicJson(envFile);
@@ -167,9 +175,6 @@ public partial class ComponentProviderViewModel
 
                 break;
             }
-
-            default:
-                throw new SwitchCaseDefaultException(HostingFramework);
         }
     }
 
@@ -314,7 +319,7 @@ public partial class ComponentProviderViewModel
             Directory.CreateDirectory(backupFolder);
         }
 
-        var sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "env.json");
+        var sourceAppSettingsFile = Path.Combine(InstallationFolderPath.GetValueAsString(), "env.json");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"env_{timestamp}.json");
@@ -322,7 +327,7 @@ public partial class ComponentProviderViewModel
             AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "appsettings.json");
+        sourceAppSettingsFile = Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"appsettings_{timestamp}.json");
@@ -330,7 +335,7 @@ public partial class ComponentProviderViewModel
             AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationFolderPath, "web.config");
+        sourceAppSettingsFile = Path.Combine(InstallationFolderPath.GetValueAsString(), "web.config");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"web_{timestamp}.config");
@@ -338,7 +343,7 @@ public partial class ComponentProviderViewModel
             AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationFolderPath, $"{Name}.exe.config");
+        sourceAppSettingsFile = Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.exe.config");
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"{Name}.exe_{timestamp}.config");
@@ -362,10 +367,10 @@ public partial class ComponentProviderViewModel
         var useDeleteBeforeCopy = !FolderPermissions
             .Items
             .Any(x => x.Directory is not null &&
-                      x.Directory.FullName.StartsWith(InstallationFolderPath, StringComparison.OrdinalIgnoreCase));
+                      x.Directory.FullName.StartsWith(InstallationFolderPath.GetValueAsString(), StringComparison.OrdinalIgnoreCase));
 
         var directoryUnpackedZip = new DirectoryInfo(UnpackedZipFolderPath);
-        var directoryInstallation = new DirectoryInfo(InstallationFolderPath);
+        var directoryInstallation = new DirectoryInfo(InstallationFolderPath.GetValueAsString());
 
         if (useDeleteBeforeCopy)
         {
@@ -376,7 +381,7 @@ public partial class ComponentProviderViewModel
             var excludeDirectories = FolderPermissions
                 .Items
                 .Where(x => x.Directory is not null &&
-                            x.Directory.FullName.StartsWith(InstallationFolderPath, StringComparison.OrdinalIgnoreCase))
+                            x.Directory.FullName.StartsWith(InstallationFolderPath.GetValueAsString(), StringComparison.OrdinalIgnoreCase))
                 .Select(x => x.Directory!.Name)
                 .ToList();
 
@@ -513,7 +518,7 @@ public partial class ComponentProviderViewModel
                     var sa = key.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     if (sa.Length == 2)
                     {
-                        var refComponentProvider = refComponentProviders.FirstOrDefault(x => x.Name.Equals(sa[0], StringComparison.OrdinalIgnoreCase));
+                        var refComponentProvider = RefComponentProviders.FirstOrDefault(x => x.Name.Equals(sa[0], StringComparison.OrdinalIgnoreCase));
                         if (refComponentProvider is not null &&
                             refComponentProvider.TryGetStringFromApplicationSetting(sa[1], out var resultValue))
                         {
@@ -558,6 +563,43 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    public (string Value, IList<string> TemplateLocations) ResolveValueAndTemplateLocations(
+        string value)
+    {
+        var templateLocations = new List<string>();
+        var keys = value.GetTemplateKeys();
+        foreach (var key in keys)
+        {
+            if (key.Contains('|', StringComparison.Ordinal))
+            {
+                var sa = key.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                if (sa.Length == 2)
+                {
+                    var refComponentProvider = RefComponentProviders.FirstOrDefault(x => x.Name.Equals(sa[0], StringComparison.OrdinalIgnoreCase));
+                    if (refComponentProvider is not null &&
+                        refComponentProvider.TryGetStringFromApplicationSetting(sa[1], out var resultValue))
+                    {
+                        templateLocations.Add(resultValue);
+                        templateLocations.Add(sa[1]);
+                        value = value.ReplaceTemplateWithKey(key, resultValue);
+                    }
+                }
+            }
+            else if (TryGetStringFromApplicationSettings(key, out var resultValue))
+            {
+                var location = IsKeyInApplicationSettings(key)
+                    ? nameof(ApplicationSettings)
+                    : nameof(DefaultApplicationSettings);
+
+                templateLocations.Add(location);
+
+                value = value.ReplaceTemplateWithKey(key, resultValue);
+            }
+        }
+
+        return (value, templateLocations);
+    }
+
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
 
@@ -584,18 +626,27 @@ public partial class ComponentProviderViewModel
             return;
         }
 
-        InstalledMainFilePath = applicationOption switch
+        switch (applicationOption)
         {
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationFolderPath, "index.html"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationFolderPath, $"{Name}.dll"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationFolderPath, $"{Name}.dll"),
-            { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs } => Path.Combine(InstallationFolderPath, "index.html"),
-            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
-            { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 } => Path.Combine(InstallationFolderPath, $"{Name}.exe"),
-            _ => InstalledMainFilePath,
-        };
+            case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 }:
+            case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
+                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.exe"), template: null, templateLocations: null);
+                break;
+            case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs }:
+                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), "index.html"), template: null, templateLocations: null);
+                break;
+            case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 }:
+            case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
+                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.dll"), template: null, templateLocations: null);
+                break;
+            case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs }:
+                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), "index.html"), template: null, templateLocations: null);
+                break;
+            case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 }:
+            case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
+                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.exe"), template: null, templateLocations: null);
+                break;
+        }
     }
 
     private void ResolveDirectoriesForFolderPermissions()
@@ -641,7 +692,7 @@ public partial class ComponentProviderViewModel
         if (InstallationFolderPath is not null &&
             InstalledMainFilePath is not null)
         {
-            if (File.Exists(InstalledMainFilePath))
+            if (File.Exists(InstalledMainFilePath.GetValueAsString()))
             {
                 InstallationState = ComponentInstallationState.Installed;
             }
@@ -679,7 +730,7 @@ public partial class ComponentProviderViewModel
         }
 
         if (File.Exists(installationMainFile) &&
-            File.Exists(InstalledMainFilePath))
+            File.Exists(InstalledMainFilePath.GetValueAsString()))
         {
             Version? sourceVersion = null;
             var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
@@ -690,7 +741,7 @@ public partial class ComponentProviderViewModel
             }
 
             Version? destinationVersion = null;
-            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath);
+            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath.GetValueAsString());
             if (installedMainFileVersion?.FileVersion is not null)
             {
                 destinationVersion = new Version(installedMainFileVersion.FileVersion);
@@ -728,7 +779,7 @@ public partial class ComponentProviderViewModel
         }
 
         string? destinationVersion = null;
-        var installedVersionFile = Path.Combine(InstallationFolderPath, "version.json");
+        var installedVersionFile = Path.Combine(InstallationFolderPath.GetValueAsString(), "version.json");
         if (File.Exists(installedVersionFile))
         {
             var destinationDynamicJson = new DynamicJson(new FileInfo(installedVersionFile));

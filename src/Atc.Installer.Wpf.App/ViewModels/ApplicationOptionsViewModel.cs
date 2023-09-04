@@ -4,6 +4,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
 {
     private string theme = string.Empty;
     private string title = string.Empty;
+    private bool enableEditingMode;
 
     public ApplicationOptionsViewModel()
     {
@@ -14,8 +15,9 @@ public class ApplicationOptionsViewModel : ViewModelBase
     {
         ArgumentNullException.ThrowIfNull(applicationOptions);
 
-        Title = applicationOptions.Title;
-        Theme = applicationOptions.Theme;
+        title = applicationOptions.Title;
+        theme = applicationOptions.Theme;
+        enableEditingMode = applicationOptions.EnableEditingMode;
     }
 
     public string Title
@@ -24,6 +26,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
         set
         {
             title = value;
+            IsDirty = true;
             RaisePropertyChanged();
         }
     }
@@ -34,10 +37,22 @@ public class ApplicationOptionsViewModel : ViewModelBase
         set
         {
             theme = value;
+            IsDirty = true;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool EnableEditingMode
+    {
+        get => enableEditingMode;
+        set
+        {
+            enableEditingMode = value;
+            IsDirty = true;
             RaisePropertyChanged();
         }
     }
 
     public override string ToString()
-        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}";
+        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}, {nameof(EnableEditingMode)}: {EnableEditingMode}, {nameof(IsDirty)}: {IsDirty}";
 }
