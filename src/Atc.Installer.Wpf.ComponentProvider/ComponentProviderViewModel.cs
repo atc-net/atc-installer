@@ -31,8 +31,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             ProjectName = "MyProject";
             Name = "MyApp";
             InstallationFolderPath = new ValueTemplateItemViewModel(@"C:\ProgramFiles\MyApp", template: null, templateLocations: null);
-            DefaultApplicationSettings = new ApplicationSettingsViewModel(RefComponentProviders);
-            ApplicationSettings = new ApplicationSettingsViewModel(RefComponentProviders);
+            DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, RefComponentProviders);
+            ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, RefComponentProviders);
             ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel(RefComponentProviders);
         }
         else
@@ -66,10 +66,10 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ProjectName = projectName;
         Name = applicationOption.Name;
 
-        DefaultApplicationSettings = new ApplicationSettingsViewModel(refComponentProviders);
+        DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, refComponentProviders);
         DefaultApplicationSettings.Populate(defaultApplicationSettings);
 
-        ApplicationSettings = new ApplicationSettingsViewModel(refComponentProviders);
+        ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, refComponentProviders);
         ApplicationSettings.Populate(DefaultApplicationSettings, applicationOption.ApplicationSettings);
 
         FolderPermissions.Populate(applicationOption.FolderPermissions);

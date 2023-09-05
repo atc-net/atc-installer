@@ -12,6 +12,8 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders)
     {
         this.refComponentProviders = refComponentProviders;
+
+        Messenger.Default.Register<UpdateEditingModeMessage>(this, HandleUpdateEditingModeMessage);
     }
 
     public IRelayCommand<ConfigurationSettingsJsonFileViewModel> NewJsonCommand
@@ -83,6 +85,12 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
 
     public override string ToString()
         => $"{nameof(JsonItems)}.Count: {JsonItems?.Count}, {nameof(XmlItems)}.Count: {XmlItems?.Count}";
+
+    private void HandleUpdateEditingModeMessage(
+        UpdateEditingModeMessage obj)
+    {
+        EnableEditingMode = obj.EnableEditingMode;
+    }
 
     private void NewJsonCommandHandler(
         ConfigurationSettingsJsonFileViewModel item)

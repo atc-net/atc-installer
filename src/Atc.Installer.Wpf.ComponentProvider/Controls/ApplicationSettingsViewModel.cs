@@ -1,15 +1,24 @@
 // ReSharper disable InvertIf
 namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
+[SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
 public class ApplicationSettingsViewModel : ViewModelBase
 {
+    private const string DefaultTemplateLocation = "DefaultApplicationSetting";
+    private readonly string itemBlankIdentifier = DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString();
     private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
+    private readonly bool isDefaultApplicationSettings;
     private bool enableEditingMode;
+    private ApplicationSettingsViewModel? defaultSettings;
 
     public ApplicationSettingsViewModel(
+        bool isDefaultApplicationSettings,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders)
     {
+        this.isDefaultApplicationSettings = isDefaultApplicationSettings;
         this.refComponentProviders = refComponentProviders;
+
+        Messenger.Default.Register<UpdateEditingModeMessage>(this, HandleUpdateEditingModeMessage);
     }
 
     public IRelayCommand NewCommand
@@ -66,6 +75,8 @@ public class ApplicationSettingsViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationSettings);
 
+        this.defaultSettings = defaultApplicationSettings;
+
         Items.Clear();
 
         Items.SuppressOnChangedNotification = true;
@@ -83,7 +94,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
                             applicationSetting.Key,
                             resultValue,
                             value,
-                            templateLocations: new List<string> { "DefaultApplicationSetting" }));
+                            templateLocations: new List<string> { DefaultTemplateLocation }));
                 }
             }
             else
@@ -160,26 +171,15 @@ public class ApplicationSettingsViewModel : ViewModelBase
     public override string ToString()
         => string.Join("; ", Items);
 
+    private void HandleUpdateEditingModeMessage(
+        UpdateEditingModeMessage obj)
+    {
+        EnableEditingMode = obj.EnableEditingMode;
+    }
+
     private void NewCommandHandler()
     {
-        var labelControls = new List<ILabelControlBase>
-        {
-            new LabelTextBox
-            {
-                LabelText = "Key",
-                IsMandatory = true,
-                MinLength = 1,
-            },
-            new LabelTextBox
-            {
-                LabelText = "Value",
-                IsMandatory = true,
-                MinLength = 1,
-            },
-        };
-
-        //// TODO: Handle templates
-
+        var labelControls = CreateLabelControls(updateItem: null);
         var labelControlsForm = new LabelControlsForm();
         labelControlsForm.AddColumn(labelControls);
 
@@ -198,14 +198,60 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
         var data = dialogBox.Data.GetKeyValues();
 
-        //// TODO: Handle templates
+        var dataKey = data["Key"].ToString()!;
+        var dataValue = data["Value"].ToString()!;
 
-        Items.Add(
-            new KeyValueTemplateItemViewModel(
-                data["Key"].ToString()!,
-                data["Value"].ToString()!,
-                template: null,
-                templateLocations: null));
+        if (Items.Any(x => x.Key.Equals(dataKey, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        if (isDefaultApplicationSettings)
+        {
+            Items.Add(
+                new KeyValueTemplateItemViewModel(
+                    dataKey,
+                    dataValue,
+                    template: null,
+                    templateLocations: null));
+        }
+        else
+        {
+            var dataTemplate = data["Templates"].ToString()!;
+
+            if (string.IsNullOrEmpty(dataValue) &&
+                (string.IsNullOrEmpty(dataTemplate) ||
+                dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(dataTemplate) ||
+                dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal))
+            {
+                Items.Add(
+                    new KeyValueTemplateItemViewModel(
+                        dataKey,
+                        dataValue,
+                        template: null,
+                        templateLocations: null));
+            }
+            else
+            {
+                var dataDefaultValue = defaultSettings is null
+                    ? dataValue
+                    : defaultSettings.Items
+                        .First(x => x.Key.Equals(dataTemplate, StringComparison.OrdinalIgnoreCase))
+                        .GetValueAsString();
+
+                Items.Add(
+                    new KeyValueTemplateItemViewModel(
+                        dataKey,
+                        dataDefaultValue,
+                        template: $"[[{dataTemplate}]]",
+                        templateLocations: new List<string> { DefaultTemplateLocation }));
+            }
+        }
 
         IsDirty = true;
     }
@@ -213,25 +259,9 @@ public class ApplicationSettingsViewModel : ViewModelBase
     private void EditCommandHandler(
         KeyValueTemplateItemViewModel item)
     {
-        var labelControls = new List<ILabelControlBase>
-        {
-            new LabelTextBox
-            {
-                LabelText = "Key",
-                IsEnabled = false,
-                Text = item.Key,
-            },
-            new LabelTextBox
-            {
-                LabelText = "Value",
-                IsMandatory = true,
-                MinLength = 1,
-                Text = item.Value.ToString()!,
-            },
-        };
+        var updateItem = Items.First(x => x.Key.Equals(item.Key, StringComparison.Ordinal));
 
-        //// TODO: Handle templates
-
+        var labelControls = CreateLabelControls(updateItem);
         var labelControlsForm = new LabelControlsForm();
         labelControlsForm.AddColumn(labelControls);
 
@@ -250,9 +280,52 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
         var data = dialogBox.Data.GetKeyValues();
 
-        //// TODO: Handle templates
+        var dataValue = data["Value"].ToString()!;
 
-        item.Value = data["Value"];
+        if (isDefaultApplicationSettings)
+        {
+            updateItem.Value = dataValue;
+            updateItem.Template = null;
+            updateItem.TemplateLocations = null;
+
+            UpdateComponentProviders(updateItem);
+        }
+        else
+        {
+            var dataTemplate = data["Templates"].ToString()!;
+
+            if (string.IsNullOrEmpty(dataValue) &&
+                (string.IsNullOrEmpty(dataTemplate) ||
+                 dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(dataTemplate) ||
+                dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal))
+            {
+                updateItem.Value = data["Value"].ToString()!;
+                updateItem.Template = null;
+                updateItem.TemplateLocations = null;
+            }
+            else
+            {
+                var dataDefaultValue = defaultSettings is null
+                    ? dataValue
+                    : defaultSettings.Items
+                        .First(x => x.Key.Equals(dataTemplate, StringComparison.OrdinalIgnoreCase))
+                        .GetValueAsString();
+
+                updateItem.Value = dataDefaultValue;
+                updateItem.Template = $"[[{dataTemplate}]]";
+                updateItem.TemplateLocations = new ObservableCollectionEx<string>
+                {
+                    DefaultTemplateLocation,
+                };
+            }
+
+            UpdateComponentProviders(updateItem);
+        }
 
         IsDirty = true;
     }
@@ -313,5 +386,182 @@ public class ApplicationSettingsViewModel : ViewModelBase
         Items.Remove(item);
 
         IsDirty = true;
+    }
+
+    private List<ILabelControlBase> CreateLabelControls(
+        KeyValueTemplateItemViewModel? updateItem)
+    {
+        var labelControls = new List<ILabelControlBase>();
+
+        var labelTextBoxKey = new LabelTextBox
+        {
+            LabelText = "Key",
+            IsMandatory = true,
+            MinLength = 1,
+        };
+
+        if (updateItem is not null)
+        {
+            labelTextBoxKey.IsMandatory = false;
+            labelTextBoxKey.IsEnabled = false;
+            labelTextBoxKey.Text = updateItem.Key;
+        }
+
+        labelControls.Add(labelTextBoxKey);
+
+        if (defaultSettings is null)
+        {
+            var labelTextBoxValue = new LabelTextBox
+            {
+                LabelText = "Value",
+                IsMandatory = true,
+                MinLength = 1,
+            };
+
+            if (updateItem is not null)
+            {
+                labelTextBoxValue.Text = string.IsNullOrEmpty(updateItem.Template)
+                    ? updateItem.Value.ToString()!
+                    : updateItem.Template;
+            }
+
+            labelControls.Add(labelTextBoxValue);
+        }
+        else
+        {
+            var labelTextBoxValue = new LabelTextBox
+            {
+                LabelText = "Value",
+                IsMandatory = false,
+            };
+
+            var labelComboBox = new LabelComboBox
+            {
+                LabelText = "Templates",
+                IsMandatory = false,
+                Items = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    {
+                        DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
+                        string.Empty
+                    },
+                },
+            };
+
+            foreach (var keyValueTemplateItem in defaultSettings.Items)
+            {
+                labelComboBox.Items.Add(
+                    keyValueTemplateItem.Key,
+                    $"[[{keyValueTemplateItem.Key}]]   -   {keyValueTemplateItem.GetValueAsString()}");
+            }
+
+            if (updateItem is not null)
+            {
+                if (string.IsNullOrEmpty(updateItem.Template))
+                {
+                    labelTextBoxValue.Text = updateItem.Value.ToString()!;
+                }
+                else
+                {
+                    labelComboBox.SelectedKey = updateItem.Template
+                        .Replace("[[", string.Empty, StringComparison.Ordinal)
+                        .Replace("]]", string.Empty, StringComparison.Ordinal);
+                }
+            }
+
+            labelControls.Add(labelTextBoxValue);
+            labelControls.Add(labelComboBox);
+        }
+
+        return labelControls;
+    }
+
+    private void UpdateComponentProviders(
+        KeyValueTemplateItemViewModel updateItem)
+    {
+        foreach (var componentProvider in refComponentProviders)
+        {
+            foreach (var item in componentProvider.ApplicationSettings.Items)
+            {
+                if (item.Template is not null &&
+                    item.TemplateLocations is not null &&
+                    item.Template.Contains(updateItem.Key, StringComparison.Ordinal))
+                {
+                    item.Value = ResolveTemplateValue(updateItem, componentProvider, item.Template);
+                }
+            }
+
+            foreach (var item in componentProvider.BrowserLinkEndpoints)
+            {
+                if (item.Template is not null &&
+                    item.TemplateLocations is not null &&
+                    item.Template.Contains(updateItem.Key, StringComparison.Ordinal))
+                {
+                    item.Endpoint = ResolveTemplateValue(updateItem,componentProvider, item.Template);
+                }
+            }
+
+            foreach (var item in componentProvider.ConfigurationSettingsFiles.JsonItems)
+            {
+                foreach (var keyValueTemplateItem in item.Settings)
+                {
+                    if (keyValueTemplateItem.Template is not null &&
+                        keyValueTemplateItem.TemplateLocations is not null &&
+                        keyValueTemplateItem.Template.Contains(updateItem.Key, StringComparison.Ordinal))
+                    {
+                        keyValueTemplateItem.Value = ResolveTemplateValue(updateItem, componentProvider, keyValueTemplateItem.Template);
+                    }
+                }
+            }
+
+            foreach (var item in componentProvider.ConfigurationSettingsFiles.XmlItems)
+            {
+                foreach (var xmlElement in item.Settings)
+                {
+                    foreach (var keyValueTemplateItem in xmlElement.Attributes)
+                    {
+                        if (keyValueTemplateItem.Template is not null &&
+                            keyValueTemplateItem.TemplateLocations is not null &&
+                            keyValueTemplateItem.Template.Contains(updateItem.Key, StringComparison.Ordinal))
+                        {
+                            keyValueTemplateItem.Value = ResolveTemplateValue(updateItem, componentProvider, keyValueTemplateItem.Template);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static string ResolveTemplateValue(
+        KeyValueTemplateItemViewModel updateItem,
+        ComponentProviderViewModel componentProvider,
+        string template)
+    {
+        var terms = template.SplitTemplate();
+        var sb = new StringBuilder();
+        foreach (var term in terms)
+        {
+            if (term.Equals(updateItem.Key, StringComparison.Ordinal))
+            {
+                sb.Append(updateItem.Value);
+            }
+            else
+            {
+                if (componentProvider.TryGetStringFromApplicationSetting(term, out var strValue))
+                {
+                    sb.Append(strValue);
+                }
+                else if (componentProvider.TryGetUshortFromApplicationSettings(term, out var ushortValue))
+                {
+                    sb.Append(ushortValue);
+                }
+                else
+                {
+                    sb.Append(term);
+                }
+            }
+        }
+
+        return sb.ToString();
     }
 }

@@ -342,9 +342,11 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         IsRequiredWebSockets = applicationOption.DependentComponents.Contains("WebSockets", StringComparer.Ordinal);
 
+        var useTemplateHostName = false;
         if (TryGetStringFromApplicationSettings("HostName", out var hostNameValue))
         {
             HostName = hostNameValue;
+            useTemplateHostName = true;
         }
 
         if (TryGetUshortFromApplicationSettings("HttpPort", out var httpValue))
@@ -355,11 +357,62 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
                     swaggerEnabledValue)
                 {
-                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}/swagger", null, null));
+                    if (useTemplateHostName)
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Http",
+                                ComponentEndpointType.BrowserLink,
+                                $"http://{HostName}:{HttpPort}/swagger",
+                                "http://[[HostName]]:[[HttpPort]]/swagger",
+                                new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
+                    }
+                    else
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Http",
+                                ComponentEndpointType.BrowserLink,
+                                $"http://{HostName}:{HttpPort}/swagger",
+                                $"http://{HostName}:[[HttpPort]]/swagger",
+                                new List<string> { "ApplicationSettings" }));
+                    }
                 }
                 else
                 {
-                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{HostName}:{HttpPort}", null, null));
+                    if (useTemplateHostName)
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Http",
+                                ComponentEndpointType.BrowserLink,
+                                $"http://{HostName}:{HttpPort}",
+                                "http://[[HostName]]:[[HttpPort]]",
+                                new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
+                    }
+                    else
+                    {
+                        if (useTemplateHostName)
+                        {
+                            Endpoints.Add(
+                                new EndpointViewModel(
+                                    "Http",
+                                    ComponentEndpointType.BrowserLink,
+                                    $"http://{HostName}:{HttpPort}",
+                                    "http://[[HostName]]:[[HttpPort]]",
+                                    new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
+                        }
+                        else
+                        {
+                            Endpoints.Add(
+                                new EndpointViewModel(
+                                    "Http",
+                                    ComponentEndpointType.BrowserLink,
+                                    $"http://{HostName}:{HttpPort}",
+                                    $"http://{HostName}:[[HttpPort]]",
+                                    new List<string> { "ApplicationSettings" }));
+                        }
+                    }
                 }
             }
         }
@@ -372,11 +425,49 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
                     swaggerEnabledValue)
                 {
-                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}/swagger", null, null));
+                    if (useTemplateHostName)
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Https",
+                                ComponentEndpointType.BrowserLink,
+                                $"https://{HostName}:{HttpsPort}/swagger",
+                                "https://[[HostName]]:[[HttpsPort]]/swagger",
+                                new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
+                    }
+                    else
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Https",
+                                ComponentEndpointType.BrowserLink,
+                                $"https://{HostName}:{HttpsPort}/swagger",
+                                $"https://{HostName}:[[HttpsPort]]/swagger",
+                                new List<string> { "ApplicationSettings" }));
+                    }
                 }
                 else
                 {
-                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{HostName}:{HttpsPort}", null, null));
+                    if (useTemplateHostName)
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Https",
+                                ComponentEndpointType.BrowserLink,
+                                $"https://{HostName}:{HttpsPort}",
+                                "https://[[HostName]]:[[HttpsPort]]",
+                                new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
+                    }
+                    else
+                    {
+                        Endpoints.Add(
+                            new EndpointViewModel(
+                                "Http",
+                                ComponentEndpointType.BrowserLink,
+                                $"http://{HostName}:{HttpsPort}",
+                                $"http://{HostName}:[[HttpsPort]]",
+                                new List<string> { "ApplicationSettings" }));
+                    }
                 }
             }
         }

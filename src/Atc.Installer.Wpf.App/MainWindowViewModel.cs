@@ -580,5 +580,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         RaisePropertyChanged(nameof(ComponentProviders));
+
+        Messenger.Default.Send(new UpdateEditingModeMessage(ApplicationOptions.EnableEditingMode));
     }
 }

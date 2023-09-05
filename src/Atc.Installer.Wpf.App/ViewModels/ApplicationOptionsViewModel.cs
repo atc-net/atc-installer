@@ -50,6 +50,8 @@ public class ApplicationOptionsViewModel : ViewModelBase
             enableEditingMode = value;
             IsDirty = true;
             RaisePropertyChanged();
+
+            Messenger.Default.Send(new UpdateEditingModeMessage(enableEditingMode));
         }
     }
 
