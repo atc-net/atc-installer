@@ -173,9 +173,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
     private void HandleUpdateEditingModeMessage(
         UpdateEditingModeMessage obj)
-    {
-        EnableEditingMode = obj.EnableEditingMode;
-    }
+        => EnableEditingMode = obj.EnableEditingMode;
 
     private void NewCommandHandler()
     {
@@ -463,9 +461,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
                 }
                 else
                 {
-                    labelComboBox.SelectedKey = updateItem.Template
-                        .Replace("[[", string.Empty, StringComparison.Ordinal)
-                        .Replace("]]", string.Empty, StringComparison.Ordinal);
+                    labelComboBox.SelectedKey = updateItem.Template.GetTemplateKeys()[0];
                 }
             }
 
@@ -497,7 +493,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
                     item.TemplateLocations is not null &&
                     item.Template.Contains(updateItem.Key, StringComparison.Ordinal))
                 {
-                    item.Endpoint = ResolveTemplateValue(updateItem,componentProvider, item.Template);
+                    item.Endpoint = ResolveTemplateValue(updateItem, componentProvider, item.Template);
                 }
             }
 

@@ -33,7 +33,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             InstallationFolderPath = new ValueTemplateItemViewModel(@"C:\ProgramFiles\MyApp", template: null, templateLocations: null);
             DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, RefComponentProviders);
             ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, RefComponentProviders);
-            ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel(RefComponentProviders);
+            ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
         }
         else
         {
@@ -76,7 +76,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         FirewallRules.Populate(applicationOption.FirewallRules);
 
-        ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel(RefComponentProviders);
+        ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
         ConfigurationSettingsFiles.Populate(this, applicationOption.ConfigurationSettingsFiles);
 
         SetFilterTextForMenu(string.Empty);
