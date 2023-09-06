@@ -627,6 +627,8 @@ public partial class ComponentProviderViewModel
         {
             item.IsDirty = false;
         }
+
+        ConfigurationSettingsFiles.IsDirty = false;
     }
 
     public override string ToString()

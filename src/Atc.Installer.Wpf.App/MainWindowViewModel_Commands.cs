@@ -53,6 +53,8 @@ public partial class MainWindowViewModel
             ServiceStartAllCommandHandler,
             CanServiceStartAllCommandHandler);
 
+    public new ICommand ApplicationExitCommand => new RelayCommand(ApplicationExitCommandHandler);
+
     private async Task OpenConfigurationFileCommandHandler()
     {
         var openFileDialog = new OpenFileDialog
@@ -98,71 +100,18 @@ public partial class MainWindowViewModel
             CancellationToken.None);
 
     private bool CanSaveConfigurationFileCommandHandler()
-    {
-        return ApplicationOptions.EnableEditingMode &&
-               InstallationFile is not null &&
-               (IsDirty ||
-                ComponentProviders.Any(x => x.IsDirty ||
-                                            x.DefaultApplicationSettings.IsDirty ||
-                                            x.ApplicationSettings.IsDirty ||
-                                            x.FolderPermissions.IsDirty ||
-                                            x.FirewallRules.IsDirty ||
-                                            x.ConfigurationSettingsFiles.IsDirty));
-    }
+        => ApplicationOptions.EnableEditingMode &&
+           InstallationFile is not null &&
+           (IsDirty ||
+            ComponentProviders.Any(x => x.IsDirty ||
+                                        x.DefaultApplicationSettings.IsDirty ||
+                                        x.ApplicationSettings.IsDirty ||
+                                        x.FolderPermissions.IsDirty ||
+                                        x.FirewallRules.IsDirty ||
+                                        x.ConfigurationSettingsFiles.IsDirty));
 
-    private async Task SaveConfigurationFileCommandHandler()
-    {
-        // TODO: Use InstallationFile
-        var file = new FileInfo(@"C:\Temp\test.json");
-        try
-        {
-            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {file.FullName}");
-
-            var installationOption = new InstallationOption();
-            if (ProjectName is not null)
-            {
-                installationOption.Name = ProjectName;
-            }
-
-            if (AzureOptions is not null)
-            {
-                installationOption.Azure = new AzureOptions
-                {
-                    StorageConnectionString = AzureOptions.StorageConnectionString,
-                    BlobContainerName = AzureOptions.BlobContainerName,
-                };
-            }
-
-            foreach (var keyValueTemplateItem in DefaultApplicationSettings)
-            {
-                installationOption.DefaultApplicationSettings.Add(
-                    new KeyValuePair<string, object>(keyValueTemplateItem.Key, keyValueTemplateItem.Value));
-            }
-
-            foreach (var componentProvider in ComponentProviders)
-            {
-                var applicationOption = CreateApplicationOption(componentProvider);
-
-                installationOption.Applications.Add(applicationOption);
-            }
-
-            var json = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
-            await FileHelper.WriteAllTextAsync(file, json, cancellationTokenSource!.Token).ConfigureAwait(true);
-
-            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {file.FullName}");
-
-            IsDirty = false;
-            foreach (var componentProvider in ComponentProviders)
-            {
-                componentProvider.ClearAllIsDirty();
-            }
-        }
-        catch (Exception ex)
-        {
-            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
-            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
-        }
-    }
+    private Task SaveConfigurationFileCommandHandler()
+        => SaveConfigurationFile();
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
         => AzureOptions is not null &&
@@ -272,5 +221,29 @@ public partial class MainWindowViewModel
         }
 
         return TaskHelper.WhenAll(tasks);
+    }
+
+    private void ApplicationExitCommandHandler()
+    {
+        if (CanSaveConfigurationFileCommandHandler())
+        {
+            var dialogBox = new QuestionDialogBox(
+                Application.Current.MainWindow!,
+                "Unsaved data",
+                "Are you sure you want to exit without saving changes?")
+            {
+                Width = 500,
+            };
+
+            dialogBox.ShowDialog();
+
+            if (!dialogBox.DialogResult.HasValue ||
+                !dialogBox.DialogResult.Value)
+            {
+                return;
+            }
+        }
+
+        OnClosing(this, new CancelEventArgs());
     }
 }

@@ -8,6 +8,223 @@ namespace Atc.Installer.Wpf.App;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "OK.")]
 public partial class MainWindowViewModel
 {
+    private void LoadRecentOpenFiles()
+    {
+        var recentOpenFilesFile = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
+        if (!File.Exists(recentOpenFilesFile))
+        {
+            return;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(recentOpenFilesFile);
+
+            var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
+                json,
+                App.JsonSerializerOptions) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
+
+            RecentOpenFiles.Clear();
+
+            RecentOpenFiles.SuppressOnChangedNotification = true;
+            foreach (var recentOpenFile in recentOpenFilesOption.RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
+            {
+                if (!File.Exists(recentOpenFile.FilePath))
+                {
+                    continue;
+                }
+
+                RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, recentOpenFile.TimeStamp, recentOpenFile.FilePath));
+            }
+
+            RecentOpenFiles.SuppressOnChangedNotification = false;
+        }
+        catch
+        {
+            // Skip
+        }
+    }
+
+    private void AddLoadedFileToRecentOpenFiles(
+        FileInfo file)
+    {
+        RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, DateTime.Now, file.FullName));
+
+        var recentOpenFilesOption = new RecentOpenFilesOption();
+        foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
+        {
+            var item = new RecentOpenFileOption
+            {
+                TimeStamp = vm.TimeStamp,
+                FilePath = vm.File,
+            };
+
+            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.FilePath == item.FilePath) is not null)
+            {
+                continue;
+            }
+
+            if (!File.Exists(item.FilePath))
+            {
+                continue;
+            }
+
+            recentOpenFilesOption.RecentOpenFiles.Add(item);
+        }
+
+        var recentOpenFilesFilePath = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
+        if (!Directory.Exists(App.InstallerProgramDataDirectory.FullName))
+        {
+            Directory.CreateDirectory(App.InstallerProgramDataDirectory.FullName);
+        }
+
+        var json = JsonSerializer.Serialize(recentOpenFilesOption, App.JsonSerializerOptions);
+        File.WriteAllText(recentOpenFilesFilePath, json);
+
+        LoadRecentOpenFiles();
+    }
+
+    private static void ValidateConfigurationFile(
+        InstallationOption installationOptions)
+    {
+        var errors = new List<string>();
+        foreach (var applicationOption in installationOptions.Applications)
+        {
+            if (string.IsNullOrEmpty(applicationOption.Name))
+            {
+                errors.Add($"{nameof(applicationOption.Name)} is missing");
+            }
+
+            if (string.IsNullOrEmpty(applicationOption.RawInstallationPath) &&
+                string.IsNullOrEmpty(applicationOption.InstallationFile) &&
+                applicationOption.HostingFramework != HostingFrameworkType.NativeNoSettings)
+            {
+                errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationFile)} is invalid");
+            }
+
+            if (string.IsNullOrEmpty(applicationOption.InstallationPath))
+            {
+                errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationPath)} is invalid");
+            }
+        }
+
+        if (errors.Any())
+        {
+            throw new ValidationException(string.Join(Environment.NewLine, errors));
+        }
+    }
+
+    private async Task LoadConfigurationFile(
+        FileInfo file,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            loggerComponentProvider.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
+
+            StopMonitoringServices();
+
+            var json = await File
+                .ReadAllTextAsync(file.FullName, cancellationToken)
+                .ConfigureAwait(true);
+
+            var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
+                json,
+                App.JsonSerializerOptions) ?? throw new IOException($"Invalid format in {file}");
+
+            installationDirectory = new DirectoryInfo(file.Directory!.FullName);
+
+            ValidateConfigurationFile(installationOptions);
+
+            Populate(file, installationOptions);
+
+            AddLoadedFileToRecentOpenFiles(file);
+
+            StartMonitoringServices();
+
+            loggerComponentProvider.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
+        }
+        catch (Exception ex)
+        {
+            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
+            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+        }
+    }
+
+    private async Task SaveConfigurationFile()
+    {
+        try
+        {
+            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
+
+            var installationOption = new InstallationOption();
+            if (ProjectName is not null)
+            {
+                installationOption.Name = ProjectName;
+            }
+
+            if (AzureOptions is not null)
+            {
+                installationOption.Azure = new AzureOptions
+                {
+                    StorageConnectionString = AzureOptions.StorageConnectionString,
+                    BlobContainerName = AzureOptions.BlobContainerName,
+                };
+            }
+
+            foreach (var keyValueTemplateItem in DefaultApplicationSettings)
+            {
+                installationOption.DefaultApplicationSettings.Add(
+                    new KeyValuePair<string, object>(
+                        keyValueTemplateItem.Key,
+                        keyValueTemplateItem.Value));
+            }
+
+            foreach (var componentProvider in ComponentProviders)
+            {
+                var applicationOption = CreateApplicationOption(componentProvider);
+
+                installationOption.Applications.Add(applicationOption);
+            }
+
+            var json = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
+            await FileHelper
+                .WriteAllTextAsync(InstallationFile, json, cancellationTokenSource!.Token)
+                .ConfigureAwait(true);
+
+            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
+
+            IsDirty = false;
+            foreach (var componentProvider in ComponentProviders)
+            {
+                componentProvider.ClearAllIsDirty();
+            }
+
+            var customSettingsFile = new FileInfo(Path.Combine(InstallationFile.Directory!.FullName, Constants.CustomSettingsFileName));
+            var templateSettingsFile = new FileInfo(Path.Combine(InstallationFile.Directory!.FullName, Constants.TemplateSettingsFileName));
+            if (customSettingsFile.Exists &&
+                templateSettingsFile.Exists)
+            {
+                var dynamicJsonCustomSettings = new DynamicJson(json);
+                dynamicJsonCustomSettings.RemovePath("Applications");
+                await FileHelper
+                    .WriteAllTextAsync(customSettingsFile, dynamicJsonCustomSettings.ToJson(), cancellationTokenSource!.Token)
+                    .ConfigureAwait(true);
+
+                installationOption.ClearDataForTemplateSettings();
+                var jsonTemplateSettings = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
+                await FileHelper
+                    .WriteAllTextAsync(templateSettingsFile, jsonTemplateSettings, cancellationTokenSource!.Token)
+                    .ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {InstallationFile!.FullName}, Error: {ex.Message}");
+            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+        }
+    }
+
     private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
     {
         var components = new List<(string ComponentName, string? ContentHash)>();
