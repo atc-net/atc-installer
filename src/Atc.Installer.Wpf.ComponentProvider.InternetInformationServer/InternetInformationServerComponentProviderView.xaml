@@ -41,12 +41,15 @@
                 Grid.Column="3"
                 Orientation="Vertical"
                 Spacing="10">
-                <GroupBox Header="Default Application Settings">
+                <GroupBox Header="Common Application Settings for all components">
                     <Expander>
                         <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettings}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Application Settings" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
+                <GroupBox Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
+                    <GroupBox.Header>
+                        <TextBlock Foreground="{StaticResource AtcApps.Brushes.IdealForeground}" Text="{Binding Path=Name, StringFormat='Common Application Settings for {0}', FallbackValue='Common Application Settings for XX'}" />
+                    </GroupBox.Header>
                     <Expander>
                         <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettings}" />
                     </Expander>
@@ -61,7 +64,7 @@
                         <controls:FirewallRulesView DataContext="{Binding Path=FirewallRules}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Configuration Settings Files" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
+                <GroupBox Header="Configuration Settings Files - Deploy output" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:ConfigurationSettingsFilesView DataContext="{Binding Path=ConfigurationSettingsFiles}" />
                     </Expander>
