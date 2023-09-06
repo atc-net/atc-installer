@@ -43,6 +43,7 @@ public class XmlElementViewModel : ViewModelBase
         }
     }
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "OK.")]
     public ObservableCollectionEx<KeyValueTemplateItemViewModel> Attributes { get; set; } = new();
 
     private void Populate(

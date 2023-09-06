@@ -4,8 +4,6 @@ namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
 public class ApplicationSettingsViewModel : ViewModelBase
 {
-    private const string DefaultTemplateLocation = "DefaultApplicationSetting";
-    private readonly string itemBlankIdentifier = DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString();
     private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
     private readonly bool isDefaultApplicationSettings;
     private bool enableEditingMode;
@@ -94,7 +92,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
                             applicationSetting.Key,
                             resultValue,
                             value,
-                            templateLocations: new List<string> { DefaultTemplateLocation }));
+                            templateLocations: new List<string> { Constants.DefaultTemplateLocation }));
                 }
             }
             else
@@ -219,13 +217,13 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
             if (string.IsNullOrEmpty(dataValue) &&
                 (string.IsNullOrEmpty(dataTemplate) ||
-                dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal)))
+                dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal)))
             {
                 return;
             }
 
             if (string.IsNullOrEmpty(dataTemplate) ||
-                dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal))
+                dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
             {
                 Items.Add(
                     new KeyValueTemplateItemViewModel(
@@ -247,7 +245,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
                         dataKey,
                         dataDefaultValue,
                         template: $"[[{dataTemplate}]]",
-                        templateLocations: new List<string> { DefaultTemplateLocation }));
+                        templateLocations: new List<string> { Constants.DefaultTemplateLocation }));
             }
         }
 
@@ -276,56 +274,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
             return;
         }
 
-        var data = dialogBox.Data.GetKeyValues();
-
-        var dataValue = data["Value"].ToString()!;
-
-        if (isDefaultApplicationSettings)
-        {
-            updateItem.Value = dataValue;
-            updateItem.Template = null;
-            updateItem.TemplateLocations = null;
-
-            UpdateComponentProviders(updateItem);
-        }
-        else
-        {
-            var dataTemplate = data["Templates"].ToString()!;
-
-            if (string.IsNullOrEmpty(dataValue) &&
-                (string.IsNullOrEmpty(dataTemplate) ||
-                 dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal)))
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(dataTemplate) ||
-                dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal))
-            {
-                updateItem.Value = data["Value"].ToString()!;
-                updateItem.Template = null;
-                updateItem.TemplateLocations = null;
-            }
-            else
-            {
-                var dataDefaultValue = defaultSettings is null
-                    ? dataValue
-                    : defaultSettings.Items
-                        .First(x => x.Key.Equals(dataTemplate, StringComparison.OrdinalIgnoreCase))
-                        .GetValueAsString();
-
-                updateItem.Value = dataDefaultValue;
-                updateItem.Template = $"[[{dataTemplate}]]";
-                updateItem.TemplateLocations = new ObservableCollectionEx<string>
-                {
-                    DefaultTemplateLocation,
-                };
-            }
-
-            UpdateComponentProviders(updateItem);
-        }
-
-        IsDirty = true;
+        HandleEditDialogResult(dialogBox, updateItem);
     }
 
     private bool CanDeleteCommandHandler(
@@ -470,6 +419,67 @@ public class ApplicationSettingsViewModel : ViewModelBase
         }
 
         return labelControls;
+    }
+
+    private void HandleEditDialogResult(
+        InputFormDialogBox dialogBox,
+        KeyValueTemplateItemViewModel updateItem)
+    {
+        var data = dialogBox.Data.GetKeyValues();
+
+        var dataValue = data["Value"].ToString()!;
+
+        if (isDefaultApplicationSettings)
+        {
+            if (string.IsNullOrEmpty(dataValue))
+            {
+                return;
+            }
+
+            updateItem.Value = dataValue;
+            updateItem.Template = null;
+            updateItem.TemplateLocations = null;
+
+            UpdateComponentProviders(updateItem);
+        }
+        else
+        {
+            var dataTemplate = data["Templates"].ToString()!;
+
+            if (string.IsNullOrEmpty(dataValue) &&
+                (string.IsNullOrEmpty(dataTemplate) ||
+                 dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(dataTemplate) ||
+                dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
+            {
+                updateItem.Value = data["Value"].ToString()!;
+                updateItem.Template = null;
+                updateItem.TemplateLocations = null;
+            }
+            else
+            {
+                var dataDefaultValue = defaultSettings is null
+                    ? dataValue
+                    : defaultSettings.Items
+                        .First(x => x.Key.Equals(dataTemplate, StringComparison.OrdinalIgnoreCase))
+                        .GetValueAsString();
+
+                updateItem.Value = dataDefaultValue;
+                updateItem.Template = $"[[{dataTemplate}]]";
+                updateItem.TemplateLocations = new ObservableCollectionEx<string>
+                {
+                    Constants.DefaultTemplateLocation,
+                };
+            }
+
+            UpdateComponentProviders(updateItem);
+        }
+
+        IsDirty = true;
     }
 
     private void UpdateComponentProviders(

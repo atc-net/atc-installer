@@ -99,9 +99,6 @@ public partial class MainWindowViewModel
 
     private bool CanSaveConfigurationFileCommandHandler()
     {
-        return ApplicationOptions.EnableEditingMode;
-
-        // TODO:
         return ApplicationOptions.EnableEditingMode &&
                InstallationFile is not null &&
                (IsDirty ||
@@ -153,6 +150,12 @@ public partial class MainWindowViewModel
             await FileHelper.WriteAllTextAsync(file, json, cancellationTokenSource!.Token).ConfigureAwait(true);
 
             loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {file.FullName}");
+
+            IsDirty = false;
+            foreach (var componentProvider in ComponentProviders)
+            {
+                componentProvider.ClearAllIsDirty();
+            }
         }
         catch (Exception ex)
         {

@@ -600,6 +600,35 @@ public partial class ComponentProviderViewModel
         return (value, templateLocations);
     }
 
+    public void ClearAllIsDirty()
+    {
+        IsDirty = false;
+        foreach (var item in DefaultApplicationSettings.Items)
+        {
+            item.IsDirty = false;
+        }
+
+        foreach (var item in ApplicationSettings.Items)
+        {
+            item.IsDirty = false;
+        }
+
+        foreach (var item in FolderPermissions.Items)
+        {
+            item.IsDirty = false;
+        }
+
+        foreach (var item in ConfigurationSettingsFiles.JsonItems)
+        {
+            item.IsDirty = false;
+        }
+
+        foreach (var item in ConfigurationSettingsFiles.XmlItems)
+        {
+            item.IsDirty = false;
+        }
+    }
+
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
 

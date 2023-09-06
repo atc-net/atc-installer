@@ -7,9 +7,6 @@ namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
 public class ConfigurationSettingsFilesViewModel : ViewModelBase
 {
-    private const string DefaultTemplateLocation = "DefaultApplicationSetting";
-    private const string CurrentTemplateLocation = "ApplicationSetting";
-    private readonly string itemBlankIdentifier = DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString();
     private ComponentProviderViewModel? refComponentProvider;
     private bool enableEditingMode;
 
@@ -58,6 +55,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         ComponentProviderViewModel refComponentProviderViewModel,
         IList<ConfigurationSettingsFileOption> configurationSettingsFiles)
     {
+        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
         ArgumentNullException.ThrowIfNull(configurationSettingsFiles);
 
         refComponentProvider = refComponentProviderViewModel;
@@ -72,12 +70,18 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         {
             if (configurationSettingsFile.JsonSettings.Any())
             {
-                JsonItems.Add(new ConfigurationSettingsJsonFileViewModel(refComponentProviderViewModel, configurationSettingsFile));
+                JsonItems.Add(
+                    new ConfigurationSettingsJsonFileViewModel(
+                        refComponentProviderViewModel,
+                        configurationSettingsFile));
             }
 
             if (configurationSettingsFile.XmlSettings.Any())
             {
-                XmlItems.Add(new ConfigurationSettingsXmlFileViewModel(refComponentProviderViewModel, configurationSettingsFile));
+                XmlItems.Add(
+                    new ConfigurationSettingsXmlFileViewModel(
+                        refComponentProviderViewModel,
+                        configurationSettingsFile));
             }
         }
 
@@ -134,13 +138,13 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
 
         if (string.IsNullOrEmpty(dataValue) &&
             (string.IsNullOrEmpty(dataTemplate) ||
-             dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal)))
+             dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal)))
         {
             return;
         }
 
         if (string.IsNullOrEmpty(dataTemplate) ||
-            dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal))
+            dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
         {
             items.Add(
                 new KeyValueTemplateItemViewModel(
@@ -151,31 +155,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         }
         else
         {
-            if (refComponentProvider is null)
-            {
-                return;
-            }
-
-            var sa = dataTemplate.Split('|');
-            dataTemplate = sa[^1];
-
-            var templateLocation = string.Empty;
-            var dataDefaultValue = string.Empty;
-
-            if (sa[0].Equals("Default", StringComparison.Ordinal))
-            {
-                templateLocation = DefaultTemplateLocation;
-                dataDefaultValue = refComponentProvider.DefaultApplicationSettings.Items
-                    .First(x => x.Key.Equals(dataTemplate, StringComparison.Ordinal))
-                    .GetValueAsString();
-            }
-            else if (sa[0].Equals("Current", StringComparison.Ordinal))
-            {
-                templateLocation = CurrentTemplateLocation;
-                dataDefaultValue = refComponentProvider.ApplicationSettings.Items
-                    .First(x => x.Key.Equals(dataTemplate, StringComparison.Ordinal))
-                    .GetValueAsString();
-            }
+            (dataTemplate, var templateLocation, var dataDefaultValue) = TemplateExtract(dataTemplate);
 
             items.Add(
                 new KeyValueTemplateItemViewModel(
@@ -210,13 +190,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
             return;
         }
 
-        var data = dialogBox.Data.GetKeyValues();
-
-        //// TODO: Handle templates
-
-        item.Value = data["Value"];
-
-        IsDirty = true;
+        HandleEditDialogResult(dialogBox, updateItem);
     }
 
     private void DeleteJsonCommandHandler(
@@ -297,20 +271,16 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
 
         if (string.IsNullOrEmpty(dataValue) &&
             (string.IsNullOrEmpty(dataTemplate) ||
-             dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal)))
+             dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal)))
         {
             return;
         }
 
         if (string.IsNullOrEmpty(dataTemplate) ||
-            dataTemplate.Equals(itemBlankIdentifier, StringComparison.Ordinal))
+            dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
         {
             var xmlElementViewModel = new XmlElementViewModel(
-                new XmlElementSettingsOptions
-                {
-                    Path = "configuration:appSettings",
-                    Element = "add",
-                });
+                new XmlElementSettingsOptions { Path = "configuration:appSettings", Element = "add", });
 
             xmlElementViewModel.Attributes = new ObservableCollectionEx<KeyValueTemplateItemViewModel>
             {
@@ -330,31 +300,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         }
         else
         {
-            if (refComponentProvider is null)
-            {
-                return;
-            }
-
-            var sa = dataTemplate.Split('|');
-            dataTemplate = sa[^1];
-
-            var templateLocation = string.Empty;
-            var dataDefaultValue = string.Empty;
-
-            if (sa[0].Equals("Default", StringComparison.Ordinal))
-            {
-                templateLocation = DefaultTemplateLocation;
-                dataDefaultValue = refComponentProvider.DefaultApplicationSettings.Items
-                    .First(x => x.Key.Equals(dataTemplate, StringComparison.Ordinal))
-                    .GetValueAsString();
-            }
-            else if (sa[0].Equals("Current", StringComparison.Ordinal))
-            {
-                templateLocation = CurrentTemplateLocation;
-                dataDefaultValue = refComponentProvider.ApplicationSettings.Items
-                    .First(x => x.Key.Equals(dataTemplate, StringComparison.Ordinal))
-                    .GetValueAsString();
-            }
+            (dataTemplate, var templateLocation, var dataDefaultValue) = TemplateExtract(dataTemplate);
 
             var xmlElementViewModel = new XmlElementViewModel(
                 new XmlElementSettingsOptions
@@ -395,6 +341,11 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
             }
         }
 
+        if (updateItem is null)
+        {
+            return;
+        }
+
         var labelControls = CreateLabelControls(updateItem);
         var labelControlsForm = new LabelControlsForm();
         labelControlsForm.AddColumn(labelControls);
@@ -412,14 +363,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
             return;
         }
 
-        var data = dialogBox.Data.GetKeyValues();
-
-        //// TODO: Handle templates
-
-        var attribute = item.Attributes.First(x => x.Key == "value");
-        attribute.Value = data["Value"];
-
-        IsDirty = true;
+        HandleEditDialogResult(dialogBox, updateItem);
     }
 
     private void DeleteXmlCommandHandler(
@@ -481,12 +425,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     {
         var labelControls = new List<ILabelControlBase>();
 
-        var labelTextBoxKey = new LabelTextBox
-        {
-            LabelText = "Key",
-            IsMandatory = true,
-            MinLength = 1,
-        };
+        var labelTextBoxKey = new LabelTextBox { LabelText = "Key", IsMandatory = true, MinLength = 1, };
 
         if (updateItem is not null)
         {
@@ -497,11 +436,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
 
         labelControls.Add(labelTextBoxKey);
 
-        var labelTextBoxValue = new LabelTextBox
-        {
-            LabelText = "Value",
-            IsMandatory = false,
-        };
+        var labelTextBoxValue = new LabelTextBox { LabelText = "Value", IsMandatory = false, };
 
         if (updateItem is not null &&
             string.IsNullOrEmpty(updateItem.Template))
@@ -547,11 +482,92 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
             !string.IsNullOrEmpty(updateItem.Template))
         {
             var templateKey = updateItem.Template.GetTemplateKeys()[0];
-            labelComboBox.SelectedKey = labelComboBox.Items.Keys.First(x => x.EndsWith($"|{templateKey}", StringComparison.Ordinal));
+            labelComboBox.SelectedKey =
+                labelComboBox.Items.Keys.First(x => x.EndsWith($"|{templateKey}", StringComparison.Ordinal));
         }
 
         labelControls.Add(labelComboBox);
 
         return labelControls;
+    }
+
+    private void HandleEditDialogResult(
+        InputFormDialogBox dialogBox,
+        KeyValueTemplateItemViewModel updateItem)
+    {
+        var data = dialogBox.Data.GetKeyValues();
+
+        var dataValue = data["Value"].ToString()!;
+
+        var dataTemplate = string.Empty;
+        if (data.TryGetValue("Templates", out var value))
+        {
+            dataTemplate = value?.ToString()!;
+        }
+
+        if (string.IsNullOrEmpty(dataValue) &&
+            (string.IsNullOrEmpty(dataTemplate) ||
+             dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal)))
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(dataTemplate) ||
+            dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
+        {
+            if (string.IsNullOrEmpty(dataValue))
+            {
+                return;
+            }
+
+            updateItem.Value = dataValue;
+            updateItem.Template = null;
+            updateItem.TemplateLocations = null;
+        }
+        else
+        {
+            (dataTemplate, var templateLocation, var dataDefaultValue) = TemplateExtract(dataTemplate);
+
+            updateItem.Value = dataDefaultValue;
+            updateItem.Template = $"[[{dataTemplate}]]";
+            updateItem.TemplateLocations = new ObservableCollectionEx<string>
+            {
+                templateLocation,
+            };
+        }
+
+        IsDirty = true;
+    }
+
+    private (string DataTemplate, string TemplateLocation, string DataDefaultValue) TemplateExtract(
+        string dataTemplate)
+    {
+        var templateLocation = string.Empty;
+        var dataDefaultValue = string.Empty;
+
+        if (refComponentProvider is null)
+        {
+            return (dataTemplate, templateLocation, dataDefaultValue);
+        }
+
+        var sa = dataTemplate.Split('|');
+        dataTemplate = sa[^1];
+
+        if (sa[0].Equals(Constants.Default, StringComparison.Ordinal))
+        {
+            templateLocation = Constants.DefaultTemplateLocation;
+            dataDefaultValue = refComponentProvider.DefaultApplicationSettings.Items
+                .First(x => x.Key.Equals(dataTemplate, StringComparison.Ordinal))
+                .GetValueAsString();
+        }
+        else if (sa[0].Equals(Constants.Current, StringComparison.Ordinal))
+        {
+            templateLocation = Constants.CurrentTemplateLocation;
+            dataDefaultValue = refComponentProvider.ApplicationSettings.Items
+                .First(x => x.Key.Equals(dataTemplate, StringComparison.Ordinal))
+                .GetValueAsString();
+        }
+
+        return (dataTemplate, templateLocation, dataDefaultValue);
     }
 }
