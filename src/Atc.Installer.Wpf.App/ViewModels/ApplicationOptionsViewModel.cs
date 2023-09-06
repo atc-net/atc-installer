@@ -5,6 +5,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
     private string theme = string.Empty;
     private string title = string.Empty;
     private bool enableEditingMode;
+    private bool showOnlyBaseSettings;
 
     public ApplicationOptionsViewModel()
     {
@@ -18,6 +19,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
         title = applicationOptions.Title;
         theme = applicationOptions.Theme;
         enableEditingMode = applicationOptions.EnableEditingMode;
+        showOnlyBaseSettings = applicationOptions.ShowOnlyBaseSettings;
     }
 
     public string Title
@@ -47,14 +49,33 @@ public class ApplicationOptionsViewModel : ViewModelBase
         get => enableEditingMode;
         set
         {
+            if (enableEditingMode == value)
+            {
+                return;
+            }
+
             enableEditingMode = value;
             IsDirty = true;
             RaisePropertyChanged();
+        }
+    }
 
-            Messenger.Default.Send(new UpdateEditingModeMessage(enableEditingMode));
+    public bool ShowOnlyBaseSettings
+    {
+        get => showOnlyBaseSettings;
+        set
+        {
+            if (showOnlyBaseSettings == value)
+            {
+                return;
+            }
+
+            showOnlyBaseSettings = value;
+            IsDirty = true;
+            RaisePropertyChanged();
         }
     }
 
     public override string ToString()
-        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}, {nameof(EnableEditingMode)}: {EnableEditingMode}, {nameof(IsDirty)}: {IsDirty}";
+        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}, {nameof(EnableEditingMode)}: {EnableEditingMode}, {nameof(ShowOnlyBaseSettings)}: {ShowOnlyBaseSettings}, {nameof(IsDirty)}: {IsDirty}";
 }

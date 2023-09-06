@@ -16,7 +16,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
         this.isDefaultApplicationSettings = isDefaultApplicationSettings;
         this.refComponentProviders = refComponentProviders;
 
-        Messenger.Default.Register<UpdateEditingModeMessage>(this, HandleUpdateEditingModeMessage);
+        Messenger.Default.Register<UpdateApplicationOptionsMessage>(this, HandleUpdateApplicationOptionsMessage);
     }
 
     public IRelayCommand NewCommand
@@ -37,6 +37,11 @@ public class ApplicationSettingsViewModel : ViewModelBase
         get => enableEditingMode;
         set
         {
+            if (enableEditingMode == value)
+            {
+                return;
+            }
+
             enableEditingMode = value;
             RaisePropertyChanged();
         }
@@ -169,8 +174,8 @@ public class ApplicationSettingsViewModel : ViewModelBase
     public override string ToString()
         => string.Join("; ", Items);
 
-    private void HandleUpdateEditingModeMessage(
-        UpdateEditingModeMessage obj)
+    private void HandleUpdateApplicationOptionsMessage(
+        UpdateApplicationOptionsMessage obj)
         => EnableEditingMode = obj.EnableEditingMode;
 
     private void NewCommandHandler()

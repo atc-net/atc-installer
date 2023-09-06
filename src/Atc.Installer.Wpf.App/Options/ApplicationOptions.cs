@@ -10,6 +10,8 @@ public sealed class ApplicationOptions
 
     public bool EnableEditingMode { get; set; }
 
+    public bool ShowOnlyBaseSettings { get; set; }
+
     public override string ToString()
-        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}, {nameof(EnableEditingMode)}: {EnableEditingMode}";
+        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}, {nameof(EnableEditingMode)}: {EnableEditingMode}, {nameof(ShowOnlyBaseSettings)}: {ShowOnlyBaseSettings}";
 }

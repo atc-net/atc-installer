@@ -15,6 +15,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     private string? installedVersion;
     private string? installationVersion;
     private string filterTextForMenu = string.Empty;
+    private bool showOnlyBaseSettings;
     private bool hideMenuItem;
 
     public ComponentProviderViewModel()
@@ -105,6 +106,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             DependentServices.Add(new DependentServiceViewModel(dependentServiceName));
         }
 
+        Messenger.Default.Register<UpdateApplicationOptionsMessage>(this, HandleUpdateApplicationOptionsMessage);
         Messenger.Default.Register<UpdateDependentServiceStateMessage>(this, HandleDependentServiceState);
     }
 
@@ -117,6 +119,21 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public DirectoryInfo InstallationDirectory { get; }
 
     public string ProjectName { get; }
+
+    public bool ShowOnlyBaseSettings
+    {
+        get => showOnlyBaseSettings;
+        set
+        {
+            if (showOnlyBaseSettings == value)
+            {
+                return;
+            }
+
+            showOnlyBaseSettings = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public ApplicationSettingsViewModel DefaultApplicationSettings { get; }
 
@@ -300,4 +317,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public int DependentServicesIssueCount
         => DependentServices.Count(x => x.RunningState != ComponentRunningState.Running);
+
+    private void HandleUpdateApplicationOptionsMessage(
+        UpdateApplicationOptionsMessage obj)
+        => this.ShowOnlyBaseSettings = obj.ShowOnlyBaseSettings;
 }

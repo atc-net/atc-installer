@@ -51,6 +51,7 @@ public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSet
                 dynamicJson.SetValue("Application.Title", ApplicationOptions.Title);
                 dynamicJson.SetValue("Application.Theme", ApplicationOptions.Theme);
                 dynamicJson.SetValue("Application.EnableEditingMode", ApplicationOptions.EnableEditingMode);
+                dynamicJson.SetValue("Application.ShowOnlyBaseSettings", ApplicationOptions.ShowOnlyBaseSettings);
                 File.WriteAllText(file.FullName, dynamicJson.ToJson());
 
                 File.Copy(
@@ -64,6 +65,11 @@ public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSet
             }
 
             ApplicationOptions.IsDirty = false;
+
+            Messenger.Default.Send(
+                new UpdateApplicationOptionsMessage(
+                    ApplicationOptions.EnableEditingMode,
+                    ApplicationOptions.ShowOnlyBaseSettings));
         }
 
         dialogBox.Close();

@@ -20,6 +20,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Atc.Installer.Wpf.ComponentProvider;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <atcValueConverters:BoolToVisibilityCollapsedValueConverter x:Key="BoolToVisibilityCollapsedValueConverter" />
             <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
@@ -45,22 +46,22 @@
                         <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettings}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Application Settings">
+                <GroupBox Header="Application Settings" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettings}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Folder Permissions">
+                <GroupBox Header="Folder Permissions" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissions}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Firewall Rules">
+                <GroupBox Header="Firewall Rules" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:FirewallRulesView DataContext="{Binding Path=FirewallRules}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Configuration Settings Files">
+                <GroupBox Header="Configuration Settings Files" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:ConfigurationSettingsFilesView DataContext="{Binding Path=ConfigurationSettingsFiles}" />
                     </Expander>

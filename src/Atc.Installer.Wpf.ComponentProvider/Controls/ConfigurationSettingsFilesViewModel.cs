@@ -11,7 +11,7 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     private bool enableEditingMode;
 
     public ConfigurationSettingsFilesViewModel()
-        => Messenger.Default.Register<UpdateEditingModeMessage>(this, HandleUpdateEditingModeMessage);
+        => Messenger.Default.Register<UpdateApplicationOptionsMessage>(this, HandleUpdateApplicationOptionsMessage);
 
     public IRelayCommand<ConfigurationSettingsJsonFileViewModel> NewJsonCommand
         => new RelayCommand<ConfigurationSettingsJsonFileViewModel>(
@@ -42,6 +42,11 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         get => enableEditingMode;
         set
         {
+            if (enableEditingMode == value)
+            {
+                return;
+            }
+
             enableEditingMode = value;
             RaisePropertyChanged();
         }
@@ -92,8 +97,8 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     public override string ToString()
         => $"{nameof(JsonItems)}.Count: {JsonItems?.Count}, {nameof(XmlItems)}.Count: {XmlItems?.Count}";
 
-    private void HandleUpdateEditingModeMessage(
-        UpdateEditingModeMessage obj)
+    private void HandleUpdateApplicationOptionsMessage(
+        UpdateApplicationOptionsMessage obj)
         => EnableEditingMode = obj.EnableEditingMode;
 
     private void NewJsonCommandHandler(

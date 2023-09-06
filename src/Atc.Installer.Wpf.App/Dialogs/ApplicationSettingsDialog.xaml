@@ -10,7 +10,7 @@
     x:Name="DialogApplicationSettings"
     Title="Application Settings"
     Width="600"
-    Height="300"
+    Height="400"
     d:DataContext="{d:DesignInstance Type=dialogs:ApplicationSettingsDialogViewModel}"
     ShowCloseButton="False"
     ShowMaxRestoreButton="False"
@@ -58,10 +58,20 @@
             Spacing="20">
             <atc:LabelTextBox
                 LabelText="Title"
+                LabelWidthNumber="150"
                 MinLength="3"
                 Text="{Binding Path=ApplicationOptions.Title}" />
-            <atc:LabelThemeAndAccentColorSelectors />
-            <atc:LabelCheckBox IsChecked="{Binding Path=ApplicationOptions.EnableEditingMode}" LabelText="Editing Mode" />
+            <atc:LabelThemeAndAccentColorSelectors LabelWidthNumber="150" />
+            <atc:LabelCheckBox
+                HideAreas="Validation"
+                IsChecked="{Binding Path=ApplicationOptions.EnableEditingMode}"
+                LabelText="Allow Editing"
+                LabelWidthNumber="150" />
+            <atc:LabelCheckBox
+                HideAreas="Validation"
+                IsChecked="{Binding Path=ApplicationOptions.ShowOnlyBaseSettings}"
+                LabelText="Show only base settings"
+                LabelWidthNumber="150" />
         </atc:UniformSpacingPanel>
 
     </DockPanel>
