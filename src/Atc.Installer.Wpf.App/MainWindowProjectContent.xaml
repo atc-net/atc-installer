@@ -17,7 +17,6 @@
     xmlns:models="clr-namespace:Atc.Data.Models;assembly=Atc"
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:viewModels="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ViewModels;assembly=Atc.Installer.Wpf.ComponentProvider"
-    d:Background="White"
     d:DataContext="{d:DesignInstance Type=app:MainWindowViewModel}"
     d:DesignHeight="800"
     d:DesignWidth="1400"
