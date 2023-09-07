@@ -126,6 +126,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         loggerComponentProvider.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
 
+        if (ApplicationOptions.OpenRecentConfigurationFileOnStartup &&
+            RecentOpenFiles.Count > 0)
+        {
+            OpenRecentConfigurationFileCommand.ExecuteAsync(RecentOpenFiles[0].File);
+        }
+
         Task.Factory.StartNew(
             async () => await CheckForUpdates().ConfigureAwait(false),
             CancellationToken.None,

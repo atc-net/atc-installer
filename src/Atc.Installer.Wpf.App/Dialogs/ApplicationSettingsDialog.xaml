@@ -64,14 +64,19 @@
             <atc:LabelThemeAndAccentColorSelectors LabelWidthNumber="150" />
             <atc:LabelCheckBox
                 HideAreas="Validation"
+                IsChecked="{Binding Path=ApplicationOptions.OpenRecentConfigurationFileOnStartup}"
+                LabelText="Open recent configuration on startup"
+                LabelWidthNumber="210" />
+            <atc:LabelCheckBox
+                HideAreas="Validation"
                 IsChecked="{Binding Path=ApplicationOptions.EnableEditingMode}"
                 LabelText="Allow Editing"
-                LabelWidthNumber="150" />
+                LabelWidthNumber="210" />
             <atc:LabelCheckBox
                 HideAreas="Validation"
                 IsChecked="{Binding Path=ApplicationOptions.ShowOnlyBaseSettings}"
                 LabelText="Show only base settings"
-                LabelWidthNumber="150" />
+                LabelWidthNumber="210" />
         </atc:UniformSpacingPanel>
 
     </DockPanel>

@@ -4,6 +4,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
 {
     private string theme = string.Empty;
     private string title = string.Empty;
+    private bool openRecentConfigurationFileOnStartup;
     private bool enableEditingMode;
     private bool showOnlyBaseSettings;
 
@@ -18,6 +19,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
 
         title = applicationOptions.Title;
         theme = applicationOptions.Theme;
+        openRecentConfigurationFileOnStartup = applicationOptions.OpenRecentConfigurationFileOnStartup;
         enableEditingMode = applicationOptions.EnableEditingMode;
         showOnlyBaseSettings = applicationOptions.ShowOnlyBaseSettings;
     }
@@ -39,6 +41,22 @@ public class ApplicationOptionsViewModel : ViewModelBase
         set
         {
             theme = value;
+            IsDirty = true;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool OpenRecentConfigurationFileOnStartup
+    {
+        get => openRecentConfigurationFileOnStartup;
+        set
+        {
+            if (value == openRecentConfigurationFileOnStartup)
+            {
+                return;
+            }
+
+            openRecentConfigurationFileOnStartup = value;
             IsDirty = true;
             RaisePropertyChanged();
         }
