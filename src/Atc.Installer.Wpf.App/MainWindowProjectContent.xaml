@@ -71,16 +71,23 @@
                         BorderBrush="{DynamicResource AtcApps.Brushes.Accent}"
                         BorderThickness="0,1,0,0"
                         DockPanel.Dock="Bottom">
-                        <atc:GridEx Columns="*,10,*,10,*" Rows="Auto">
+                        <atc:GridEx Columns="*,10,*,10,*" Rows="Auto,10,Auto">
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.ColumnSpan="5"
+                                Text="All components:" />
                             <Button
+                                Grid.Row="2"
                                 Grid.Column="0"
                                 Command="{Binding Path=ServiceStopAllCommand}"
                                 Content="Stop" />
                             <Button
+                                Grid.Row="2"
                                 Grid.Column="2"
                                 Command="{Binding Path=ServiceDeployAllCommand}"
                                 Content="Deploy" />
                             <Button
+                                Grid.Row="2"
                                 Grid.Column="4"
                                 Command="{Binding Path=ServiceStartAllCommand}"
                                 Content="Start" />

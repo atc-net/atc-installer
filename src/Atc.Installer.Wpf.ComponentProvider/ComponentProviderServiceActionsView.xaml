@@ -15,7 +15,7 @@
         Padding="10"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Header="Service actions">
+        Header="Component actions">
         <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
             <Button Command="{Binding Path=ServiceStopCommand}" Content="Stop" />
             <Button Command="{Binding Path=ServiceStartCommand}" Content="Start" />
