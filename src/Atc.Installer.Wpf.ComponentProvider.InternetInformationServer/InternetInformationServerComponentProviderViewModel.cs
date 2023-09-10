@@ -361,7 +361,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     {
                         Endpoints.Add(
                             new EndpointViewModel(
-                                "Http",
+                                "Http - Swagger",
                                 ComponentEndpointType.BrowserLink,
                                 $"http://{HostName}:{HttpPort}/swagger",
                                 "http://[[HostName]]:[[HttpPort]]/swagger",
@@ -371,7 +371,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     {
                         Endpoints.Add(
                             new EndpointViewModel(
-                                "Http",
+                                "Http - Swagger",
                                 ComponentEndpointType.BrowserLink,
                                 $"http://{HostName}:{HttpPort}/swagger",
                                 $"http://{HostName}:[[HttpPort]]/swagger",
@@ -429,7 +429,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     {
                         Endpoints.Add(
                             new EndpointViewModel(
-                                "Https",
+                                "Https - Swagger",
                                 ComponentEndpointType.BrowserLink,
                                 $"https://{HostName}:{HttpsPort}/swagger",
                                 "https://[[HostName]]:[[HttpsPort]]/swagger",
@@ -439,7 +439,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     {
                         Endpoints.Add(
                             new EndpointViewModel(
-                                "Https",
+                                "Https - Swagger",
                                 ComponentEndpointType.BrowserLink,
                                 $"https://{HostName}:{HttpsPort}/swagger",
                                 $"https://{HostName}:[[HttpsPort]]/swagger",

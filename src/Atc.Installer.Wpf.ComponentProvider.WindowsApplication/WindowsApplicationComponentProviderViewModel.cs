@@ -324,7 +324,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 {
                     Endpoints.Add(
                         new EndpointViewModel(
-                            "Http",
+                            "Http - Swagger",
                             ComponentEndpointType.BrowserLink,
                             $"http://{hostNameValue}:{httpPortValue}/swagger",
                             "http://[[HostName]]:[[HttpPort]]/swagger",
@@ -349,7 +349,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 {
                     Endpoints.Add(
                         new EndpointViewModel(
-                            "Https",
+                            "Https - Swagger",
                             ComponentEndpointType.BrowserLink,
                             $"https://{hostNameValue}:{httpsPortValue}/swagger",
                             "https://[[HostName]]:[[HttpsPort]]/swagger",
