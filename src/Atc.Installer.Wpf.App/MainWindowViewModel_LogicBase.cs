@@ -187,9 +187,8 @@ public partial class MainWindowViewModel
                 installationOption.Applications.Add(applicationOption);
             }
 
-            var json = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
-            await FileHelper
-                .WriteAllTextAsync(InstallationFile, json, cancellationTokenSource!.Token)
+            await ConfigurationFileHelper
+                .SaveInstallationSettings(InstallationFile, installationOption)
                 .ConfigureAwait(true);
 
             loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
@@ -205,16 +204,19 @@ public partial class MainWindowViewModel
             if (customSettingsFile.Exists &&
                 templateSettingsFile.Exists)
             {
+                var json = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
                 var dynamicJsonCustomSettings = new DynamicJson(json);
                 dynamicJsonCustomSettings.RemovePath("Applications");
-                await FileHelper
-                    .WriteAllTextAsync(customSettingsFile, dynamicJsonCustomSettings.ToJson(), cancellationTokenSource!.Token)
+                await ConfigurationFileHelper.SaveInstallationSettings(
+                        customSettingsFile,
+                        dynamicJsonCustomSettings.ToJson())
                     .ConfigureAwait(true);
 
                 installationOption.ClearDataForTemplateSettings();
                 var jsonTemplateSettings = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
-                await FileHelper
-                    .WriteAllTextAsync(templateSettingsFile, jsonTemplateSettings, cancellationTokenSource!.Token)
+                await ConfigurationFileHelper.SaveInstallationSettings(
+                        templateSettingsFile,
+                        jsonTemplateSettings)
                     .ConfigureAwait(true);
             }
         }

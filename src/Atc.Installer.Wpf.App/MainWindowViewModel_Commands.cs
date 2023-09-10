@@ -53,7 +53,8 @@ public partial class MainWindowViewModel
             ServiceStartAllCommandHandler,
             CanServiceStartAllCommandHandler);
 
-    public new ICommand ApplicationExitCommand => new RelayCommand(ApplicationExitCommandHandler);
+    public new ICommand ApplicationExitCommand
+        => new RelayCommand(ApplicationExitCommandHandler);
 
     private async Task OpenConfigurationFileCommandHandler()
     {
@@ -163,7 +164,9 @@ public partial class MainWindowViewModel
 
             if (files.Any())
             {
-                reloadProjectInstallationFile = ConfigurationFileHelper.UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(installationDirectory);
+                reloadProjectInstallationFile = await ConfigurationFileHelper
+                    .UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(installationDirectory)
+                    .ConfigureAwait(true);
             }
         }
 

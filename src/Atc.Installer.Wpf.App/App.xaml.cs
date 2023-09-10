@@ -1,5 +1,4 @@
 // ReSharper disable NotAccessedField.Local
-
 namespace Atc.Installer.Wpf.App;
 
 /// <summary>
@@ -34,7 +33,7 @@ public partial class App
 
         RestoreInstallerCustomAppSettingsIfNeeded();
 
-        UpdateProjectsInstallerFilesIfNeeded();
+        TaskHelper.RunSync(UpdateProjectsInstallerFilesIfNeeded);
 
         host = Host.CreateDefaultBuilder()
             .ConfigureLogging((_, logging) =>
@@ -157,11 +156,13 @@ public partial class App
         File.Copy(backupFile.FullName, currentFile.FullName, overwrite: true);
     }
 
-    private static void UpdateProjectsInstallerFilesIfNeeded()
+    private static async Task UpdateProjectsInstallerFilesIfNeeded()
     {
         foreach (var projectDirectory in Directory.GetDirectories(InstallerProgramDataProjectsDirectory.FullName))
         {
-            ConfigurationFileHelper.UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(new DirectoryInfo(projectDirectory));
+            await ConfigurationFileHelper
+                .UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(new DirectoryInfo(projectDirectory))
+                .ConfigureAwait(true);
         }
     }
 
