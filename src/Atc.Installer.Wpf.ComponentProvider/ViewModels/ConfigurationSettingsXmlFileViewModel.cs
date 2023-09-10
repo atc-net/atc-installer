@@ -13,7 +13,7 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
         ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
-        Populate(refComponentProviderViewModel,configurationSettingsFileOption);
+        Populate(refComponentProviderViewModel, configurationSettingsFileOption);
     }
 
     public string FileName

@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Atc.XUnit" Version="2.0.349" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="xunit" Version="2.5.1-pre.12" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1-pre.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Atc.Installer.Integration.WindowsApplication\Atc.Installer.Integration.WindowsApplication.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Atc.Test" Version="1.0.79" />
   </ItemGroup>
 
 </Project>

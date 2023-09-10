@@ -72,7 +72,6 @@ public class EndpointViewModel : ViewModelBase
         => Template is not null &&
            Template.Contains(templateKey, StringComparison.Ordinal);
 
-
     public override string ToString()
     {
         if (Template is null || TemplateLocations is null)
