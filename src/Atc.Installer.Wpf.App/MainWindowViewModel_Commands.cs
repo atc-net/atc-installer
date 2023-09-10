@@ -136,7 +136,38 @@ public partial class MainWindowViewModel
 
         loggerComponentProvider.Log(LogLevel.Trace, "Downloading installation files from Azure StorageAccount");
 
-        var files = await azureStorageAccountInstallerService
+        var reloadProjectInstallationFile = false;
+        var templateSettingsFileContentHash = GetTemplateSettingsWithInstallationFileContentHash(installationDirectory!);
+        if (templateSettingsFileContentHash is not null)
+        {
+            var projectNameTerms = ProjectName!.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+            var list = new List<(string ComponentName, string? ContentHash)>
+            {
+                ("Settings", templateSettingsFileContentHash),
+                ($"{projectNameTerms[0]}.Settings", templateSettingsFileContentHash),
+            };
+
+            if (projectNameTerms.Length > 1)
+            {
+                list.Add(($"{projectNameTerms[0]}.{projectNameTerms[1]}.Settings", templateSettingsFileContentHash));
+            }
+
+            var files = await azureStorageAccountInstallerService
+                .DownloadLatestFilesByNames(
+                    AzureOptions!.StorageConnectionString,
+                    AzureOptions!.BlobContainerName,
+                    installationDirectory!.FullName,
+                    list)
+                .ConfigureAwait(true);
+
+            if (files.Any())
+            {
+                reloadProjectInstallationFile = ConfigurationFileHelper.UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(installationDirectory);
+            }
+        }
+
+        var componentFiles = await azureStorageAccountInstallerService
             .DownloadLatestFilesByNames(
                 AzureOptions!.StorageConnectionString,
                 AzureOptions!.BlobContainerName,
@@ -146,7 +177,7 @@ public partial class MainWindowViewModel
 
         foreach (var vm in ComponentProviders)
         {
-            var fileInfo = files.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
+            var fileInfo = componentFiles.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
             if (fileInfo is null)
             {
                 continue;
@@ -161,6 +192,12 @@ public partial class MainWindowViewModel
         loggerComponentProvider.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
 
         IsBusy = false;
+
+        if (reloadProjectInstallationFile)
+        {
+            await LoadConfigurationFile(InstallationFile!, CancellationToken.None)
+                .ConfigureAwait(true);
+        }
     }
 
     private static bool CanOpenApplicationCheckForUpdatesCommandHandler()

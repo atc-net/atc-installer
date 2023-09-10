@@ -225,6 +225,15 @@ public partial class MainWindowViewModel
         }
     }
 
+    private static string? GetTemplateSettingsWithInstallationFileContentHash(
+        DirectoryInfo installationDirectory)
+    {
+        var templateSettingsFile = new FileInfo(Path.Combine(installationDirectory.FullName, Constants.TemplateSettingsFileName));
+        return templateSettingsFile.Exists
+            ? CalculateMd5(templateSettingsFile)
+            : null;
+    }
+
     private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
     {
         var components = new List<(string ComponentName, string? ContentHash)>();
