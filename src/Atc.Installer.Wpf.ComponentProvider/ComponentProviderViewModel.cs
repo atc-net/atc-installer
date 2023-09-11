@@ -76,7 +76,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ApplicationSettings.Populate(DefaultApplicationSettings, applicationOption.ApplicationSettings);
 
         FolderPermissions = new FolderPermissionsViewModel();
-        FolderPermissions.Populate(applicationOption.FolderPermissions);
+        FolderPermissions.Populate(this, applicationOption.FolderPermissions);
 
         FirewallRules = new FirewallRulesViewModel();
         FirewallRules.Populate(this, applicationOption.FirewallRules);

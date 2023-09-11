@@ -602,33 +602,12 @@ public partial class ComponentProviderViewModel
 
     public void ClearAllIsDirty()
     {
+        DefaultApplicationSettings.ClearAllIsDirty();
+        ApplicationSettings.ClearAllIsDirty();
+        FolderPermissions.ClearAllIsDirty();
+        FirewallRules.ClearAllIsDirty();
+        ConfigurationSettingsFiles.ClearAllIsDirty();
         IsDirty = false;
-        foreach (var item in DefaultApplicationSettings.Items)
-        {
-            item.IsDirty = false;
-        }
-
-        foreach (var item in ApplicationSettings.Items)
-        {
-            item.IsDirty = false;
-        }
-
-        foreach (var item in FolderPermissions.Items)
-        {
-            item.IsDirty = false;
-        }
-
-        foreach (var item in ConfigurationSettingsFiles.JsonItems)
-        {
-            item.IsDirty = false;
-        }
-
-        foreach (var item in ConfigurationSettingsFiles.XmlItems)
-        {
-            item.IsDirty = false;
-        }
-
-        ConfigurationSettingsFiles.IsDirty = false;
     }
 
     public override string ToString()

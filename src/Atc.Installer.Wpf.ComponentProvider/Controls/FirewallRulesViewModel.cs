@@ -10,27 +10,6 @@ public class FirewallRulesViewModel : ViewModelBase
     public FirewallRulesViewModel()
         => Messenger.Default.Register<UpdateApplicationOptionsMessage>(this, HandleUpdateApplicationOptionsMessage);
 
-    public void Populate(
-        ComponentProviderViewModel refComponentProviderViewModel,
-        IList<FirewallRuleOption> firewallRules)
-    {
-        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
-        ArgumentNullException.ThrowIfNull(firewallRules);
-
-        refComponentProvider = refComponentProviderViewModel;
-
-        Items.Clear();
-
-        Items.SuppressOnChangedNotification = true;
-
-        foreach (var firewallRule in firewallRules)
-        {
-            Items.Add(new FirewallRuleViewModel(firewallRule));
-        }
-
-        Items.SuppressOnChangedNotification = false;
-    }
-
     public IRelayCommand NewCommand
         => new RelayCommand(
             NewCommandHandler);
@@ -59,6 +38,36 @@ public class FirewallRulesViewModel : ViewModelBase
     }
 
     public ObservableCollectionEx<FirewallRuleViewModel> Items { get; init; } = new();
+
+    public void Populate(
+        ComponentProviderViewModel refComponentProviderViewModel,
+        IList<FirewallRuleOption> firewallRules)
+    {
+        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
+        ArgumentNullException.ThrowIfNull(firewallRules);
+
+        refComponentProvider = refComponentProviderViewModel;
+
+        Items.Clear();
+
+        Items.SuppressOnChangedNotification = true;
+
+        foreach (var firewallRule in firewallRules)
+        {
+            Items.Add(new FirewallRuleViewModel(firewallRule));
+        }
+
+        Items.SuppressOnChangedNotification = false;
+    }
+
+    public void ClearAllIsDirty()
+    {
+        IsDirty = false;
+        foreach (var item in Items)
+        {
+            item.IsDirty = false;
+        }
+    }
 
     private void HandleUpdateApplicationOptionsMessage(
         UpdateApplicationOptionsMessage obj)

@@ -2,6 +2,7 @@
     x:Class="Atc.Installer.Wpf.ComponentProvider.Controls.FolderPermissionsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
     xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,24 +10,71 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <Grid>
+
+    <StackPanel Orientation="Vertical">
+        <Button
+            Margin="7"
+            HorizontalAlignment="Left"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            BorderThickness="0"
+            Command="{Binding Path=NewCommand}"
+            CommandParameter="{Binding}"
+            IsEnabled="{Binding Path=EnableEditingMode}">
+            <StackPanel Orientation="Horizontal">
+                <atc:SvgImage
+                    Width="16"
+                    Height="16"
+                    ControlSizeType="ContentToSizeNoStretch"
+                    OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                    Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/new.svg" />
+                <TextBlock Margin="10,0,0,0" Text="New" />
+            </StackPanel>
+        </Button>
+
         <ListView ItemsSource="{Binding Path=Items}">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn Width="Auto" Header="Actions">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <atc:UniformSpacingPanel
+                                    IsEnabled="{Binding Path=DataContext.EnableEditingMode, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                    Orientation="Horizontal"
+                                    Spacing="10">
+                                    <Button
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        BorderThickness="0"
+                                        Command="{Binding Path=DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip="Delete">
+                                        <atc:SvgImage
+                                            Width="16"
+                                            Height="16"
+                                            ControlSizeType="ContentToSizeNoStretch"
+                                            OverrideColor="{DynamicResource AtcApps.Colors.ThemeForeground}"
+                                            Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/delete.svg" />
+                                    </Button>
+                                </atc:UniformSpacingPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn
                         Width="100"
                         DisplayMemberBinding="{Binding Path=User}"
-                        Header="Key" />
+                        Header="User" />
                     <GridViewColumn
                         Width="100"
                         DisplayMemberBinding="{Binding Path=FileSystemRights}"
-                        Header="Value" />
+                        Header="Access Rights" />
                     <GridViewColumn
                         Width="Auto"
                         DisplayMemberBinding="{Binding Path=Folder}"
-                        Header="Value" />
+                        Header="Folder" />
                 </GridView>
             </ListView.View>
         </ListView>
-    </Grid>
+    </StackPanel>
+
 </UserControl>
