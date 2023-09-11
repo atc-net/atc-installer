@@ -34,6 +34,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             InstallationFolderPath = new ValueTemplateItemViewModel(@"C:\ProgramFiles\MyApp", template: null, templateLocations: null);
             DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, RefComponentProviders);
             ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, RefComponentProviders);
+            FolderPermissions = new FolderPermissionsViewModel();
+            FirewallRules = new FirewallRulesViewModel();
             ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
         }
         else
@@ -73,9 +75,11 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, refComponentProviders);
         ApplicationSettings.Populate(DefaultApplicationSettings, applicationOption.ApplicationSettings);
 
+        FolderPermissions = new FolderPermissionsViewModel();
         FolderPermissions.Populate(applicationOption.FolderPermissions);
 
-        FirewallRules.Populate(applicationOption.FirewallRules);
+        FirewallRules = new FirewallRulesViewModel();
+        FirewallRules.Populate(this, applicationOption.FirewallRules);
 
         ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
         ConfigurationSettingsFiles.Populate(this, applicationOption.ConfigurationSettingsFiles);
@@ -139,9 +143,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public ApplicationSettingsViewModel ApplicationSettings { get; }
 
-    public FolderPermissionsViewModel FolderPermissions { get; } = new();
+    public FolderPermissionsViewModel FolderPermissions { get; }
 
-    public FirewallRulesViewModel FirewallRules { get; } = new();
+    public FirewallRulesViewModel FirewallRules { get; }
 
     public ConfigurationSettingsFilesViewModel ConfigurationSettingsFiles { get; }
 
