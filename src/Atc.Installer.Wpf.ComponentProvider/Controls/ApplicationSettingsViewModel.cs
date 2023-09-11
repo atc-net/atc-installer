@@ -171,6 +171,15 @@ public class ApplicationSettingsViewModel : ViewModelBase
         return false;
     }
 
+    public void ClearAllIsDirty()
+    {
+        IsDirty = false;
+        foreach (var item in Items)
+        {
+            item.IsDirty = false;
+        }
+    }
+
     public override string ToString()
         => string.Join("; ", Items);
 

@@ -94,6 +94,20 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         XmlItems.SuppressOnChangedNotification = false;
     }
 
+    public void ClearAllIsDirty()
+    {
+        IsDirty = false;
+        foreach (var item in JsonItems)
+        {
+            item.IsDirty = false;
+        }
+
+        foreach (var item in XmlItems)
+        {
+            item.IsDirty = false;
+        }
+    }
+
     public override string ToString()
         => $"{nameof(JsonItems)}.Count: {JsonItems?.Count}, {nameof(XmlItems)}.Count: {XmlItems?.Count}";
 
