@@ -16,6 +16,7 @@
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
         <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
+        <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
     </UserControl.Resources>
 
     <UserControl.ContextMenu>
@@ -23,8 +24,8 @@
             <MenuItem Command="{Binding Path=ServiceStopCommand}" Header="Stop" />
             <MenuItem Command="{Binding Path=ServiceDeployCommand}" Header="Deploy" />
             <MenuItem Command="{Binding Path=ServiceStartCommand}" Header="Start" />
-            <Separator />
-            <MenuItem Header="Browse links">
+            <Separator Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}" />
+            <MenuItem Header="Browse links" Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
                 <MenuItem.ItemsSource>
                     <Binding Path="BrowserLinkEndpoints" />
                 </MenuItem.ItemsSource>
