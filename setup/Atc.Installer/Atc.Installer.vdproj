@@ -225,7 +225,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Atc.Installer"
         "ProductCode" = "8:{3F307C9D-74FA-4720-A46B-9BE093C3A265}"
-        "PackageCode" = "8:{93937C48-D568-4997-A6D2-5564D5653779}"
+        "PackageCode" = "8:{D56B6FCA-3775-4E78-B08E-55417E9AA2C7}"
         "UpgradeCode" = "8:{F7F3665E-9FEB-4AE3-B0EA-F3791208A1A8}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -760,7 +760,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B80DFB6270524AC7B2F3C294312B6821"
             {
-            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\obj\\Debug\\net7.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\obj\\Release\\net7.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"
