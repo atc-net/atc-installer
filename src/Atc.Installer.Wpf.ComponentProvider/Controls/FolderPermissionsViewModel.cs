@@ -116,6 +116,12 @@ public class FolderPermissionsViewModel : ViewModelBase
         if (string.IsNullOrEmpty(dataTemplate) ||
             dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
         {
+            if (!dataFolder.StartsWith(".\\", StringComparison.Ordinal) &&
+               !dataFolder.Contains(":\\", StringComparison.Ordinal))
+            {
+                dataFolder = $".\\{dataFolder}";
+            }
+
             Items.Add(
                 new FolderPermissionViewModel
                 {
