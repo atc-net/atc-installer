@@ -29,6 +29,22 @@ public static class StringExtensions
             .ToList();
     }
 
+    public static IList<string> SplitTemplate(
+        this string value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        var list = new List<string>();
+        var sa1 = value.Split("[[", StringSplitOptions.RemoveEmptyEntries);
+        foreach (var sx1 in sa1)
+        {
+            var sa2 = sx1.Split("]]", StringSplitOptions.RemoveEmptyEntries);
+            list.AddRange(sa2);
+        }
+
+        return list;
+    }
+
     public static string ReplaceTemplateWithKey(
         this string value,
         string templateKey,

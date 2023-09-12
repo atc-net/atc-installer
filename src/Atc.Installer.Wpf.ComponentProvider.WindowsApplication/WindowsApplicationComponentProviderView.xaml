@@ -20,12 +20,13 @@
                 <ResourceDictionary Source="pack://application:,,,/Atc.Installer.Wpf.ComponentProvider;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <atcValueConverters:BoolToVisibilityCollapsedValueConverter x:Key="BoolToVisibilityCollapsedValueConverter" />
             <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
-        <atc:GridEx Columns="50,200,50,*" Rows="Auto">
+        <atc:GridEx Columns="0,200,20,*,10" Rows="Auto">
             <atc:UniformSpacingPanel
                 Grid.Row="0"
                 Grid.Column="1"
@@ -40,22 +41,30 @@
                 Orientation="Vertical"
                 Spacing="10"
                 Visibility="{Binding Path=SettingsVisibility}">
-                <GroupBox Header="Default Application Settings">
+                <GroupBox Header="Common Application Settings for all components">
                     <Expander>
                         <controls:ApplicationSettingsView DataContext="{Binding Path=DefaultApplicationSettings}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Application Settings">
+                <GroupBox Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
+                    <GroupBox.Header>
+                        <TextBlock Foreground="{StaticResource AtcApps.Brushes.IdealForeground}" Text="{Binding Path=Name, StringFormat='Common Application Settings for {0}', FallbackValue='Common Application Settings for XX'}" />
+                    </GroupBox.Header>
                     <Expander>
                         <controls:ApplicationSettingsView DataContext="{Binding Path=ApplicationSettings}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Folder Permissions">
+                <GroupBox Header="Folder Permissions" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:FolderPermissionsView DataContext="{Binding Path=FolderPermissions}" />
                     </Expander>
                 </GroupBox>
-                <GroupBox Header="Configuration Settings Files">
+                <GroupBox Header="Firewall Rules" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
+                    <Expander>
+                        <controls:FirewallRulesView DataContext="{Binding Path=FirewallRules}" />
+                    </Expander>
+                </GroupBox>
+                <GroupBox Header="Configuration Settings Files - Deploy output" Visibility="{Binding Path=ShowOnlyBaseSettings, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                     <Expander>
                         <controls:ConfigurationSettingsFilesView DataContext="{Binding Path=ConfigurationSettingsFiles}" />
                     </Expander>

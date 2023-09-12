@@ -10,9 +10,10 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
     }
 
     public ConfigurationSettingsXmlFileViewModel(
+        ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
-        Populate(configurationSettingsFileOption);
+        Populate(refComponentProviderViewModel, configurationSettingsFileOption);
     }
 
     public string FileName
@@ -28,6 +29,7 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
     public ObservableCollectionEx<XmlElementViewModel> Settings { get; init; } = new();
 
     public void Populate(
+        ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
         ArgumentNullException.ThrowIfNull(configurationSettingsFileOption);
@@ -40,7 +42,7 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
 
         foreach (var xmlSetting in configurationSettingsFileOption.XmlSettings)
         {
-            Settings.Add(new XmlElementViewModel(xmlSetting));
+            Settings.Add(new XmlElementViewModel(refComponentProviderViewModel, xmlSetting));
         }
 
         Settings.SuppressOnChangedNotification = false;

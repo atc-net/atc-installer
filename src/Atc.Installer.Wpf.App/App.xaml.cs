@@ -17,13 +17,23 @@ public partial class App
 
     public static DirectoryInfo InstallerProgramDataProjectsDirectory => new(Path.Combine(InstallerProgramDataDirectory.FullName, "Projects"));
 
+    public static JsonSerializerOptions JsonSerializerOptions
+    {
+        get
+        {
+            var jsonSerializerOptions = JsonSerializerOptionsFactory.Create();
+            jsonSerializerOptions.PropertyNamingPolicy = null;
+            return jsonSerializerOptions;
+        }
+    }
+
     public App()
     {
         EnsureInstallerDirectoriesIsCreated();
 
         RestoreInstallerCustomAppSettingsIfNeeded();
 
-        UpdateProjectsInstallerFilesIfNeeded();
+        TaskHelper.RunSync(UpdateProjectsInstallerFilesIfNeeded);
 
         host = Host.CreateDefaultBuilder()
             .ConfigureLogging((_, logging) =>
@@ -55,10 +65,13 @@ public partial class App
     {
         services
             .AddOptions<ApplicationOptions>()
-            .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName));
+            .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddSingleton<IGitHubReleaseService, GitHubReleaseService>();
         services.AddSingleton<INetworkShellService, NetworkShellService>();
+        services.AddSingleton<IWindowsFirewallService, WindowsFirewallService>();
         services.AddSingleton<IInstalledAppsInstallerService, InstalledAppsInstallerService>();
 
         services.AddSingleton<IElasticSearchServerInstallerService, ElasticSearchServerInstallerService>();
@@ -68,7 +81,7 @@ public partial class App
         services.AddSingleton<IAzureStorageAccountInstallerService, AzureStorageAccountInstallerService>();
 
         services.AddSingleton<ICheckForUpdatesBoxDialogViewModel, CheckForUpdatesBoxDialogViewModel>();
-        services.AddSingleton<IMainWindowViewModelBase, MainWindowViewModel>();
+        services.AddSingleton<IMainWindowViewModel, MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
     }
 
@@ -143,55 +156,13 @@ public partial class App
         File.Copy(backupFile.FullName, currentFile.FullName, overwrite: true);
     }
 
-    private static void UpdateProjectsInstallerFilesIfNeeded()
+    private static async Task UpdateProjectsInstallerFilesIfNeeded()
     {
         foreach (var projectDirectory in Directory.GetDirectories(InstallerProgramDataProjectsDirectory.FullName))
         {
-            var customSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.CustomSettingsFileName));
-            var templateSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.TemplateSettingsFileName));
-            if (!customSettingsFile.Exists ||
-                !templateSettingsFile.Exists)
-            {
-                continue;
-            }
-
-            var customSettings = JsonSerializer.Deserialize<InstallationOption>(
-                File.ReadAllText(customSettingsFile.FullName),
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {customSettingsFile.FullName}");
-
-            var templateSettings = JsonSerializer.Deserialize<InstallationOption>(
-                File.ReadAllText(templateSettingsFile.FullName),
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {templateSettingsFile.FullName}");
-
-            templateSettings.Azure = customSettings.Azure;
-            foreach (var item in customSettings.DefaultApplicationSettings)
-            {
-                if (templateSettings.DefaultApplicationSettings.ContainsKey(item.Key))
-                {
-                    templateSettings.DefaultApplicationSettings[item.Key] = item.Value;
-                }
-            }
-
-            var installationSettingsJson = JsonSerializer.Serialize(
-                templateSettings,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                });
-
-            var installationSettingsFile = new FileInfo(Path.Combine(projectDirectory, Constants.InstallationSettingsFileName));
-            if (installationSettingsFile.Exists)
-            {
-                var oldInstallationSettings = File.ReadAllText(installationSettingsFile.FullName);
-                if (oldInstallationSettings.Equals(installationSettingsJson, StringComparison.Ordinal))
-                {
-                    return;
-                }
-
-                File.Delete(installationSettingsFile.FullName);
-            }
-
-            File.WriteAllText(installationSettingsFile.FullName, installationSettingsJson);
+            await ConfigurationFileHelper
+                .UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(new DirectoryInfo(projectDirectory))
+                .ConfigureAwait(true);
         }
     }
 

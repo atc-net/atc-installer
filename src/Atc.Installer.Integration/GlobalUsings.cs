@@ -14,3 +14,4 @@ global using Atc;
 global using Atc.Helpers;
 
 global using Microsoft.Win32;
+global using NetFwTypeLib;

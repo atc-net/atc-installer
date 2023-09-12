@@ -10,8 +10,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="MainWindowControl"
     Title="{Binding Path=ApplicationOptions.Title, Mode=OneWay, StringFormat='..:: {0} ::..', FallbackValue='..:: Atc.Installer ::..'}"
-    Width="1920"
-    Height="1080"
+    Width="1440"
+    Height="900"
     MinWidth="1440"
     MinHeight="900"
     d:DataContext="{d:DesignInstance Type=app:MainWindowViewModel}"
@@ -35,12 +35,15 @@
             <!--  Menu  -->
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem Command="{Binding Path=OpenConfigurationFileCommand}" Header="_Open configuration file">
+                    <MenuItem
+                        Command="{Binding Path=OpenConfigurationFileCommand}"
+                        Header="_Open configuration file"
+                        InputGestureText="Ctrl+O">
                         <MenuItem.Icon>
                             <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.File}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Recent Files">
+                    <MenuItem Header="_Recent Files" InputGestureText="Ctrl+R">
                         <MenuItem.ItemsSource>
                             <Binding Path="RecentOpenFiles" />
                         </MenuItem.ItemsSource>
@@ -53,6 +56,14 @@
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
+                    <MenuItem
+                        Command="{Binding Path=SaveConfigurationFileCommand}"
+                        Header="_Save configuration file"
+                        InputGestureText="Ctrl+S">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.File}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
                     <MenuItem Command="{Binding Path=OpenApplicationSettingsCommand}" Header="Application settings">
                         <MenuItem.Icon>
@@ -60,7 +71,10 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="{Binding Path=ApplicationExitCommand}" Header="_Exit">
+                    <MenuItem
+                        Command="{Binding Path=ApplicationExitCommand}"
+                        Header="_Exit"
+                        InputGestureText="Alt+F4">
                         <MenuItem.Icon>
                             <Image Source="{Binding Source={x:Static fontIcons:IcoFontType.Close}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RedBrush}}" />
                         </MenuItem.Icon>
@@ -119,40 +133,14 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!--<atc:ImageButton.ContentTemplate>
-                    <ContentPresenter
-                        x:Name="PART_ContentPresenter"
-                        Grid.Row="1"
+                <atc:GridEx Grid.Row="1" Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
+                    <TextBlock
                         Grid.Column="1"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Content="{TemplateBinding Content}" />
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="PART_ContentPresenter" Property="Opacity" Value="0.5" />
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="False">
-                            <Setter TargetName="PART_ContentPresenter" Property="Opacity" Value="1" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="PART_ContentPresenter" Property="Opacity" Value="0.5" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </atc:ImageButton.ContentTemplate>-->
-
-                <Grid Grid.Row="1" Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityVisibleValueConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="161*" />
-                        <ColumnDefinition Width="319*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock
-                        Grid.Column="1"
-                        Margin="149,0,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
                         FontSize="24"
                         Text="Please open a configuration file" />
-                </Grid>
+                </atc:GridEx>
                 <app:MainWindowProjectContent Grid.Row="1" Visibility="{Binding Path=ProjectName, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}" />
             </atc:GridEx>
 

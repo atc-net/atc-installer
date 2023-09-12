@@ -13,7 +13,7 @@ public class WindowsApplicationInstallerServiceTests
         var iaInstallerService = new InstalledAppsInstallerService();
         var sut = new WindowsApplicationInstallerService(iaInstallerService);
 
-        var applicationName = "notepad";
+        const string applicationName = "notepad";
 
         var runningState = sut.GetApplicationState(applicationName);
         Assert.Equal(ComponentRunningState.NotAvailable, runningState);

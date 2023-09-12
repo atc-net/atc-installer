@@ -18,8 +18,8 @@
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:viewModels="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ViewModels;assembly=Atc.Installer.Wpf.ComponentProvider"
     d:DataContext="{d:DesignInstance Type=app:MainWindowViewModel}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="800"
+    d:DesignWidth="1400"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -35,13 +35,14 @@
 
     <atc:GridEx
         Margin="10"
-        Columns="400,10,*"
+        Columns="600,10,*"
         Rows="*">
 
         <!--  Left-Content  -->
         <atc:GridEx
             Grid.Row="0"
             Grid.Column="0"
+            Margin="0,0,10,0"
             Columns="*"
             Rows="100,*">
             <TextBlock
@@ -69,16 +70,23 @@
                         BorderBrush="{DynamicResource AtcApps.Brushes.Accent}"
                         BorderThickness="0,1,0,0"
                         DockPanel.Dock="Bottom">
-                        <atc:GridEx Columns="*,10,*,10,*" Rows="Auto">
+                        <atc:GridEx Columns="*,10,*,10,*" Rows="Auto,10,Auto">
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.ColumnSpan="5"
+                                Text="All components:" />
                             <Button
+                                Grid.Row="2"
                                 Grid.Column="0"
                                 Command="{Binding Path=ServiceStopAllCommand}"
                                 Content="Stop" />
                             <Button
+                                Grid.Row="2"
                                 Grid.Column="2"
                                 Command="{Binding Path=ServiceDeployAllCommand}"
                                 Content="Deploy" />
                             <Button
+                                Grid.Row="2"
                                 Grid.Column="4"
                                 Command="{Binding Path=ServiceStartAllCommand}"
                                 Content="Start" />
@@ -126,49 +134,41 @@
             Rows="100,3*,10,2*">
 
             <!--  Right-Content-Header  -->
-            <atc:GridEx
+            <StackPanel
                 Grid.Row="0"
                 Grid.Column="0"
-                Columns="*,10,350">
-                <StackPanel Grid.Column="0" Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,20,0,10"
-                        FontSize="26"
-                        Text="{Binding Path=SelectedComponentProvider.Name}" />
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=ComponentProviders, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider.InstalledVersion, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                            <TextBlock FontSize="18" Text="Version" />
-                            <TextBlock
-                                Margin="10,0,0,0"
-                                FontSize="18"
-                                Text="{Binding Path=SelectedComponentProvider.InstalledVersion}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider, Converter={StaticResource ComponentProviderVersionCompareVisibilityVisibleValueConverter}}">
-                            <TextBlock
-                                Margin="20,0,0,0"
-                                FontSize="18"
-                                Foreground="DarkOrange"
-                                Text="New version available" />
-                            <TextBlock
-                                Margin="10,0,0,0"
-                                FontSize="18"
-                                Foreground="DarkOrange"
-                                Text="{Binding Path=SelectedComponentProvider.InstallationVersion}" />
-                        </StackPanel>
+                Orientation="Vertical">
+                <TextBlock
+                    Margin="0,20,0,10"
+                    FontSize="26"
+                    Text="{Binding Path=SelectedComponentProvider.Name}" />
+                <StackPanel Orientation="Horizontal" Visibility="{Binding Path=ComponentProviders, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider.InstalledVersion, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
+                        <TextBlock FontSize="18" Text="Version" />
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            FontSize="18"
+                            Text="{Binding Path=SelectedComponentProvider.InstalledVersion}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider, Converter={StaticResource ComponentProviderVersionCompareVisibilityVisibleValueConverter}}">
+                        <TextBlock
+                            Margin="20,0,0,0"
+                            FontSize="18"
+                            Foreground="DarkOrange"
+                            Text="New version available" />
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            FontSize="18"
+                            Foreground="DarkOrange"
+                            Text="{Binding Path=SelectedComponentProvider.InstallationVersion}" />
                     </StackPanel>
                 </StackPanel>
-                <atc:ToastNotificationArea
-                    x:Name="ToastNotificationArea"
-                    Grid.Column="2"
-                    MaxItems="1"
-                    Position="TopRight" />
-            </atc:GridEx>
+            </StackPanel>
 
             <!--  Right-Content-ContentControls  -->
             <ScrollViewer
                 Grid.Row="1"
                 Grid.Column="0"
-                Padding="0,0,10,0"
                 HorizontalScrollBarVisibility="Auto"
                 VerticalScrollBarVisibility="Auto">
                 <ContentControl Content="{Binding Path=SelectedComponentProvider}">
@@ -359,6 +359,14 @@
             </TabControl>
 
         </atc:GridEx>
+
+        <atc:ToastNotificationArea
+            x:Name="ToastNotificationArea"
+            Grid.Column="2"
+            Panel.ZIndex="1"
+            MaxItems="10"
+            Position="TopRight" />
+
     </atc:GridEx>
 
 </UserControl>

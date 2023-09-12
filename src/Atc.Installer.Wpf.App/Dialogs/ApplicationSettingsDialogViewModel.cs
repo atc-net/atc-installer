@@ -2,55 +2,96 @@ namespace Atc.Installer.Wpf.App.Dialogs;
 
 public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSettingsDialogViewModel
 {
-    public IRelayCommand<NiceWindow> OkCommand
-        => new RelayCommand<NiceWindow>(
-            OkCommandCommandHandler);
+    public IRelayCommand<NiceDialogBox> OkCommand
+        => new RelayCommand<NiceDialogBox>(
+            OkCommandHandler);
+
+    public IRelayCommand<NiceDialogBox> CancelCommand
+        => new RelayCommand<NiceDialogBox>(
+            CancelCommandHandler);
 
     public ApplicationSettingsDialogViewModel(
         ApplicationOptionsViewModel applicationOptionsViewModel)
     {
         ArgumentNullException.ThrowIfNull(applicationOptionsViewModel);
 
-        this.ApplicationOptions = applicationOptionsViewModel;
+        this.ApplicationOptions = applicationOptionsViewModel.Clone();
+        this.ApplicationOptionsBackup = applicationOptionsViewModel.Clone();
 
         ThemeManager.Current.ThemeChanged += OnThemeChanged;
     }
 
     public ApplicationOptionsViewModel ApplicationOptions { get; set; }
 
+    public ApplicationOptionsViewModel ApplicationOptionsBackup { get; set; }
+
     private void OnThemeChanged(
         object? sender,
         ThemeChangedEventArgs e)
     {
-        IsDirty = true;
+        ApplicationOptions.IsDirty = true;
     }
 
-    private void OkCommandCommandHandler(
-        NiceWindow window)
+    private void OkCommandHandler(
+        NiceDialogBox dialogBox)
     {
-        if (IsDirty)
+        ThemeManager.Current.ThemeChanged -= OnThemeChanged;
+
+        if (ApplicationOptions.IsDirty)
         {
             ApplicationOptions.Theme = ThemeManager.Current.DetectTheme(Application.Current)!.Name;
 
-            var file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.CustomAppSettingsFileName));
+            var file = new FileInfo(
+                Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    Constants.CustomAppSettingsFileName));
             if (file.Exists)
             {
                 var dynamicJson = new DynamicJson(file);
                 dynamicJson.SetValue("Application.Title", ApplicationOptions.Title);
                 dynamicJson.SetValue("Application.Theme", ApplicationOptions.Theme);
+                dynamicJson.SetValue("Application.OpenRecentConfigurationFileOnStartup", ApplicationOptions.OpenRecentConfigurationFileOnStartup);
+                dynamicJson.SetValue("Application.EnableEditingMode", ApplicationOptions.EnableEditingMode);
+                dynamicJson.SetValue("Application.ShowOnlyBaseSettings", ApplicationOptions.ShowOnlyBaseSettings);
                 File.WriteAllText(file.FullName, dynamicJson.ToJson());
 
                 File.Copy(
                     file.FullName,
-                    Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.CustomAppSettingsFileName),
+                    Path.Combine(
+                        App.InstallerProgramDataDirectory.FullName,
+                        Constants.CustomAppSettingsFileName),
                     overwrite: true);
 
-                window.DialogResult = true;
+                dialogBox.DialogResult = true;
             }
+
+            ApplicationOptions.IsDirty = false;
+
+            Messenger.Default.Send(
+                new UpdateApplicationOptionsMessage(
+                    ApplicationOptions.EnableEditingMode,
+                    ApplicationOptions.ShowOnlyBaseSettings));
         }
 
+        dialogBox.Close();
+    }
+
+    private void CancelCommandHandler(
+        NiceDialogBox dialogBox)
+    {
         ThemeManager.Current.ThemeChanged -= OnThemeChanged;
 
-        window.Close();
+        if (ApplicationOptions.IsDirty)
+        {
+            if (!ApplicationOptions.Theme.Equals(ThemeManager.Current.DetectTheme(Application.Current)!.Name, StringComparison.Ordinal))
+            {
+                var sa = ApplicationOptions.Theme.Split('.');
+                ThemeManager.Current.ChangeTheme(Application.Current, sa[0], sa[1]);
+            }
+
+            ApplicationOptions = ApplicationOptionsBackup.Clone();
+        }
+
+        dialogBox.Close();
     }
 }

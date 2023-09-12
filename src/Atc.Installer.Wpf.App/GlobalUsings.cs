@@ -18,6 +18,7 @@ global using Atc.Installer.Integration.InternetInformationServer;
 global using Atc.Installer.Integration.PostgreSql;
 global using Atc.Installer.Integration.WindowsApplication;
 global using Atc.Installer.Wpf.App.Dialogs;
+global using Atc.Installer.Wpf.App.Helpers;
 global using Atc.Installer.Wpf.App.Options;
 global using Atc.Installer.Wpf.App.ViewModels;
 global using Atc.Installer.Wpf.ComponentProvider;
@@ -30,11 +31,12 @@ global using Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
 global using Atc.Serialization;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;
+global using Atc.Wpf.Controls.Dialogs;
 global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Controls.Notifications.Messages;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
-global using Atc.Wpf.Theming.Controls.Windows;
+global using Atc.Wpf.Theming.Themes.Dialogs;
 
 global using ControlzEx.Theming;
 

@@ -4,17 +4,18 @@ namespace Atc.Installer.Wpf.ComponentProvider;
 public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvider
 {
     private readonly INetworkShellService networkShellService;
-    private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
+    private readonly IWindowsFirewallService windowsFirewallService;
     private ComponentInstallationState installationState;
     private ComponentRunningState runningState;
     private string? rawInstallationPath;
     private string? installationFile;
     private string? unpackedZipFolderPath;
-    private string? installationFolderPath;
-    private string? installedMainFilePath;
+    private ValueTemplateItemViewModel? installationFolderPath;
+    private ValueTemplateItemViewModel? installedMainFilePath;
     private string? installedVersion;
     private string? installationVersion;
     private string filterTextForMenu = string.Empty;
+    private bool showOnlyBaseSettings;
     private bool hideMenuItem;
 
     public ComponentProviderViewModel()
@@ -23,13 +24,19 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         {
             Logger = NullLogger<ComponentProviderViewModel>.Instance;
             networkShellService = new NetworkShellService();
-            refComponentProviders = new ObservableCollectionEx<ComponentProviderViewModel>();
+            windowsFirewallService = new WindowsFirewallService();
+            RefComponentProviders = new ObservableCollectionEx<ComponentProviderViewModel>();
             InstallationState = ComponentInstallationState.Checking;
             InstallerTempDirectory = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "atc-installer"));
             InstallationDirectory = new DirectoryInfo(Path.Combine(InstallerTempDirectory.FullName, "InstallationFiles"));
             ProjectName = "MyProject";
             Name = "MyApp";
-            InstallationFolderPath = @"C:\ProgramFiles\MyApp";
+            InstallationFolderPath = new ValueTemplateItemViewModel(@"C:\ProgramFiles\MyApp", template: null, templateLocations: null);
+            DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, RefComponentProviders);
+            ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, RefComponentProviders);
+            FolderPermissions = new FolderPermissionsViewModel();
+            FirewallRules = new FirewallRulesViewModel();
+            ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
         }
         else
         {
@@ -40,11 +47,12 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public ComponentProviderViewModel(
         ILogger<ComponentProviderViewModel> logger,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
-        IDictionary<string, object> defaultApplicationSettings,
+        ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
     {
         ArgumentNullException.ThrowIfNull(refComponentProviders);
@@ -54,27 +62,47 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         this.Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
-        this.refComponentProviders = refComponentProviders;
+        this.windowsFirewallService = windowsFirewallService ?? throw new ArgumentNullException(nameof(windowsFirewallService));
+        this.RefComponentProviders = refComponentProviders;
         InstallerTempDirectory = installerTempDirectory;
         InstallationDirectory = installationDirectory;
         ProjectName = projectName;
-        DefaultApplicationSettings.Populate(defaultApplicationSettings);
-        ApplicationSettings.Populate(applicationOption.ApplicationSettings);
-        FolderPermissions.Populate(applicationOption.FolderPermissions);
-        ConfigurationSettingsFiles.Populate(applicationOption.ConfigurationSettingsFiles);
         Name = applicationOption.Name;
+
+        DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, refComponentProviders);
+        DefaultApplicationSettings.Populate(defaultApplicationSettings);
+
+        ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, refComponentProviders);
+        ApplicationSettings.Populate(DefaultApplicationSettings, applicationOption.ApplicationSettings);
+
+        FolderPermissions = new FolderPermissionsViewModel();
+        FolderPermissions.Populate(this, applicationOption.FolderPermissions);
+
+        FirewallRules = new FirewallRulesViewModel();
+        FirewallRules.Populate(this, applicationOption.FirewallRules);
+
+        ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
+        ConfigurationSettingsFiles.Populate(this, applicationOption.ConfigurationSettingsFiles);
+
         SetFilterTextForMenu(string.Empty);
 
         ComponentType = applicationOption.ComponentType;
         HostingFramework = applicationOption.HostingFramework;
-        IsService = applicationOption.ComponentType is ComponentType.PostgreSqlServer or ComponentType.InternetInformationService or ComponentType.WindowsService;
+        IsService = applicationOption.ComponentType
+            is ComponentType.PostgreSqlServer
+            or ComponentType.InternetInformationService
+            or ComponentType.WindowsService;
         if (!string.IsNullOrEmpty(applicationOption.RawInstallationPath))
         {
             RawInstallationPath = ResolveTemplateIfNeededByApplicationSettingsLookup(applicationOption.RawInstallationPath);
         }
 
         InstallationFile = applicationOption.InstallationFile;
-        InstallationFolderPath = ResolveTemplateIfNeededByApplicationSettingsLookup(applicationOption.InstallationPath);
+        InstallationFolderPath = new ValueTemplateItemViewModel(
+            applicationOption.InstallationPath,
+            template: null,
+            templateLocations: null);
+
         ResolveInstalledMainFile(applicationOption);
 
         foreach (var dependentServiceName in applicationOption.DependentServices)
@@ -82,10 +110,13 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             DependentServices.Add(new DependentServiceViewModel(dependentServiceName));
         }
 
+        Messenger.Default.Register<UpdateApplicationOptionsMessage>(this, HandleUpdateApplicationOptionsMessage);
         Messenger.Default.Register<UpdateDependentServiceStateMessage>(this, HandleDependentServiceState);
     }
 
     public ILogger<ComponentProviderViewModel> Logger { get; }
+
+    public ObservableCollectionEx<ComponentProviderViewModel> RefComponentProviders { get; }
 
     public DirectoryInfo InstallerTempDirectory { get; }
 
@@ -93,13 +124,30 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public string ProjectName { get; }
 
-    public ApplicationSettingsViewModel DefaultApplicationSettings { get; } = new();
+    public bool ShowOnlyBaseSettings
+    {
+        get => showOnlyBaseSettings;
+        set
+        {
+            if (showOnlyBaseSettings == value)
+            {
+                return;
+            }
 
-    public ApplicationSettingsViewModel ApplicationSettings { get; } = new();
+            showOnlyBaseSettings = value;
+            RaisePropertyChanged();
+        }
+    }
 
-    public FolderPermissionsViewModel FolderPermissions { get; } = new();
+    public ApplicationSettingsViewModel DefaultApplicationSettings { get; }
 
-    public ConfigurationSettingsFilesViewModel ConfigurationSettingsFiles { get; } = new();
+    public ApplicationSettingsViewModel ApplicationSettings { get; }
+
+    public FolderPermissionsViewModel FolderPermissions { get; }
+
+    public FirewallRulesViewModel FirewallRules { get; }
+
+    public ConfigurationSettingsFilesViewModel ConfigurationSettingsFiles { get; }
 
     public string FilterTextForMenu
     {
@@ -171,7 +219,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
     }
 
-    public string? InstallationFolderPath
+    public ValueTemplateItemViewModel? InstallationFolderPath
     {
         get => installationFolderPath;
         protected set
@@ -181,7 +229,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
     }
 
-    public string? InstalledMainFilePath
+    public ValueTemplateItemViewModel? InstalledMainFilePath
     {
         get => installedMainFilePath;
         protected set
@@ -273,4 +321,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public int DependentServicesIssueCount
         => DependentServices.Count(x => x.RunningState != ComponentRunningState.Running);
+
+    private void HandleUpdateApplicationOptionsMessage(
+        UpdateApplicationOptionsMessage obj)
+        => this.ShowOnlyBaseSettings = obj.ShowOnlyBaseSettings;
 }

@@ -86,20 +86,25 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
             foreach (var subKeyName in registryKey.GetSubKeyNames())
             {
                 var registrySubKey = registryKey.OpenSubKey(subKeyName);
-                var displayName = (string?)registrySubKey?.GetValue("DisplayName");
+                if (registrySubKey is null)
+                {
+                    continue;
+                }
+
+                var displayName = (string?)registrySubKey.GetValue("DisplayName");
                 if (displayName is null || !displayName.StartsWith(appDisplayName, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                var displayVersion = (string?)registrySubKey?.GetValue("DisplayVersion");
+                var displayVersion = (string?)registrySubKey.GetValue("DisplayVersion");
                 if (displayVersion is not null && displayVersion.Contains('.', StringComparison.Ordinal))
                 {
                     return new Version(displayVersion);
                 }
 
-                var majorVersion = (int?)registrySubKey?.GetValue("MajorVersion");
-                var minorVersion = (int?)registrySubKey?.GetValue("MinorVersion");
+                var majorVersion = (int?)registrySubKey.GetValue("MajorVersion");
+                var minorVersion = (int?)registrySubKey.GetValue("MinorVersion");
                 if (majorVersion.HasValue && minorVersion.HasValue)
                 {
                     return new Version(majorVersion.Value, minorVersion.Value);

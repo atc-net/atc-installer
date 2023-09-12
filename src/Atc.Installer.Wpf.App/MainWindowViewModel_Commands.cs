@@ -1,3 +1,4 @@
+// ReSharper disable LoopCanBeConvertedToQuery
 namespace Atc.Installer.Wpf.App;
 
 [SuppressMessage("Design", "MA0048:File name must match type name", Justification = "OK - partial class")]
@@ -17,6 +18,11 @@ public partial class MainWindowViewModel
     public IRelayCommandAsync<string> OpenRecentConfigurationFileCommand
         => new RelayCommandAsync<string>(
             OpenRecentConfigurationFileCommandHandler);
+
+    public IRelayCommandAsync SaveConfigurationFileCommand
+        => new RelayCommandAsync(
+            SaveConfigurationFileCommandHandler,
+            CanSaveConfigurationFileCommandHandler);
 
     public IRelayCommandAsync DownloadInstallationFilesFromAzureStorageAccountCommand
         => new RelayCommandAsync(
@@ -47,6 +53,9 @@ public partial class MainWindowViewModel
             ServiceStartAllCommandHandler,
             CanServiceStartAllCommandHandler);
 
+    public new ICommand ApplicationExitCommand
+        => new RelayCommand(ApplicationExitCommandHandler);
+
     private async Task OpenConfigurationFileCommandHandler()
     {
         var openFileDialog = new OpenFileDialog
@@ -68,15 +77,42 @@ public partial class MainWindowViewModel
 
     private void OpenApplicationSettingsCommandHandler()
     {
-        new ApplicationSettingsDialog(
-            new ApplicationSettingsDialogViewModel(ApplicationOptions)).ShowDialog();
+        var vm = new ApplicationSettingsDialogViewModel(ApplicationOptions);
+        var dialogResult = new ApplicationSettingsDialog(vm).ShowDialog();
+        if (!dialogResult.HasValue)
+        {
+            return;
+        }
+
+        if (dialogResult.Value)
+        {
+            ApplicationOptions = vm.ApplicationOptions.Clone();
+        }
     }
+
+    private bool CanOpenRecentConfigurationFileCommandHandler()
+        => RecentOpenFiles is not null &&
+           RecentOpenFiles.Count != 0;
 
     private Task OpenRecentConfigurationFileCommandHandler(
         string filePath)
         => LoadConfigurationFile(
             new FileInfo(filePath),
             CancellationToken.None);
+
+    private bool CanSaveConfigurationFileCommandHandler()
+        => ApplicationOptions.EnableEditingMode &&
+           InstallationFile is not null &&
+           (IsDirty ||
+            ComponentProviders.Any(x => x.IsDirty ||
+                                        x.DefaultApplicationSettings.IsDirty ||
+                                        x.ApplicationSettings.IsDirty ||
+                                        x.FolderPermissions.IsDirty ||
+                                        x.FirewallRules.IsDirty ||
+                                        x.ConfigurationSettingsFiles.IsDirty));
+
+    private Task SaveConfigurationFileCommandHandler()
+        => SaveConfigurationFile();
 
     private bool CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler()
         => AzureOptions is not null &&
@@ -101,7 +137,40 @@ public partial class MainWindowViewModel
 
         loggerComponentProvider.Log(LogLevel.Trace, "Downloading installation files from Azure StorageAccount");
 
-        var files = await azureStorageAccountInstallerService
+        var reloadProjectInstallationFile = false;
+        var templateSettingsFileContentHash = GetTemplateSettingsWithInstallationFileContentHash(installationDirectory!);
+        if (templateSettingsFileContentHash is not null)
+        {
+            var projectNameTerms = ProjectName!.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+            var list = new List<(string ComponentName, string? ContentHash)>
+            {
+                ("Settings", templateSettingsFileContentHash),
+                ($"{projectNameTerms[0]}.Settings", templateSettingsFileContentHash),
+            };
+
+            if (projectNameTerms.Length > 1)
+            {
+                list.Add(($"{projectNameTerms[0]}.{projectNameTerms[1]}.Settings", templateSettingsFileContentHash));
+            }
+
+            var files = await azureStorageAccountInstallerService
+                .DownloadLatestFilesByNames(
+                    AzureOptions!.StorageConnectionString,
+                    AzureOptions!.BlobContainerName,
+                    installationDirectory!.FullName,
+                    list)
+                .ConfigureAwait(true);
+
+            if (files.Any())
+            {
+                reloadProjectInstallationFile = await ConfigurationFileHelper
+                    .UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(installationDirectory)
+                    .ConfigureAwait(true);
+            }
+        }
+
+        var componentFiles = await azureStorageAccountInstallerService
             .DownloadLatestFilesByNames(
                 AzureOptions!.StorageConnectionString,
                 AzureOptions!.BlobContainerName,
@@ -111,7 +180,7 @@ public partial class MainWindowViewModel
 
         foreach (var vm in ComponentProviders)
         {
-            var fileInfo = files.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
+            var fileInfo = componentFiles.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
             if (fileInfo is null)
             {
                 continue;
@@ -126,6 +195,12 @@ public partial class MainWindowViewModel
         loggerComponentProvider.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
 
         IsBusy = false;
+
+        if (reloadProjectInstallationFile)
+        {
+            await LoadConfigurationFile(InstallationFile!, CancellationToken.None)
+                .ConfigureAwait(true);
+        }
     }
 
     private static bool CanOpenApplicationCheckForUpdatesCommandHandler()
@@ -140,86 +215,75 @@ public partial class MainWindowViewModel
     private bool CanServiceStopAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStopCommandHandler());
 
-    private async Task ServiceStopAllCommandHandler()
+    private Task ServiceStopAllCommandHandler()
     {
+        var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
             if (vm.CanServiceStopCommandHandler())
             {
-                await vm.ServiceStopCommand
-                    .ExecuteAsync(this)
-                    .ConfigureAwait(false);
+                tasks.Add(vm.ServiceStopCommand.ExecuteAsync(this));
             }
         }
+
+        return TaskHelper.WhenAll(tasks);
     }
 
     private bool CanServiceDeployAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceDeployCommandHandler());
 
-    private async Task ServiceDeployAllCommandHandler()
+    private Task ServiceDeployAllCommandHandler()
     {
+        var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
             if (vm.CanServiceDeployCommandHandler())
             {
-                await vm.ServiceDeployCommand
-                    .ExecuteAsync(this)
-                    .ConfigureAwait(false);
+                tasks.Add(vm.ServiceDeployCommand.ExecuteAsync(this));
             }
         }
+
+        return TaskHelper.WhenAll(tasks);
     }
 
     private bool CanServiceStartAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStartCommandHandler());
 
-    private async Task ServiceStartAllCommandHandler()
+    private Task ServiceStartAllCommandHandler()
     {
+        var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
             if (vm.CanServiceStartCommandHandler())
             {
-                await vm.ServiceStartCommand
-                    .ExecuteAsync(this)
-                    .ConfigureAwait(false);
+                tasks.Add(vm.ServiceStartCommand.ExecuteAsync(this));
             }
         }
+
+        return TaskHelper.WhenAll(tasks);
     }
 
-    private List<(string ComponentName, string? ContentHash)> GetComponentsWithInstallationFileContentHash()
+    private void ApplicationExitCommandHandler()
     {
-        var components = new List<(string ComponentName, string? ContentHash)>();
-        foreach (var vm in ComponentProviders)
+        if (CanSaveConfigurationFileCommandHandler())
         {
-            if (vm.InstallationFile is null)
+            var dialogBox = new QuestionDialogBox(
+                Application.Current.MainWindow!,
+                "Unsaved data",
+                "Are you sure you want to exit without saving changes?")
             {
-                components.Add((vm.Name, ContentHash: null));
-            }
-            else
+                Width = 500,
+            };
+
+            dialogBox.ShowDialog();
+
+            if (!dialogBox.DialogResult.HasValue ||
+                !dialogBox.DialogResult.Value)
             {
-                var existingInstallationFileInfo = new FileInfo(Path.Combine(vm.InstallationDirectory.FullName, vm.InstallationFile));
-                if (existingInstallationFileInfo.Exists)
-                {
-                    var calculateMd5 = CalculateMd5(existingInstallationFileInfo);
-                    components.Add((vm.Name, ContentHash: calculateMd5));
-                }
-                else
-                {
-                    components.Add((vm.Name, ContentHash: null));
-                }
+                return;
             }
         }
 
-        return components;
-    }
-
-    public static string CalculateMd5(
-        FileInfo file)
-    {
-        ArgumentNullException.ThrowIfNull(file);
-
-        using var md5 = MD5.Create();
-        using var stream = File.OpenRead(file.FullName);
-        var hash = md5.ComputeHash(stream);
-        return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
+        OnClosing(this, new CancelEventArgs());
     }
 }

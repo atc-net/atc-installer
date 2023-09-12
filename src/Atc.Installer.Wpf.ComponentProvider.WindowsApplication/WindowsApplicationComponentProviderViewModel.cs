@@ -12,15 +12,17 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         ILogger<ComponentProviderViewModel> logger,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
-        IDictionary<string, object> defaultApplicationSettings,
+        ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             logger,
             networkShellService,
+            windowsFirewallService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -45,17 +47,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         base.CheckServiceState();
 
-        if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.Running)
-        {
-            RunningState = ComponentRunningState.Checking;
-        }
-
         RunningState = IsWindowsService
             ? waInstallerService.GetServiceState(ServiceName!)
             : waInstallerService.GetApplicationState(Name);
 
-        if (RunningState == ComponentRunningState.Checking)
+        if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
@@ -102,7 +98,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             AddLogItem(LogLevel.Trace, "Stop application");
 
             var isStopped = waInstallerService
-                .StopApplication(InstalledMainFilePath!);
+                .StopApplication(InstalledMainFilePath!.GetValueAsString());
 
             if (isStopped)
             {
@@ -163,7 +159,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         else
         {
             var isStarted = waInstallerService
-                .StartApplication(InstalledMainFilePath!);
+                .StartApplication(InstalledMainFilePath!.GetValueAsString());
 
             if (isStarted)
             {
@@ -264,11 +260,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 {
                     var attributeKey = setting.Attributes.FirstOrDefault(x => x.Key == "key");
                     var attributeValue = setting.Attributes.FirstOrDefault(x => x.Key == "value");
-                    if (!string.IsNullOrEmpty(attributeKey?.Value?.ToString()) &&
-                        !string.IsNullOrEmpty(attributeValue?.Value?.ToString()))
+                    if (!string.IsNullOrEmpty(attributeKey?.GetValueAsString()) &&
+                        !string.IsNullOrEmpty(attributeValue?.GetValueAsString()))
                     {
                         var value = ResolveTemplateIfNeededByApplicationSettingsLookup(attributeValue.Value.ToString()!);
-                        xmlDocument.SetAppSettings(attributeKey.Value.ToString()!, value);
+                        xmlDocument.SetAppSettings(attributeKey.GetValueAsString(), value);
                     }
                 }
                 else
@@ -295,12 +291,13 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (InstallationFolderPath is not null)
         {
-            folder = folder.Replace(".", InstallationFolderPath, StringComparison.Ordinal);
+            folder = folder.Replace(".", InstallationFolderPath.GetValueAsString(), StringComparison.Ordinal);
         }
 
         return folder;
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void InitializeFromApplicationOptions(
         ApplicationOption applicationOption)
     {
@@ -325,11 +322,23 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
                     swaggerEnabledValue)
                 {
-                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{hostNameValue}:{httpPortValue}/swagger"));
+                    Endpoints.Add(
+                        new EndpointViewModel(
+                            "Http - Swagger",
+                            ComponentEndpointType.BrowserLink,
+                            $"http://{hostNameValue}:{httpPortValue}/swagger",
+                            "http://[[HostName]]:[[HttpPort]]/swagger",
+                            new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
                 }
                 else
                 {
-                    Endpoints.Add(new EndpointViewModel("Http", ComponentEndpointType.BrowserLink, $"http://{hostNameValue}:{httpPortValue}"));
+                    Endpoints.Add(
+                        new EndpointViewModel(
+                            "Http",
+                            ComponentEndpointType.BrowserLink,
+                            $"http://{hostNameValue}:{httpPortValue}",
+                            "http://[[HostName]]:[[HttpPort]]",
+                            new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
                 }
             }
 
@@ -338,22 +347,67 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
                     swaggerEnabledValue)
                 {
-                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpsPortValue}/swagger"));
+                    Endpoints.Add(
+                        new EndpointViewModel(
+                            "Https - Swagger",
+                            ComponentEndpointType.BrowserLink,
+                            $"https://{hostNameValue}:{httpsPortValue}/swagger",
+                            "https://[[HostName]]:[[HttpsPort]]/swagger",
+                            new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
                 }
                 else
                 {
-                    Endpoints.Add(new EndpointViewModel("Https", ComponentEndpointType.BrowserLink, $"https://{hostNameValue}:{httpsPortValue}"));
+                    Endpoints.Add(
+                        new EndpointViewModel(
+                            "Https",
+                            ComponentEndpointType.BrowserLink,
+                            $"https://{hostNameValue}:{httpsPortValue}",
+                            "https://[[HostName]]:[[HttpsPort]]",
+                            new List<string> { "DefaultApplicationSettings", "ApplicationSettings" }));
                 }
             }
         }
 
         foreach (var endpoint in applicationOption.Endpoints)
         {
-            Endpoints.Add(
-                new EndpointViewModel(
-                    endpoint.Name,
-                    endpoint.EndpointType,
-                    ResolveTemplateIfNeededByApplicationSettingsLookup(endpoint.Endpoint)));
+            var endpointType = endpoint.EndpointType;
+            if (endpointType == ComponentEndpointType.Unknown)
+            {
+                if (endpoint.Name.Equals("AssemblyInfo", StringComparison.Ordinal))
+                {
+                    endpointType = ComponentEndpointType.ReportingAssemblyInfo;
+                }
+                else if (endpoint.Name.Equals("HealthCheck", StringComparison.Ordinal))
+                {
+                    endpointType = ComponentEndpointType.ReportingHealthCheck;
+                }
+            }
+
+            if (endpoint.Endpoint.ContainsTemplateKeyBrackets())
+            {
+                var (resolvedValue, templateLocations) = ResolveValueAndTemplateLocations(endpoint.Endpoint);
+
+                if (templateLocations.Count > 0)
+                {
+                    Endpoints.Add(
+                        new EndpointViewModel(
+                            endpoint.Name,
+                            endpointType,
+                            resolvedValue,
+                            template: endpoint.Endpoint,
+                            templateLocations));
+                }
+            }
+            else
+            {
+                Endpoints.Add(
+                    new EndpointViewModel(
+                        endpoint.Name,
+                        endpointType,
+                        endpoint.Endpoint,
+                        template: null,
+                        templateLocations: null));
+            }
         }
     }
 
@@ -533,6 +587,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         EnsureFolderPermissions();
 
+        EnsureFirewallRules();
+
         if (TryGetStringFromApplicationSettings("WebProtocol", out _))
         {
             if (TryGetUshortFromApplicationSettings("HttpPort", out var httpPortValue))
@@ -550,10 +606,10 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (RunningState == ComponentRunningState.NotAvailable &&
             InstalledMainFilePath is not null &&
-            File.Exists(InstalledMainFilePath) &&
-            InstalledMainFilePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            File.Exists(InstalledMainFilePath.GetValueAsString()) &&
+            InstalledMainFilePath.GetValueAsString().EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
-            var isInstalled = await SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath))
+            var isInstalled = await SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath.GetValueAsString()))
                 .ConfigureAwait(true);
 
             if (isInstalled)

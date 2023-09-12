@@ -10,16 +10,18 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         ILogger<ComponentProviderViewModel> logger,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
         DirectoryInfo installerTempDirectory,
         DirectoryInfo installationDirectory,
         string projectName,
-        IDictionary<string, object> defaultApplicationSettings,
+        ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
             logger,
             networkShellService,
+            windowsFirewallService,
             refComponentProviders,
             installerTempDirectory,
             installationDirectory,
@@ -81,17 +83,14 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
             return;
         }
 
-        if (RunningState != ComponentRunningState.Stopped &&
-            RunningState != ComponentRunningState.PartiallyRunning &&
-            RunningState != ComponentRunningState.Running)
-        {
-            RunningState = ComponentRunningState.Checking;
-        }
-
-        var isRunning = esInstallerService.IsRunning;
-        RunningState = isRunning
+        RunningState = esInstallerService.IsRunning
             ? ComponentRunningState.Running
             : ComponentRunningState.Stopped;
+
+        if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
+        {
+            RunningState = ComponentRunningState.NotAvailable;
+        }
     }
 
     public override bool CanServiceStopCommandHandler()
@@ -170,7 +169,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
 
     private void InitializeFromApplicationOptions(ApplicationOption applicationOption)
     {
-        InstalledMainFilePath = esInstallerService.GetInstalledMainFile()?.FullName;
+        InstalledMainFilePath = new ValueTemplateItemViewModel(esInstallerService.GetInstalledMainFile()?.FullName!, template: null, templateLocations: null);
         ServiceName = esInstallerService.GetServiceName();
 
         IsRequiredJava = applicationOption.DependentComponents.Contains("Java", StringComparer.Ordinal);

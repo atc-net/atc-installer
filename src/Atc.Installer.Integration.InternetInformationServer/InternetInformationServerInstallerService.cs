@@ -72,7 +72,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         => iaInstallerService.IsMicrosoftDonNet7();
 
     public bool IsNodeJs18()
-        => TaskHelper.RunSync(() => iaInstallerService.IsNodeJs18());
+        => TaskHelper.RunSync(iaInstallerService.IsNodeJs18);
 
     public bool IsInstalledManagementConsole()
     {

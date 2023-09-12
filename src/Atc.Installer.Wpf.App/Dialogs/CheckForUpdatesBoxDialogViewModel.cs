@@ -45,6 +45,10 @@ public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdates
             DownloadLatestCommandHandler,
             CanDownloadLatestCommandHandler);
 
+    public static IRelayCommand<NiceDialogBox> CancelCommand
+        => new RelayCommand<NiceDialogBox>(
+            CancelCommandHandler);
+
     public string CurrentVersion { get; set; }
 
     public string LatestVersion
@@ -127,6 +131,12 @@ public class CheckForUpdatesBoxDialogViewModel : ViewModelBase, ICheckForUpdates
                     .ConfigureAwait(true);
             }
         }
+    }
+
+    private static void CancelCommandHandler(
+        NiceDialogBox dialogBox)
+    {
+        dialogBox.Close();
     }
 
     public void Dispose()

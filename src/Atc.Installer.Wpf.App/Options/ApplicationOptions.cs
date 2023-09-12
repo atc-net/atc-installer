@@ -8,6 +8,12 @@ public sealed class ApplicationOptions
 
     public string Theme { get; set; } = string.Empty;
 
+    public bool OpenRecentConfigurationFileOnStartup { get; set; } = true;
+
+    public bool EnableEditingMode { get; set; }
+
+    public bool ShowOnlyBaseSettings { get; set; }
+
     public override string ToString()
-        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}";
+        => $"{nameof(Title)}: {Title}, {nameof(Theme)}: {Theme}, {nameof(OpenRecentConfigurationFileOnStartup)}: {OpenRecentConfigurationFileOnStartup}, {nameof(EnableEditingMode)}: {EnableEditingMode}, {nameof(ShowOnlyBaseSettings)}: {ShowOnlyBaseSettings}";
 }

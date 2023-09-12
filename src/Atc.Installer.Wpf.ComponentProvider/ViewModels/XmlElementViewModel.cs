@@ -16,6 +16,13 @@ public class XmlElementViewModel : ViewModelBase
         Populate(xmlElementSettingsOptions);
     }
 
+    public XmlElementViewModel(
+        ComponentProviderViewModel refComponentProviderViewModel,
+        XmlElementSettingsOptions xmlElementSettingsOptions)
+    {
+        Populate(refComponentProviderViewModel, xmlElementSettingsOptions);
+    }
+
     public string Path
     {
         get => path;
@@ -36,7 +43,8 @@ public class XmlElementViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollectionEx<KeyValueItemViewModel> Attributes { get; init; } = new();
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "OK.")]
+    public ObservableCollectionEx<KeyValueTemplateItemViewModel> Attributes { get; set; } = new();
 
     private void Populate(
         XmlElementSettingsOptions xmlElementSettingsOptions)
@@ -50,11 +58,58 @@ public class XmlElementViewModel : ViewModelBase
 
         Attributes.SuppressOnChangedNotification = true;
 
-        foreach (var attribute in xmlElementSettingsOptions.Attributes)
+        foreach (var (attributeKey, attributeValue) in xmlElementSettingsOptions.Attributes)
         {
             Attributes.Add(
-                new KeyValueItemViewModel(
-                    new KeyValuePair<string, object>(attribute.Key, attribute.Value)));
+                new KeyValueTemplateItemViewModel(
+                    attributeKey,
+                    attributeValue,
+                    template: null,
+                    templateLocations: null));
+        }
+
+        Attributes.SuppressOnChangedNotification = false;
+    }
+
+    private void Populate(
+        ComponentProviderViewModel refComponentProviderViewModel,
+        XmlElementSettingsOptions xmlElementSettingsOptions)
+    {
+        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
+        ArgumentNullException.ThrowIfNull(xmlElementSettingsOptions);
+
+        Path = xmlElementSettingsOptions.Path;
+        Element = xmlElementSettingsOptions.Element;
+
+        Attributes.Clear();
+
+        Attributes.SuppressOnChangedNotification = true;
+
+        foreach (var (attributeKey, attributeValue) in xmlElementSettingsOptions.Attributes)
+        {
+            if (attributeValue.ContainsTemplateKeyBrackets())
+            {
+                var (resolvedValue, templateLocations) = refComponentProviderViewModel.ResolveValueAndTemplateLocations(attributeValue);
+
+                if (templateLocations.Count > 0)
+                {
+                    Attributes.Add(
+                        new KeyValueTemplateItemViewModel(
+                            attributeKey,
+                            resolvedValue,
+                            template: attributeValue,
+                            templateLocations));
+                }
+            }
+            else
+            {
+                Attributes.Add(
+                    new KeyValueTemplateItemViewModel(
+                        attributeKey,
+                        attributeValue,
+                        template: null,
+                        templateLocations: null));
+            }
         }
 
         Attributes.SuppressOnChangedNotification = false;

@@ -67,7 +67,8 @@ public class AzureStorageAccountInstallerService : IAzureStorageAccountInstaller
 
             if (latestReleasedBlobName is not (null, null) &&
                 (contentHash is null || (latestReleasedBlobName.ContentHash is not null &&
-                                         contentHash != ConvertBase64ToHex(latestReleasedBlobName.ContentHash))))
+                                         contentHash != ConvertBase64ToHex(latestReleasedBlobName.ContentHash))) &&
+                !blobsToDownload.Contains(latestReleasedBlobName.BlobName!, StringComparer.Ordinal))
             {
                 blobsToDownload.Add(latestReleasedBlobName.BlobName!);
             }

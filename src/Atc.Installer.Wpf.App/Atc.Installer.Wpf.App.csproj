@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <PlatformTarget>x64</PlatformTarget>
     <TargetFramework>net7.0-windows</TargetFramework>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <UseWPF>true</UseWPF>
@@ -40,14 +41,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc.Wpf" Version="2.0.260" />
-    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.260" />
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.260" />
-    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.260" />
+    <PackageReference Include="Atc.Wpf" Version="2.0.265" />
+    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.265" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.265" />
+    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.265" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-preview.6.23329.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-preview.6.23329.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.6.23329.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-preview.6.23329.7" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="7.0.0" />
     <PackageReference Include="Serilog" Version="3.0.1" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />

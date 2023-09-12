@@ -6,7 +6,7 @@ public class ComponentRunningStateToBrushValueConverter : IValueConverter
     public object Convert(
         object? value,
         Type targetType,
-        object parameter,
+        object? parameter,
         CultureInfo culture)
     {
         if (value is null)
@@ -23,7 +23,7 @@ public class ComponentRunningStateToBrushValueConverter : IValueConverter
         {
             ComponentRunningState.Unknown => Brushes.Gray,
             ComponentRunningState.Checking => Brushes.DarkViolet,
-            ComponentRunningState.NotAvailable => Brushes.Chocolate,
+            ComponentRunningState.NotAvailable => Brushes.DimGray,
             ComponentRunningState.Stopped => Brushes.Crimson,
             ComponentRunningState.PartiallyRunning => Brushes.IndianRed,
             ComponentRunningState.Running => Brushes.Green,
@@ -32,9 +32,9 @@ public class ComponentRunningStateToBrushValueConverter : IValueConverter
     }
 
     public object ConvertBack(
-        object value,
+        object? value,
         Type targetType,
-        object parameter,
+        object? parameter,
         CultureInfo culture)
         => ComponentRunningState.Unknown;
 }

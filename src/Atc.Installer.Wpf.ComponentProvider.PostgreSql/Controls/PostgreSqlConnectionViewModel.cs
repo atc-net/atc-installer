@@ -71,4 +71,7 @@ public class PostgreSqlConnectionViewModel : ViewModelBase
 
         return $"Host={HostName}:{HostPort};Username={Username};Password={Password};Database={Database}";
     }
+
+    public override string ToString()
+        => $"{nameof(HostName)}: {HostName}, {nameof(HostPort)}: {HostPort}, {nameof(Database)}: {Database}, {nameof(Username)}: {Username}, {nameof(Password)}: {Password}";
 }

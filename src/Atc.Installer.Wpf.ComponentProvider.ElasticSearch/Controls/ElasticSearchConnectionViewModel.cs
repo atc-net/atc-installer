@@ -68,4 +68,7 @@ public class ElasticSearchConnectionViewModel : ViewModelBase
             RaisePropertyChanged();
         }
     }
+
+    public override string ToString()
+        => $"{nameof(HostName)}: {HostName}, {nameof(WebProtocol)}: {WebProtocol}, {nameof(HostPort)}: {HostPort}, {nameof(Username)}: {Username}, {nameof(Password)}: {Password}, {nameof(Index)}: {Index}";
 }

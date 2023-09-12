@@ -12,11 +12,4 @@ public partial class CheckForUpdatesBoxDialog
         InitializeComponent();
         DataContext = viewModel;
     }
-
-    private void OnOk(
-        object sender,
-        RoutedEventArgs e)
-    {
-        Close();
-    }
 }

@@ -2,11 +2,13 @@
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace Atc.Installer.Wpf.App;
 
-public partial class MainWindowViewModel : MainWindowViewModelBase
+[SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowViewModel
 {
     private readonly ILogger<ComponentProviderViewModel> loggerComponentProvider;
     private readonly IGitHubReleaseService gitHubReleaseService;
     private readonly INetworkShellService networkShellService;
+    private readonly IWindowsFirewallService windowsFirewallService;
     private readonly IElasticSearchServerInstallerService esInstallerService;
     private readonly IInternetInformationServerInstallerService iisInstallerService;
     private readonly IPostgreSqlServerInstallerService pgSqlInstallerService;
@@ -28,6 +30,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         var installedAppsInstallerService = new InstalledAppsInstallerService();
         this.networkShellService = new NetworkShellService();
+        this.windowsFirewallService = new WindowsFirewallService();
 
         this.waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
         this.iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
@@ -54,11 +57,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 NullLogger<ComponentProviderViewModel>.Instance,
                 waInstallerService,
                 networkShellService,
+                windowsFirewallService,
                 new ObservableCollectionEx<ComponentProviderViewModel>(),
                 App.InstallerTempDirectory,
                 installationDirectory,
                 ProjectName,
-                new Dictionary<string, object>(StringComparer.Ordinal),
+                new ObservableCollectionEx<KeyValueTemplateItemViewModel>(),
                 new ApplicationOption
                 {
                     Name = "My-NT-Service",
@@ -70,11 +74,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
                 NullLogger<ComponentProviderViewModel>.Instance,
                 iisInstallerService,
                 networkShellService,
+                windowsFirewallService,
                 ComponentProviders,
                 App.InstallerTempDirectory,
                 installationDirectory,
                 ProjectName,
-                new Dictionary<string, object>(StringComparer.Ordinal),
+                new ObservableCollectionEx<KeyValueTemplateItemViewModel>(),
                 new ApplicationOption
                 {
                     Name = "My-WebApi",
@@ -86,6 +91,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         ILogger<ComponentProviderViewModel> loggerComponentProvider,
         IGitHubReleaseService gitHubReleaseService,
         INetworkShellService networkShellService,
+        IWindowsFirewallService windowsFirewallService,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
@@ -100,6 +106,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         this.loggerComponentProvider = loggerComponentProvider ?? throw new ArgumentNullException(nameof(loggerComponentProvider));
         this.gitHubReleaseService = gitHubReleaseService ?? throw new ArgumentNullException(nameof(gitHubReleaseService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
+        this.windowsFirewallService = windowsFirewallService ?? throw new ArgumentNullException(nameof(windowsFirewallService));
         this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
         this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
@@ -119,6 +126,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
 
         loggerComponentProvider.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
 
+        if (ApplicationOptions.OpenRecentConfigurationFileOnStartup &&
+            RecentOpenFiles.Count > 0)
+        {
+            OpenRecentConfigurationFileCommand.ExecuteAsync(RecentOpenFiles[0].File);
+        }
+
         Task.Factory.StartNew(
             async () => await CheckForUpdates().ConfigureAwait(false),
             CancellationToken.None,
@@ -136,11 +149,13 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
     }
 
-    public ApplicationOptionsViewModel ApplicationOptions { get; init; }
+    public ApplicationOptionsViewModel ApplicationOptions { get; set; }
 
     public AzureOptionsViewModel? AzureOptions { get; set; }
 
-    public IDictionary<string, object> DefaultApplicationSettings { get; private set; } = new Dictionary<string, object>(StringComparer.Ordinal);
+    public ObservableCollectionEx<KeyValueTemplateItemViewModel> DefaultApplicationSettings { get; private set; } = new();
+
+    public FileInfo? InstallationFile { get; private set; }
 
     public string? ProjectName
     {
@@ -163,6 +178,38 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         {
             selectedComponentProvider = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public new void OnKeyDown(
+        object sender,
+        KeyEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        base.OnKeyDown(sender, e);
+
+        if (!e.Handled &&
+            Keyboard.Modifiers == ModifierKeys.Control &&
+            e.Key == Key.O)
+        {
+            OpenConfigurationFileCommandHandler().ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        if (!e.Handled &&
+            Keyboard.Modifiers == ModifierKeys.Control &&
+            e.Key == Key.R &&
+            CanOpenRecentConfigurationFileCommandHandler())
+        {
+            OpenRecentConfigurationFileCommandHandler(RecentOpenFiles[0].File).ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        if (!e.Handled &&
+            Keyboard.Modifiers == ModifierKeys.Control &&
+            e.Key == Key.S &&
+            CanSaveConfigurationFileCommandHandler())
+        {
+            SaveConfigurationFileCommandHandler().ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 
@@ -241,151 +288,6 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         cancellationTokenSource?.Cancel();
     }
 
-    private void LoadRecentOpenFiles()
-    {
-        var recentOpenFilesFile = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
-        if (!File.Exists(recentOpenFilesFile))
-        {
-            return;
-        }
-
-        try
-        {
-            var json = File.ReadAllText(recentOpenFilesFile);
-
-            var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
-                json,
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
-
-            RecentOpenFiles.Clear();
-
-            RecentOpenFiles.SuppressOnChangedNotification = true;
-            foreach (var recentOpenFile in recentOpenFilesOption.RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
-            {
-                if (!File.Exists(recentOpenFile.FilePath))
-                {
-                    continue;
-                }
-
-                RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, recentOpenFile.TimeStamp, recentOpenFile.FilePath));
-            }
-
-            RecentOpenFiles.SuppressOnChangedNotification = false;
-        }
-        catch
-        {
-            // Skip
-        }
-    }
-
-    private void AddLoadedFileToRecentOpenFiles(
-        FileInfo file)
-    {
-        RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, DateTime.Now, file.FullName));
-
-        var recentOpenFilesOption = new RecentOpenFilesOption();
-        foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
-        {
-            var item = new RecentOpenFileOption
-            {
-                TimeStamp = vm.TimeStamp,
-                FilePath = vm.File,
-            };
-
-            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.FilePath == item.FilePath) is not null)
-            {
-                continue;
-            }
-
-            if (!File.Exists(item.FilePath))
-            {
-                continue;
-            }
-
-            recentOpenFilesOption.RecentOpenFiles.Add(item);
-        }
-
-        var recentOpenFilesFilePath = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
-        if (!Directory.Exists(App.InstallerProgramDataDirectory.FullName))
-        {
-            Directory.CreateDirectory(App.InstallerProgramDataDirectory.FullName);
-        }
-
-        var json = JsonSerializer.Serialize(
-            recentOpenFilesOption,
-            JsonSerializerOptionsFactory.Create());
-        File.WriteAllText(recentOpenFilesFilePath, json);
-
-        LoadRecentOpenFiles();
-    }
-
-    private async Task LoadConfigurationFile(
-        FileInfo file,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            loggerComponentProvider.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
-
-            StopMonitoringServices();
-
-            var json = await File
-                .ReadAllTextAsync(file.FullName, cancellationToken)
-                .ConfigureAwait(true);
-
-            var installationOptions = JsonSerializer.Deserialize<InstallationOption>(
-                json,
-                JsonSerializerOptionsFactory.Create()) ?? throw new IOException($"Invalid format in {file}");
-
-            installationDirectory = new DirectoryInfo(file.Directory!.FullName);
-
-            ValidateConfigurationFile(installationOptions);
-
-            Populate(installationOptions);
-
-            AddLoadedFileToRecentOpenFiles(file);
-
-            StartMonitoringServices();
-
-            loggerComponentProvider.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
-        }
-        catch (Exception ex)
-        {
-            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
-            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
-        }
-    }
-
-    private static void ValidateConfigurationFile(
-        InstallationOption installationOptions)
-    {
-        var errors = new List<string>();
-        foreach (var applicationOption in installationOptions.Applications)
-        {
-            if (string.IsNullOrEmpty(applicationOption.Name))
-            {
-                errors.Add($"{nameof(applicationOption.Name)} is missing");
-            }
-
-            if (string.IsNullOrEmpty(applicationOption.RawInstallationPath) &&
-                string.IsNullOrEmpty(applicationOption.InstallationFile) &&
-                applicationOption.HostingFramework != HostingFrameworkType.NativeNoSettings)
-            {
-                errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationFile)} is invalid");
-            }
-
-            if (string.IsNullOrEmpty(applicationOption.InstallationPath))
-            {
-                errors.Add($"{applicationOption.Name}->{nameof(applicationOption.InstallationPath)} is invalid");
-            }
-        }
-
-        if (errors.Any())
-        {
-            throw new ValidationException(string.Join(Environment.NewLine, errors));
-        }
-    }
-
     private void AddComponentProviderWindowsApplication(
         ApplicationOption appInstallationOption)
     {
@@ -398,6 +300,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             waInstallerService,
             networkShellService,
+            windowsFirewallService,
             ComponentProviders,
             App.InstallerTempDirectory,
             installationDirectory,
@@ -419,6 +322,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             esInstallerService,
             networkShellService,
+            windowsFirewallService,
             waInstallerService,
             ComponentProviders,
             App.InstallerTempDirectory,
@@ -441,6 +345,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             iisInstallerService,
             networkShellService,
+            windowsFirewallService,
             ComponentProviders,
             App.InstallerTempDirectory,
             installationDirectory,
@@ -462,6 +367,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
             loggerComponentProvider,
             pgSqlInstallerService,
             networkShellService,
+            windowsFirewallService,
             waInstallerService,
             ComponentProviders,
             App.InstallerTempDirectory,
@@ -473,16 +379,26 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
     }
 
     private void Populate(
+        FileInfo installationFile,
         InstallationOption installationOptions)
     {
+        InstallationFile = installationFile;
         ProjectName = installationOptions.Name;
         AzureOptions = new AzureOptionsViewModel(installationOptions.Azure);
-        DefaultApplicationSettings = installationOptions.DefaultApplicationSettings;
+        DefaultApplicationSettings = new ObservableCollectionEx<KeyValueTemplateItemViewModel>();
+        foreach (var item in installationOptions.DefaultApplicationSettings)
+        {
+            DefaultApplicationSettings.Add(
+                new KeyValueTemplateItemViewModel(
+                    item.Key,
+                    item.Value,
+                    template: null,
+                    templateLocations: new List<string> { nameof(DefaultApplicationSettings) }));
+        }
 
         ComponentProviders.Clear();
 
         ComponentProviders.SuppressOnChangedNotification = true;
-        ////foreach (var appInstallationOption in installationOptions.Applications.Take(1)) // TODO:...
         foreach (var appInstallationOption in installationOptions.Applications)
         {
             switch (appInstallationOption.ComponentType)
@@ -527,5 +443,10 @@ public partial class MainWindowViewModel : MainWindowViewModelBase
         }
 
         RaisePropertyChanged(nameof(ComponentProviders));
+
+        Messenger.Default.Send(
+            new UpdateApplicationOptionsMessage(
+                ApplicationOptions.EnableEditingMode,
+                ApplicationOptions.ShowOnlyBaseSettings));
     }
 }
