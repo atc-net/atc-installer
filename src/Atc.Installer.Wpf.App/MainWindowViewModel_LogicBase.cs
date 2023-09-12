@@ -206,7 +206,7 @@ public partial class MainWindowViewModel
             {
                 var json = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
                 var dynamicJsonCustomSettings = new DynamicJson(json);
-                dynamicJsonCustomSettings.RemovePath("Applications");
+
                 await ConfigurationFileHelper.SaveInstallationSettings(
                         customSettingsFile,
                         dynamicJsonCustomSettings.ToJson())
@@ -214,6 +214,7 @@ public partial class MainWindowViewModel
 
                 installationOption.ClearDataForTemplateSettings();
                 var jsonTemplateSettings = JsonSerializer.Serialize(installationOption, App.JsonSerializerOptions);
+
                 await ConfigurationFileHelper.SaveInstallationSettings(
                         templateSettingsFile,
                         jsonTemplateSettings)
