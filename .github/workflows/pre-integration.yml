@@ -29,7 +29,8 @@ jobs:
         run: dotnet restore Atc.Installer-WithoutSetup.sln
 
       - name: 🛠️ Building library in release mode
-        run: dotnet build Atc.Installer-WithoutSetup.sln -c Release --no-restore
+        #run: dotnet build Atc.Installer-WithoutSetup.sln -c Release --no-restore
+        run: msbuild Atc.Installer-WithoutSetup.sln /p:Configuration=Release /t:Restore;Build
 
   dotnet-test:
     runs-on: windows-latest
@@ -54,7 +55,8 @@ jobs:
         run: dotnet restore Atc.Installer-WithoutSetup.sln
 
       - name: 🛠️ Build
-        run: dotnet build Atc.Installer-WithoutSetup.sln -c Release --no-restore /p:UseSourceLink=true
+        #run: dotnet build Atc.Installer-WithoutSetup.sln -c Release --no-restore /p:UseSourceLink=true
+        run: msbuild Atc.Installer-WithoutSetup.sln /p:Configuration=Release /p:UseSourceLink=true /t:Restore;Build
 
       - name: 🧪 Run unit tests
         run: dotnet test Atc.Installer-WithoutSetup.sln -c Release --no-build --filter "Category!=Integration"
