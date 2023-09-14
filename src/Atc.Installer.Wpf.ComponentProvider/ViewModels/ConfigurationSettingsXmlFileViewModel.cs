@@ -3,17 +3,19 @@ namespace Atc.Installer.Wpf.ComponentProvider.ViewModels;
 
 public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
 {
+    private readonly ComponentProviderViewModel? refComponentProviderViewModel;
     private string fileName = string.Empty;
-
-    public ConfigurationSettingsXmlFileViewModel()
-    {
-    }
 
     public ConfigurationSettingsXmlFileViewModel(
         ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
-        Populate(refComponentProviderViewModel, configurationSettingsFileOption);
+        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
+        ArgumentNullException.ThrowIfNull(configurationSettingsFileOption);
+
+        this.refComponentProviderViewModel = refComponentProviderViewModel;
+
+        Populate(configurationSettingsFileOption);
     }
 
     public string FileName
@@ -29,7 +31,6 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
     public ObservableCollectionEx<XmlElementViewModel> Settings { get; init; } = new();
 
     public void Populate(
-        ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
         ArgumentNullException.ThrowIfNull(configurationSettingsFileOption);
@@ -37,6 +38,11 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
         FileName = configurationSettingsFileOption.FileName;
 
         Settings.Clear();
+
+        if (refComponentProviderViewModel is null)
+        {
+            return;
+        }
 
         Settings.SuppressOnChangedNotification = true;
 
@@ -46,6 +52,35 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
         }
 
         Settings.SuppressOnChangedNotification = false;
+    }
+
+    public void ResolveValueAndTemplateLocations()
+    {
+        if (refComponentProviderViewModel is null)
+        {
+            return;
+        }
+
+        foreach (var xmlItem in Settings)
+        {
+            var attributeItem = xmlItem.Attributes.FirstOrDefault(x => x.Key == "value");
+            if (attributeItem is null)
+            {
+                continue;
+            }
+
+            var value = attributeItem.Value?.ToString()!;
+            if (!value.ContainsTemplateKeyBrackets())
+            {
+                continue;
+            }
+
+            var (resolvedValue, templateLocations) = refComponentProviderViewModel.ResolveValueAndTemplateLocations(value);
+            if (templateLocations.Count > 0)
+            {
+                attributeItem.Value = resolvedValue;
+            }
+        }
     }
 
     public override string ToString()

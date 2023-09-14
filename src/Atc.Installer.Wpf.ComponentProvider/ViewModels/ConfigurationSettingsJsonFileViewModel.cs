@@ -3,6 +3,7 @@ namespace Atc.Installer.Wpf.ComponentProvider.ViewModels;
 
 public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
 {
+    private readonly ComponentProviderViewModel? refComponentProviderViewModel;
     private string fileName = string.Empty;
 
     public ConfigurationSettingsJsonFileViewModel()
@@ -13,7 +14,12 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
         ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
-        Populate(refComponentProviderViewModel, configurationSettingsFileOption);
+        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
+        ArgumentNullException.ThrowIfNull(configurationSettingsFileOption);
+
+        this.refComponentProviderViewModel = refComponentProviderViewModel;
+
+        Populate(configurationSettingsFileOption);
     }
 
     public string FileName
@@ -29,10 +35,8 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
     public ObservableCollectionEx<KeyValueTemplateItemViewModel> Settings { get; init; } = new();
 
     public void Populate(
-        ComponentProviderViewModel refComponentProviderViewModel,
         ConfigurationSettingsFileOption configurationSettingsFileOption)
     {
-        ArgumentNullException.ThrowIfNull(refComponentProviderViewModel);
         ArgumentNullException.ThrowIfNull(configurationSettingsFileOption);
 
         FileName = configurationSettingsFileOption.FileName;
@@ -46,6 +50,11 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
             var value = keyValuePair.Value.ToString()!;
             if (value.ContainsTemplateKeyBrackets())
             {
+                if (refComponentProviderViewModel is null)
+                {
+                    continue;
+                }
+
                 var (resolvedValue, templateLocations) = refComponentProviderViewModel.ResolveValueAndTemplateLocations(value);
 
                 if (templateLocations.Count > 0)
@@ -70,6 +79,29 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
         }
 
         Settings.SuppressOnChangedNotification = false;
+    }
+
+    public void ResolveValueAndTemplateLocations()
+    {
+        if (refComponentProviderViewModel is null)
+        {
+            return;
+        }
+
+        foreach (var keyValuePair in Settings)
+        {
+            var value = keyValuePair.Value.ToString()!;
+            if (!value.ContainsTemplateKeyBrackets())
+            {
+                continue;
+            }
+
+            var (resolvedValue, templateLocations) = refComponentProviderViewModel.ResolveValueAndTemplateLocations(value);
+            if (templateLocations.Count > 0)
+            {
+                keyValuePair.Value = resolvedValue;
+            }
+        }
     }
 
     public override string ToString()

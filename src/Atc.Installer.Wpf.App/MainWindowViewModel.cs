@@ -429,6 +429,11 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
             }
         }
 
+        foreach (var componentProvider in ComponentProviders)
+        {
+            componentProvider.ConfigurationSettingsFiles.ResolveValueAndTemplateReferences();
+        }
+
         ComponentProviders.SuppressOnChangedNotification = false;
 
         if (ComponentProviders.Count > 0)

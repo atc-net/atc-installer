@@ -108,6 +108,25 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         }
     }
 
+    public void ResolveValueAndTemplateReferences()
+    {
+        JsonItems.SuppressOnChangedNotification = true;
+        XmlItems.SuppressOnChangedNotification = true;
+
+        foreach (var jsonItem in JsonItems)
+        {
+            jsonItem.ResolveValueAndTemplateLocations();
+        }
+
+        foreach (var xmlItem in XmlItems)
+        {
+            xmlItem.ResolveValueAndTemplateLocations();
+        }
+
+        JsonItems.SuppressOnChangedNotification = false;
+        XmlItems.SuppressOnChangedNotification = false;
+    }
+
     public override string ToString()
         => $"{nameof(JsonItems)}.Count: {JsonItems?.Count}, {nameof(XmlItems)}.Count: {XmlItems?.Count}";
 
