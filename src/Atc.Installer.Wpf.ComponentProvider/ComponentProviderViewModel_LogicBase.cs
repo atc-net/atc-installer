@@ -105,6 +105,7 @@ public partial class ComponentProviderViewModel
         }
 
         ConfigurationJsonFiles.Clear();
+        ConfigurationXmlFiles.Clear();
 
         switch (HostingFramework)
         {
@@ -112,7 +113,7 @@ public partial class ComponentProviderViewModel
             {
                 if (InstalledMainFilePath is not null)
                 {
-                    var mainAppConfigFile = new FileInfo(InstalledMainFilePath + ".config");
+                    var mainAppConfigFile = new FileInfo(InstalledMainFilePath.GetValueAsString() + ".config");
                     if (mainAppConfigFile.Exists)
                     {
                         var xml = FileHelper.ReadAllText(mainAppConfigFile);
@@ -144,6 +145,7 @@ public partial class ComponentProviderViewModel
             }
 
             case HostingFrameworkType.DotNet7:
+            case HostingFrameworkType.DotNet8:
             {
                 var appSettingsFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json"));
                 if (appSettingsFile.Exists)
@@ -628,6 +630,27 @@ public partial class ComponentProviderViewModel
         RaisePropertyChanged(nameof(DependentServicesIssueCount));
     }
 
+    private void ResolveInstallationPathAndSetInstallationFolderPath(
+        ApplicationOption applicationOption)
+    {
+        if (applicationOption.InstallationPath.ContainsTemplateKeyBrackets())
+        {
+            var (resolvedValue, templateLocations) = ResolveValueAndTemplateLocations(applicationOption.InstallationPath);
+
+            InstallationFolderPath = new ValueTemplateItemViewModel(
+                resolvedValue,
+                template: applicationOption.InstallationPath,
+                templateLocations);
+        }
+        else
+        {
+            InstallationFolderPath = new ValueTemplateItemViewModel(
+                applicationOption.InstallationPath,
+                template: null,
+                templateLocations: null);
+        }
+    }
+
     private void ResolveInstalledMainFile(
         ApplicationOption applicationOption)
     {
@@ -636,27 +659,91 @@ public partial class ComponentProviderViewModel
             return;
         }
 
+        var instFolderPath = GetInstallationFolderPathAsTemplateValue();
+
+        string basePath;
+        IList<string>? templateLocations = null;
+        if (instFolderPath.ContainsTemplateKeyBrackets())
+        {
+            var (resolvedValue, resolvedTemplateLocations) = ResolveValueAndTemplateLocations(instFolderPath);
+            basePath = resolvedValue;
+            templateLocations = resolvedTemplateLocations;
+        }
+        else
+        {
+            basePath = instFolderPath;
+        }
+
         switch (applicationOption)
         {
             case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 }:
+            case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet8 }:
             case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
-                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.exe"), template: null, templateLocations: null);
+                InstalledMainFilePath = new ValueTemplateItemViewModel(
+                    Path.Combine(basePath, $"{Name}.exe"),
+                    template: instFolderPath,
+                    templateLocations);
                 break;
             case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.NodeJs }:
-                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), "index.html"), template: null, templateLocations: null);
+                InstalledMainFilePath = new ValueTemplateItemViewModel(
+                    Path.Combine(basePath, "index.html"),
+                    template: instFolderPath,
+                    templateLocations);
                 break;
             case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 }:
+            case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet8 }:
             case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
-                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.dll"), template: null, templateLocations: null);
+                InstalledMainFilePath = new ValueTemplateItemViewModel(
+                    Path.Combine(basePath, $"{Name}.dll"),
+                    template: instFolderPath,
+                    templateLocations);
                 break;
             case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.NodeJs }:
-                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), "index.html"), template: null, templateLocations: null);
+                InstalledMainFilePath = new ValueTemplateItemViewModel(
+                    Path.Combine(basePath, "index.html"),
+                    template: instFolderPath,
+                    templateLocations);
                 break;
             case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 }:
+            case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet8 }:
             case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
-                InstalledMainFilePath = new ValueTemplateItemViewModel(Path.Combine(InstallationFolderPath.GetValueAsString(), $"{Name}.exe"), template: null, templateLocations: null);
+                InstalledMainFilePath = new ValueTemplateItemViewModel(
+                    Path.Combine(basePath, $"{Name}.exe"),
+                    template: instFolderPath,
+                    templateLocations);
                 break;
         }
+    }
+
+    private string GetInstallationFolderPathAsTemplateValue()
+    {
+        if (InstallationFolderPath is null)
+        {
+            return string.Empty;
+        }
+
+        var instFolderPath = InstallationFolderPath.GetValueAsString();
+
+        var defaultTemplatePaths = DefaultApplicationSettings.Items
+            .Where(x => x.GetValueAsString().Contains(":\\", StringComparison.Ordinal))
+            .ToArray();
+
+        if (defaultTemplatePaths.Length > 0)
+        {
+            foreach (var templatePath in defaultTemplatePaths)
+            {
+                if (instFolderPath.StartsWith(templatePath.GetValueAsString(), StringComparison.Ordinal))
+                {
+                    instFolderPath = instFolderPath.Replace(
+                        templatePath.GetValueAsString(),
+                        $"[[{templatePath.Key}]]",
+                        StringComparison.Ordinal);
+                    break;
+                }
+            }
+        }
+
+        return instFolderPath;
     }
 
     private void ResolveDirectoriesForFolderPermissions()
