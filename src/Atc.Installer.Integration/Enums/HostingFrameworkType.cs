@@ -8,5 +8,6 @@ public enum HostingFrameworkType
     NativeNoSettings,
     DonNetFramework48,
     DotNet7,
+    DotNet8,
     NodeJs,
 }

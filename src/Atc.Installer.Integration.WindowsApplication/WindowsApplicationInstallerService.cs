@@ -20,6 +20,9 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
     public bool IsMicrosoftDonNet7()
         => iaInstallerService.IsMicrosoftDonNet7();
 
+    public bool IsMicrosoftDonNet8()
+        => iaInstallerService.IsMicrosoftDonNet8();
+
     public ComponentRunningState GetServiceState(
         string serviceName)
     {

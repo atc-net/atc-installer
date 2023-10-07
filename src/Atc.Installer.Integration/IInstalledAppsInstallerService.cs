@@ -6,6 +6,8 @@ public interface IInstalledAppsInstallerService : IInstallerService
 
     bool IsMicrosoftDonNet7();
 
+    bool IsMicrosoftDonNet8();
+
     Task<bool> IsNodeJs18();
 
     bool IsJavaRuntime8();

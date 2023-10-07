@@ -590,6 +590,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void CheckPrerequisitesForHostingFramework()
     {
         switch (HostingFramework)
@@ -614,6 +615,27 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 else
                 {
                     AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost7", LogCategoryType.Warning, "IIS module 'Microsoft .NET Host - 7' is not installed");
+                }
+
+                if (iisInstallerService.IsComponentInstalledMicrosoftAspNetCoreModule2())
+                {
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftAspNetCoreModule2", LogCategoryType.Information, "IIS module 'Microsoft ASP.NET Core Module V2' is installed");
+                }
+                else
+                {
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftAspNetCoreModule2", LogCategoryType.Warning, "IIS module 'Microsoft ASP.NET Core Module V2' is not installed");
+                }
+
+                break;
+
+            case HostingFrameworkType.DotNet8:
+                if (iisInstallerService.IsComponentInstalledMicrosoftNetHost7())
+                {
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost8", LogCategoryType.Information, "IIS module 'Microsoft .NET Host - 8' is installed");
+                }
+                else
+                {
+                    AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost8", LogCategoryType.Warning, "IIS module 'Microsoft .NET Host - 8' is not installed");
                 }
 
                 if (iisInstallerService.IsComponentInstalledMicrosoftAspNetCoreModule2())
