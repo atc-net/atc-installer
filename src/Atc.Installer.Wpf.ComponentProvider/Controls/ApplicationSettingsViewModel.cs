@@ -430,6 +430,24 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
             labelControls.Add(labelTextBoxValue);
             labelControls.Add(labelComboBox);
+
+            labelTextBoxValue.TextChanged += (_, args) =>
+            {
+                if (args.NewValue is not null &&
+                    args.OldValue != args.NewValue)
+                {
+                    labelComboBox.SelectedKey = labelComboBox.Items.First().Key;
+                }
+            };
+
+            labelComboBox.SelectorChanged += (_, args) =>
+            {
+                if (args.NewValue is not null &&
+                    args.NewValue != DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString())
+                {
+                    labelTextBoxValue.Text = string.Empty;
+                }
+            };
         }
 
         return labelControls;
