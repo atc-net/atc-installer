@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc.XUnit" Version="2.0.349" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageReference Include="xunit" Version="2.5.1-pre.12" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1-pre.4">
+    <PackageReference Include="Atc.XUnit" Version="2.0.360" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23503-02" />
+    <PackageReference Include="xunit" Version="2.5.2-pre.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.2-pre.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
