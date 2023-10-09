@@ -612,6 +612,84 @@ public partial class ComponentProviderViewModel
         IsDirty = false;
     }
 
+    [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+    public async Task<ReportingData> GetReportingData()
+    {
+        IsBusy = true;
+
+        var reportingData = new ReportingData(
+            Name);
+
+        if (InstalledMainFilePath is not null)
+        {
+            var mainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
+            reportingData.InstalledMainFilePath = mainFile.FullName;
+            var allFiles = FileHelper.GetFiles(mainFile.Directory!);
+
+            foreach (var fileInfo in allFiles)
+            {
+                var reportedFile = new ReportingFile(fileInfo);
+
+                switch (HostingFramework)
+                {
+                    case HostingFrameworkType.DonNetFramework48 or
+                        HostingFrameworkType.DotNet7 or
+                        HostingFrameworkType.DotNet8:
+                    {
+                        if (".exe".Equals(fileInfo.Extension, StringComparison.OrdinalIgnoreCase) ||
+                            ".dll".Equals(fileInfo.Extension, StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                var assembly = AssemblyHelper.Load(fileInfo);
+                                var assemblyInformation = AssemblyInformationFactory.Create(assembly);
+
+                                reportedFile.Version = assemblyInformation.Version.ToString();
+                                reportedFile.TargetFramework = assemblyInformation.TargetFrameworkDisplayName;
+                                reportedFile.IsDebugBuild = assemblyInformation.IsDebugBuild.HasValue && assemblyInformation.IsDebugBuild.Value;
+
+                                if (mainFile.FullName == reportedFile.FullName)
+                                {
+                                    reportingData.Version = assemblyInformation.Version.ToString();
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // Skip
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case HostingFrameworkType.NodeJs:
+                    {
+                        if ("version.json".Equals(fileInfo.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var sourceDynamicJson = new DynamicJson(fileInfo);
+                            var sourceValue = sourceDynamicJson.GetValue("VERSION");
+                            if (sourceValue is not null)
+                            {
+                                reportedFile.Version = sourceValue.ToString();
+                                reportingData.Version = sourceValue.ToString();
+                            }
+                        }
+
+                        break;
+                    }
+                }
+
+                reportingData.Files.Add(reportedFile);
+            }
+        }
+
+        IsBusy = false;
+
+        await Task.CompletedTask.ConfigureAwait(false);
+        return reportingData;
+    }
+
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(HostingFramework)}: {HostingFramework}";
 

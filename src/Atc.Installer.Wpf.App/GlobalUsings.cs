@@ -25,6 +25,7 @@ global using Atc.Installer.Wpf.ComponentProvider;
 global using Atc.Installer.Wpf.ComponentProvider.ElasticSearch;
 global using Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 global using Atc.Installer.Wpf.ComponentProvider.Messages;
+global using Atc.Installer.Wpf.ComponentProvider.Models;
 global using Atc.Installer.Wpf.ComponentProvider.PostgreSql;
 global using Atc.Installer.Wpf.ComponentProvider.ViewModels;
 global using Atc.Installer.Wpf.ComponentProvider.WindowsApplication;
@@ -37,7 +38,7 @@ global using Atc.Wpf.Controls.Notifications.Messages;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
 global using Atc.Wpf.Theming.Themes.Dialogs;
-
+global using ClosedXML.Excel;
 global using ControlzEx.Theming;
 
 global using Microsoft.Extensions.Configuration;

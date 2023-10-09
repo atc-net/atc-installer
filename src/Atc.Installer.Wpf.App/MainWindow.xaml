@@ -86,6 +86,16 @@
                             <Image Source="{Binding Source={x:Static fontIcons:FontMaterialDesignType.Azure}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource BlueBrush}}" />
                         </MenuItem.Icon>
                     </MenuItem>
+                    <MenuItem Header="_Reporting">
+                        <MenuItem.Icon>
+                            <Image Source="{Binding Source={x:Static fontIcons:FontMaterialDesignType.Export}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource BlueBrush}}" />
+                        </MenuItem.Icon>
+                        <MenuItem Command="{Binding Path=ReportingToExcelCommand}" Header="_Excel">
+                            <MenuItem.Icon>
+                                <Image Source="{Binding Source={x:Static fontIcons:IcoFontType.FileExcel}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource BlueBrush}}" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Help">
                     <MenuItem Command="{Binding Path=OpenApplicationCheckForUpdatesCommand}" Header="_Check for updates">
