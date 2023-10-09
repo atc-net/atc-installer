@@ -29,6 +29,10 @@ public partial class MainWindowViewModel
             DownloadInstallationFilesFromAzureStorageAccountCommandHandler,
             CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler);
 
+    public IRelayCommandAsync ReportingToExcelCommand => new RelayCommandAsync(
+        ReportingToExcelCommandHandler,
+        CanReportingToExcelCommandHandler);
+
     public IRelayCommand OpenApplicationCheckForUpdatesCommand
         => new RelayCommand(
             OpenApplicationCheckForUpdatesCommandHandler,
@@ -62,6 +66,7 @@ public partial class MainWindowViewModel
         {
             InitialDirectory = App.InstallerProgramDataProjectsDirectory.FullName,
             Multiselect = false,
+            Title = "Select a Installation-Settings file",
             Filter = "Configuration Files|*InstallationSettings.json",
         };
 
@@ -200,6 +205,93 @@ public partial class MainWindowViewModel
         {
             await LoadConfigurationFile(InstallationFile!, CancellationToken.None)
                 .ConfigureAwait(true);
+        }
+    }
+
+    private bool CanReportingToExcelCommandHandler()
+        => InstallationFile is not null &&
+           (!IsDirty ||
+            !ComponentProviders.Any(x => x.IsDirty ||
+                                         x.DefaultApplicationSettings.IsDirty ||
+                                         x.ApplicationSettings.IsDirty ||
+                                         x.FolderPermissions.IsDirty ||
+                                         x.FirewallRules.IsDirty ||
+                                         x.ConfigurationSettingsFiles.IsDirty));
+
+    private async Task ReportingToExcelCommandHandler()
+    {
+        if (!CanReportingToExcelCommandHandler())
+        {
+            return;
+        }
+
+        if (!ComponentProviders.Any())
+        {
+            return;
+        }
+
+        var saveFileDialog = new SaveFileDialog
+        {
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+            Title = "Select a file",
+            Filter = "Excel Files|*.xlsx",
+            FileName = ProjectName,
+        };
+
+        if (saveFileDialog.ShowDialog() != true ||
+            saveFileDialog.FileName is null)
+        {
+            return;
+        }
+
+        var exportToFile = new FileInfo(saveFileDialog.FileName);
+        if (exportToFile.Exists)
+        {
+            try
+            {
+                File.Delete(exportToFile.FullName);
+            }
+            catch (Exception)
+            {
+                var infoDialogBox = new InfoDialogBox(
+                    Application.Current.MainWindow!,
+                    "Error",
+                    $"Can't override file,{Environment.NewLine}because it is being used by{Environment.NewLine}another process.");
+                infoDialogBox.ShowDialog();
+                return;
+            }
+        }
+
+        IsBusy = true;
+
+        // Give the UI a moment to refresh (show BusyIndicator).
+        await Task
+            .Delay(1, CancellationToken.None)
+            .ConfigureAwait(false);
+
+        var tasks = ComponentProviders
+            .Select(vm => vm.GetReportingData())
+            .ToList();
+
+        try
+        {
+            var reportingDataForComponentProviders = await TaskHelper
+                .WhenAll(tasks)
+                .ConfigureAwait(true);
+
+            ExcelHelper.CreateAndSave(exportToFile, reportingDataForComponentProviders);
+        }
+        catch (Exception ex)
+        {
+            var infoDialogBox = new InfoDialogBox(
+                Application.Current.MainWindow!,
+                "Error",
+                ex.Message);
+            infoDialogBox.ShowDialog();
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

@@ -421,6 +421,12 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             case HostingFrameworkType.DotNet7:
                 AddToInstallationPrerequisites("IsMicrosoftDonNet7", LogCategoryType.Warning, "Microsoft .NET 7 is not installed");
                 break;
+            case HostingFrameworkType.DotNet8 when waInstallerService.IsMicrosoftDonNet8():
+                AddToInstallationPrerequisites("IsMicrosoftDonNet8", LogCategoryType.Information, "Microsoft .NET 8 is installed");
+                break;
+            case HostingFrameworkType.DotNet8:
+                AddToInstallationPrerequisites("IsMicrosoftDonNet8", LogCategoryType.Warning, "Microsoft .NET 8 is not installed");
+                break;
             case HostingFrameworkType.DonNetFramework48 when waInstallerService.IsMicrosoftDonNetFramework48():
                 AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
                 break;

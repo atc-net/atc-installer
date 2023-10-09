@@ -23,6 +23,9 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     public bool IsMicrosoftDonNet7()
         => IsMicrosoftDonNet(7);
 
+    public bool IsMicrosoftDonNet8()
+        => IsMicrosoftDonNet(8);
+
     public bool IsJavaRuntime8()
         => IsJavaRuntime(8);
 

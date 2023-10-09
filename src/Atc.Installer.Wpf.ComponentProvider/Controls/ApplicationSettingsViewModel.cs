@@ -1,4 +1,5 @@
 // ReSharper disable InvertIf
+// ReSharper disable MergeSequentialChecks
 namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
 [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
@@ -430,6 +431,24 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
             labelControls.Add(labelTextBoxValue);
             labelControls.Add(labelComboBox);
+
+            labelTextBoxValue.TextChanged += (_, args) =>
+            {
+                if (args.NewValue is not null &&
+                    args.OldValue != args.NewValue)
+                {
+                    labelComboBox.SelectedKey = labelComboBox.Items.First().Key;
+                }
+            };
+
+            labelComboBox.SelectorChanged += (_, args) =>
+            {
+                if (args.NewValue is not null &&
+                    args.NewValue != DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString())
+                {
+                    labelTextBoxValue.Text = string.Empty;
+                }
+            };
         }
 
         return labelControls;
@@ -501,6 +520,22 @@ public class ApplicationSettingsViewModel : ViewModelBase
     {
         foreach (var componentProvider in refComponentProviders)
         {
+            if (componentProvider.InstalledMainFilePath is not null &&
+                componentProvider.InstalledMainFilePath.Template is not null &&
+                componentProvider.InstalledMainFilePath.TemplateLocations is not null &&
+                componentProvider.InstalledMainFilePath.Template.Contains(updateItem.Key, StringComparison.Ordinal))
+            {
+                componentProvider.InstalledMainFilePath.Value = ResolveTemplateValue(updateItem, componentProvider, componentProvider.InstalledMainFilePath.Template);
+            }
+
+            if (componentProvider.InstallationFolderPath is not null &&
+                componentProvider.InstallationFolderPath.Template is not null &&
+                componentProvider.InstallationFolderPath.TemplateLocations is not null &&
+                componentProvider.InstallationFolderPath.Template.Contains(updateItem.Key, StringComparison.Ordinal))
+            {
+                componentProvider.InstallationFolderPath.Value = ResolveTemplateValue(updateItem, componentProvider, componentProvider.InstallationFolderPath.Template);
+            }
+
             foreach (var item in componentProvider.ApplicationSettings.Items)
             {
                 if (item.Template is not null &&

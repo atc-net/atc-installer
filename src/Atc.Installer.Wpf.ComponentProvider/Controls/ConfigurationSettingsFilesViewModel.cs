@@ -1,6 +1,7 @@
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 // ReSharper disable UseObjectOrCollectionInitializer
 // ReSharper disable ArrangeTrailingCommaInMultilineLists
+// ReSharper disable InvertIf
 namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
 [SuppressMessage("Style", "IDE0017:Simplify object initialization", Justification = "OK.")]
@@ -373,10 +374,13 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         KeyValueTemplateItemViewModel? updateItem = null;
         foreach (var xmlElement in XmlItems[0].Settings)
         {
-            if (xmlElement == item)
+            if (xmlElement != item)
             {
-                updateItem = xmlElement.Attributes.First(x => x.Key.Equals("value", StringComparison.Ordinal));
+                continue;
             }
+
+            updateItem = xmlElement.Attributes.First(x => x.Key.Equals("value", StringComparison.Ordinal));
+            updateItem.Key = xmlElement.Attributes.First(x => x.Key.Equals("key", StringComparison.Ordinal)).GetValueAsString();
         }
 
         if (updateItem is null)
@@ -463,7 +467,12 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     {
         var labelControls = new List<ILabelControlBase>();
 
-        var labelTextBoxKey = new LabelTextBox { LabelText = "Key", IsMandatory = true, MinLength = 1, };
+        var labelTextBoxKey = new LabelTextBox
+        {
+            LabelText = "Key",
+            IsMandatory = true,
+            MinLength = 1,
+        };
 
         if (updateItem is not null)
         {
@@ -474,7 +483,11 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
 
         labelControls.Add(labelTextBoxKey);
 
-        var labelTextBoxValue = new LabelTextBox { LabelText = "Value", IsMandatory = false, };
+        var labelTextBoxValue = new LabelTextBox
+        {
+            LabelText = "Value",
+            IsMandatory = false,
+        };
 
         if (updateItem is not null &&
             string.IsNullOrEmpty(updateItem.Template))
@@ -526,6 +539,24 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
 
         labelControls.Add(labelComboBox);
 
+        labelTextBoxValue.TextChanged += (_, args) =>
+        {
+            if (args.NewValue is not null &&
+                args.OldValue != args.NewValue)
+            {
+                labelComboBox.SelectedKey = labelComboBox.Items.First().Key;
+            }
+        };
+
+        labelComboBox.SelectorChanged += (_, args) =>
+        {
+            if (args.NewValue is not null &&
+                args.NewValue != DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString())
+            {
+                labelTextBoxValue.Text = string.Empty;
+            }
+        };
+
         return labelControls;
     }
 
@@ -533,6 +564,8 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         InputFormDialogBox dialogBox,
         KeyValueTemplateItemViewModel updateItem)
     {
+        var oldValue = updateItem.GetValueAsString();
+
         var data = dialogBox.Data.GetKeyValues();
 
         var dataValue = data["Value"].ToString()!;
@@ -574,7 +607,32 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
             };
         }
 
+        UpdateComponentProviders(oldValue, updateItem);
+
         IsDirty = true;
+    }
+
+    private void UpdateComponentProviders(
+        string oldValue,
+        KeyValueTemplateItemViewModel updateItem)
+    {
+        if (refComponentProvider is null ||
+            oldValue is null)
+        {
+            return;
+        }
+
+        var value = updateItem.GetValueAsString();
+        if (value.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var endpoint in refComponentProvider.Endpoints)
+            {
+                if (endpoint.Endpoint.StartsWith(oldValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    endpoint.Endpoint = endpoint.Endpoint.Replace(oldValue, value, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+        }
     }
 
     private (string DataTemplate, string TemplateLocation, string DataDefaultValue) TemplateExtract(

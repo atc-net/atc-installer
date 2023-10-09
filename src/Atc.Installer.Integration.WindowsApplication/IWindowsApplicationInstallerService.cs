@@ -6,6 +6,8 @@ public interface IWindowsApplicationInstallerService : IInstallerService
 
     bool IsMicrosoftDonNet7();
 
+    bool IsMicrosoftDonNet8();
+
     ComponentRunningState GetServiceState(
         string serviceName);
 

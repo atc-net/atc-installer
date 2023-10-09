@@ -20,9 +20,17 @@ public class ComponentProviderVersionCompareVisibilityVisibleValueConverter : IV
             return Visibility.Collapsed;
         }
 
-        return vm is { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 }
+        if (vm.HostingFramework is
+            HostingFrameworkType.DonNetFramework48 or
+            HostingFrameworkType.DotNet7 or
+            HostingFrameworkType.DotNet8)
+        {
+            return AnalyzeForForDotNet(vm);
+        }
+
+        return vm.ComponentType == ComponentType.InternetInformationService
             ? AnalyzeForJsVersion(vm)
-            : AnalyzeForForDotNet(vm);
+            : Visibility.Collapsed;
     }
 
     public object? ConvertBack(

@@ -98,11 +98,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
 
         InstallationFile = applicationOption.InstallationFile;
-        InstallationFolderPath = new ValueTemplateItemViewModel(
-            applicationOption.InstallationPath,
-            template: null,
-            templateLocations: null);
-
+        ResolveInstallationPathAndSetInstallationFolderPath(applicationOption);
         ResolveInstalledMainFile(applicationOption);
 
         foreach (var dependentServiceName in applicationOption.DependentServices)
