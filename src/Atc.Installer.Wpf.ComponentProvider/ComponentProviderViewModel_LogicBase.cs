@@ -503,7 +503,7 @@ public partial class ComponentProviderViewModel
             }
         }
 
-        AddLogItem(LogLevel.Information, "firewall rules is ensured");
+        AddLogItem(LogLevel.Information, "Firewall rules is ensured");
     }
 
     protected string ResolveTemplateIfNeededByApplicationSettingsLookup(
