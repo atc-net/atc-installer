@@ -91,7 +91,7 @@ public partial class ComponentProviderViewModel
 
         Messenger.Default.Send(
             new ToastNotificationMessage(
-                ToastNotificationType.Information,
+                toastNotificationType,
                 title,
                 message));
     }
