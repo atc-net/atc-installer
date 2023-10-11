@@ -710,6 +710,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         var (isSuccessful, output) = await ProcessHelper
             .Execute(
+                installedMainFile.Directory!,
                 new FileInfo(installedMainFile.FullName),
                 "install",
                 runAsAdministrator: true)
