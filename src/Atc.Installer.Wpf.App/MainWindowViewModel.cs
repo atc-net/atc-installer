@@ -1,5 +1,6 @@
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
+// ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 namespace Atc.Installer.Wpf.App;
 
 [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
@@ -123,6 +124,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
+        Messenger.Default.Register<UpdateDefaultApplicationSettingsMessage>(this, HandleUpdateDefaultApplicationSettingsMessage);
 
         loggerComponentProvider.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
 
@@ -228,6 +230,39 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private void HandleRefreshSelectedComponentProviderMessage(
         RefreshSelectedComponentProviderMessage obj)
         => RaisePropertyChanged(nameof(SelectedComponentProvider));
+
+    private void HandleUpdateDefaultApplicationSettingsMessage(
+        UpdateDefaultApplicationSettingsMessage obj)
+    {
+        switch (obj.TriggerActionType)
+        {
+            case TriggerActionType.Insert:
+                if (DefaultApplicationSettings.FirstOrDefault(x => x.Key == obj.KeyValueTemplateItem.Key) is null)
+                {
+                    DefaultApplicationSettings.Add(obj.KeyValueTemplateItem);
+                }
+
+                break;
+            case TriggerActionType.Update:
+                var itemToUpdate = DefaultApplicationSettings.FirstOrDefault(x => x.Key == obj.KeyValueTemplateItem.Key);
+                if (itemToUpdate is not null)
+                {
+                    itemToUpdate.Value = obj.KeyValueTemplateItem.Value;
+                }
+
+                break;
+            case TriggerActionType.Delete:
+                var itemToDelete = DefaultApplicationSettings.FirstOrDefault(x => x.Key == obj.KeyValueTemplateItem.Key);
+                if (itemToDelete is not null)
+                {
+                    DefaultApplicationSettings.Remove(itemToDelete);
+                }
+
+                break;
+            default:
+                throw new SwitchExpressionException(obj.TriggerActionType);
+        }
+    }
 
     private async Task CheckForUpdates()
     {

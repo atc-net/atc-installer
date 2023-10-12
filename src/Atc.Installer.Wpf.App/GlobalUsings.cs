@@ -3,6 +3,7 @@ global using System.ComponentModel.DataAnnotations;
 global using System.Diagnostics.CodeAnalysis;
 global using System.IO;
 global using System.Reflection;
+global using System.Runtime.CompilerServices;
 global using System.Security.Cryptography;
 global using System.Text.Json;
 global using System.Windows;
@@ -38,6 +39,7 @@ global using Atc.Wpf.Controls.Notifications.Messages;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
 global using Atc.Wpf.Theming.Themes.Dialogs;
+
 global using ClosedXML.Excel;
 global using ControlzEx.Theming;
 
