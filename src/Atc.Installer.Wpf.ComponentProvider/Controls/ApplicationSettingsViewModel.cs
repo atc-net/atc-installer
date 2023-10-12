@@ -219,12 +219,18 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
         if (isDefaultApplicationSettings)
         {
-            Items.Add(
-                new KeyValueTemplateItemViewModel(
-                    dataKey,
-                    dataValue,
-                    template: null,
-                    templateLocations: null));
+            var item = new KeyValueTemplateItemViewModel(
+                dataKey,
+                dataValue,
+                template: null,
+                templateLocations: null);
+
+            Items.Add(item);
+
+            Messenger.Default.Send(
+                new UpdateDefaultApplicationSettingsMessage(
+                    TriggerActionType.Insert,
+                    item));
         }
         else
         {
@@ -347,6 +353,14 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
         Items.Remove(item);
 
+        if (isDefaultApplicationSettings)
+        {
+            Messenger.Default.Send(
+                new UpdateDefaultApplicationSettingsMessage(
+                    TriggerActionType.Delete,
+                    item));
+        }
+
         IsDirty = true;
     }
 
@@ -376,8 +390,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
             var labelTextBoxValue = new LabelTextBox
             {
                 LabelText = "Value",
-                IsMandatory = true,
-                MinLength = 1,
+                IsMandatory = false,
             };
 
             if (updateItem is not null)
@@ -464,14 +477,14 @@ public class ApplicationSettingsViewModel : ViewModelBase
 
         if (isDefaultApplicationSettings)
         {
-            if (string.IsNullOrEmpty(dataValue))
-            {
-                return;
-            }
-
             updateItem.Value = dataValue;
             updateItem.Template = null;
             updateItem.TemplateLocations = null;
+
+            Messenger.Default.Send(
+                new UpdateDefaultApplicationSettingsMessage(
+                    TriggerActionType.Update,
+                    updateItem));
 
             UpdateComponentProviders(updateItem);
         }
@@ -534,6 +547,14 @@ public class ApplicationSettingsViewModel : ViewModelBase
                 componentProvider.InstallationFolderPath.Template.Contains(updateItem.Key, StringComparison.Ordinal))
             {
                 componentProvider.InstallationFolderPath.Value = ResolveTemplateValue(updateItem, componentProvider, componentProvider.InstallationFolderPath.Template);
+            }
+
+            foreach (var item in componentProvider.DefaultApplicationSettings.Items)
+            {
+                if (item.Key == updateItem.Key)
+                {
+                    item.Value = updateItem.Value;
+                }
             }
 
             foreach (var item in componentProvider.ApplicationSettings.Items)

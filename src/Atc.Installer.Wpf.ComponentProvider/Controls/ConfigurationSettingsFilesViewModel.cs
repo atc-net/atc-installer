@@ -586,11 +586,6 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         if (string.IsNullOrEmpty(dataTemplate) ||
             dataTemplate.Equals(Constants.ItemBlankIdentifier, StringComparison.Ordinal))
         {
-            if (string.IsNullOrEmpty(dataValue))
-            {
-                return;
-            }
-
             updateItem.Value = dataValue;
             updateItem.Template = null;
             updateItem.TemplateLocations = null;
