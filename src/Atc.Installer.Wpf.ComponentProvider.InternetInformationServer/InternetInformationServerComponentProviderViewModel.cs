@@ -797,9 +797,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return isDone;
         }
 
+        AddLogItem(LogLevel.Trace, "Update Website");
+
         BackupConfigurationFilesAndLog();
 
         await ServiceDeployWebsitePostProcessing(useAutoStart).ConfigureAwait(true);
+
+        AddLogItem(LogLevel.Information, "Website is updated");
 
         isDone = true;
 
