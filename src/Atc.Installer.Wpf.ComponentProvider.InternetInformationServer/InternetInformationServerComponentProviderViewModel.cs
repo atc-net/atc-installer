@@ -306,6 +306,60 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public override Task ServiceDeployAndStartCommandHandler()
         => ServiceDeployAndStart(useAutoStart: true);
 
+    public override bool CanServiceRemoveCommandHandler()
+    {
+        if (InstallationFolderPath is null ||
+            InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        return RunningState switch
+        {
+            ComponentRunningState.Stopped => true,
+            _ => false,
+        };
+    }
+
+    public override async Task ServiceRemoveCommandHandler()
+    {
+        if (!CanServiceRemoveCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        AddLogItem(LogLevel.Trace, "Remove");
+
+        var isDone = false;
+
+        if (InstallationState is
+                ComponentInstallationState.Installed or
+                ComponentInstallationState.InstalledWithOldVersion &&
+            InstallationFolderPath is not null)
+        {
+            isDone = await ServiceRemoveWebsite().ConfigureAwait(true);
+        }
+
+        if (isDone)
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Removed");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Not Removed");
+        }
+
+        IsBusy = false;
+    }
+
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void InitializeFromApplicationOptions(
         ApplicationOption applicationOption)
@@ -809,6 +863,60 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
 
         WorkOnAnalyzeAndUpdateStatesForVersion();
+    }
+
+    private async Task<bool> ServiceRemoveWebsite()
+    {
+        var isDone = false;
+
+        if (InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        AddLogItem(LogLevel.Trace, "Remove Website");
+
+        var stop1 = true;
+        var stop2 = true;
+        var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
+        if (applicationPoolState == ComponentRunningState.Running)
+        {
+            stop1 = await iisInstallerService
+                .StopApplicationPool(Name)
+                .ConfigureAwait(true);
+        }
+
+        var websitePoolState = iisInstallerService.GetWebsiteState(Name);
+        if (websitePoolState == ComponentRunningState.Running)
+        {
+            stop2 = await iisInstallerService
+                .StopWebsite(Name)
+                .ConfigureAwait(true);
+        }
+
+        if (stop1 && stop2)
+        {
+            var isWebsiteDeleted = await iisInstallerService
+                .DeleteWebsite(Name)
+                .ConfigureAwait(true);
+
+            var isApplicationPoolDeleted = await iisInstallerService
+                .DeleteApplicationPool(Name)
+                .ConfigureAwait(true);
+
+            isDone = isWebsiteDeleted && isApplicationPoolDeleted;
+        }
+        else
+        {
+            AddLogItem(LogLevel.Error, "Website is not removed");
+        }
+
+        var installedMainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
+        Directory.Delete(installedMainFile.DirectoryName!, recursive: true);
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
+        return isDone;
     }
 
     private async Task ServiceDeployWebsiteStart()
