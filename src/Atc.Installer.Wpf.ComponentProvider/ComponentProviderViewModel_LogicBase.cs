@@ -904,6 +904,11 @@ public partial class ComponentProviderViewModel
             installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.dll");
         }
 
+        if (!File.Exists(InstalledMainFilePath.GetValueAsString()))
+        {
+            InstallationState = ComponentInstallationState.NotInstalled;
+        }
+
         if (File.Exists(installationMainFile) &&
             File.Exists(InstalledMainFilePath.GetValueAsString()))
         {
@@ -938,6 +943,11 @@ public partial class ComponentProviderViewModel
             InstallationFolderPath is null)
         {
             return;
+        }
+
+        if (!Directory.Exists(InstallationFolderPath.GetValueAsString()))
+        {
+            InstallationState = ComponentInstallationState.NotInstalled;
         }
 
         string? sourceVersion = null;
