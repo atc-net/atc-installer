@@ -22,6 +22,11 @@ public partial class ComponentProviderViewModel
             ServiceDeployCommandHandler,
             CanServiceDeployCommandHandler);
 
+    public IRelayCommandAsync ServiceRemoveCommand
+        => new RelayCommandAsync(
+            ServiceRemoveCommandHandler,
+            CanServiceRemoveCommandHandler);
+
     public IRelayCommandAsync ServiceDeployAndStartCommand
         => new RelayCommandAsync(
             ServiceDeployAndStartCommandHandler,
@@ -48,6 +53,12 @@ public partial class ComponentProviderViewModel
         => false;
 
     public virtual Task ServiceDeployCommandHandler()
+        => Task.CompletedTask;
+
+    public virtual bool CanServiceRemoveCommandHandler()
+        => false;
+
+    public virtual Task ServiceRemoveCommandHandler()
         => Task.CompletedTask;
 
     public virtual Task ServiceDeployAndStartCommandHandler()

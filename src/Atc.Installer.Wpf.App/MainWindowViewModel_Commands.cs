@@ -52,6 +52,11 @@ public partial class MainWindowViewModel
             ServiceDeployAllCommandHandler,
             CanServiceDeployAllCommandHandler);
 
+    public IRelayCommandAsync ServiceRemoveAllCommand
+        => new RelayCommandAsync(
+            ServiceRemoveAllCommandHandler,
+            CanServiceRemoveAllCommandHandler);
+
     public IRelayCommandAsync ServiceStartAllCommand
         => new RelayCommandAsync(
             ServiceStartAllCommandHandler,
@@ -332,6 +337,23 @@ public partial class MainWindowViewModel
             if (vm.CanServiceDeployCommandHandler())
             {
                 tasks.Add(vm.ServiceDeployCommand.ExecuteAsync(this));
+            }
+        }
+
+        return TaskHelper.WhenAll(tasks);
+    }
+
+    private bool CanServiceRemoveAllCommandHandler()
+        => ComponentProviders.Any(x => x.CanServiceRemoveCommandHandler());
+
+    private Task ServiceRemoveAllCommandHandler()
+    {
+        var tasks = new List<Task>();
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.CanServiceRemoveCommandHandler())
+            {
+                tasks.Add(vm.ServiceRemoveCommand.ExecuteAsync(this));
             }
         }
 
