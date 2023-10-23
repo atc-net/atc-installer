@@ -311,6 +311,38 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         }
     }
 
+    public Task<bool> DeleteApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(applicationPoolName);
+
+        var applicationPoolState = GetApplicationPoolState(applicationPoolName);
+        if (applicationPoolState == ComponentRunningState.NotAvailable)
+        {
+            return Task.FromResult(false);
+        }
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var applicationPool = serverManager.ApplicationPools[applicationPoolName];
+            if (applicationPool is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            applicationPool.Delete();
+            serverManager.CommitChanges();
+            return Task.FromResult(true);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
     public Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
@@ -413,6 +445,38 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         catch
         {
             return false;
+        }
+    }
+
+    public Task<bool> DeleteWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(websiteName);
+
+        var websiteState = GetWebsiteState(websiteName);
+        if (websiteState == ComponentRunningState.NotAvailable)
+        {
+            return Task.FromResult(false);
+        }
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            site.Delete();
+            serverManager.CommitChanges();
+            return Task.FromResult(true);
+        }
+        catch
+        {
+            return Task.FromResult(false);
         }
     }
 

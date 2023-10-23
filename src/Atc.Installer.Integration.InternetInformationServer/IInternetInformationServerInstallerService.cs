@@ -44,6 +44,11 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
 
+    Task<bool> DeleteApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
     Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
@@ -65,6 +70,12 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         bool requireServerNameIndication,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
+
+    Task<bool> DeleteWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
 
     Task<bool> StopApplicationPool(
         string applicationPoolName,
