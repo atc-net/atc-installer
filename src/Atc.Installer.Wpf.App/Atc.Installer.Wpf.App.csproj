@@ -37,14 +37,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\AppIcon.ico" />
+    <Resource Include="Resources\AppIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc.Wpf" Version="2.0.265" />
-    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.265" />
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.265" />
-    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.265" />
+    <PackageReference Include="Atc.Wpf" Version="2.0.280" />
+    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.280" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.280" />
+    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.280" />
     <PackageReference Include="ClosedXML" Version="0.103.0-beta" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.2.23479.6" />
