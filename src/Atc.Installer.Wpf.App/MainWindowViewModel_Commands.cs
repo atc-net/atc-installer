@@ -38,7 +38,7 @@ public partial class MainWindowViewModel
             OpenApplicationCheckForUpdatesCommandHandler,
             CanOpenApplicationCheckForUpdatesCommandHandler);
 
-    public static IRelayCommand OpenApplicationAboutCommand
+    public IRelayCommand OpenApplicationAboutCommand
         => new RelayCommand(
             OpenApplicationAboutCommandHandler);
 
@@ -306,8 +306,13 @@ public partial class MainWindowViewModel
     private void OpenApplicationCheckForUpdatesCommandHandler()
         => new CheckForUpdatesBoxDialog(checkForUpdatesBoxDialogViewModel).ShowDialog();
 
-    private static void OpenApplicationAboutCommandHandler()
-        => new AboutBoxDialog().ShowDialog();
+    private void OpenApplicationAboutCommandHandler()
+    {
+        // ReSharper disable once UseObjectOrCollectionInitializer
+        var aboutBoxDialog = new AboutBoxDialog();
+        aboutBoxDialog.IconImage.Source = ApplicationOptions.Icon ?? App.DefaultIcon;
+        aboutBoxDialog.ShowDialog();
+    }
 
     private bool CanServiceStopAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStopCommandHandler());

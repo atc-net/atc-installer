@@ -76,7 +76,6 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
 
-
     Task<bool> StopApplicationPool(
         string applicationPoolName,
         ushort timeoutInSeconds = 60,

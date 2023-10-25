@@ -19,6 +19,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private readonly ToastNotificationManager notificationManager = new();
     private string? newVersionIsAvailable;
     private DirectoryInfo? installationDirectory;
+    private BitmapImage? icon;
     private string? projectName;
     private string? componentProviderFilter;
     private ComponentProviderViewModel? selectedComponentProvider;
@@ -118,10 +119,11 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         loggerComponentProvider.Log(LogLevel.Trace, $"Starting {AssemblyHelper.GetSystemName()} - Version: {AssemblyHelper.GetSystemVersion()}");
 
-        LoadRecentOpenFiles();
-
         ApplicationOptions = new ApplicationOptionsViewModel(applicationOptionsValue);
+        Icon = ApplicationOptions.Icon ?? App.DefaultIcon;
         AzureOptions = new AzureOptionsViewModel();
+
+        LoadRecentOpenFiles();
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
@@ -159,6 +161,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     public ObservableCollectionEx<KeyValueTemplateItemViewModel> DefaultApplicationSettings { get; private set; } = new();
 
     public FileInfo? InstallationFile { get; private set; }
+
+    public BitmapImage? Icon
+    {
+        get => icon;
+        set
+        {
+            icon = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public string? ProjectName
     {
@@ -435,6 +447,9 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     {
         InstallationFile = installationFile;
         ProjectName = installationOptions.Name;
+        Icon = string.IsNullOrEmpty(installationOptions.Icon)
+            ? ApplicationOptions.Icon ?? App.DefaultIcon
+            : Atc.Wpf.Helpers.BitmapImageHelper.ConvertFromBase64(installationOptions.Icon);
         AzureOptions = new AzureOptionsViewModel(installationOptions.Azure);
         DefaultApplicationSettings = new ObservableCollectionEx<KeyValueTemplateItemViewModel>();
         foreach (var item in installationOptions.DefaultApplicationSettings)

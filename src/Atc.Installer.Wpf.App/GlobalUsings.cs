@@ -6,9 +6,11 @@ global using System.Reflection;
 global using System.Runtime.CompilerServices;
 global using System.Security.Cryptography;
 global using System.Text.Json;
+global using System.Text.Json.Serialization;
 global using System.Windows;
 global using System.Windows.Controls;
 global using System.Windows.Input;
+global using System.Windows.Media.Imaging;
 
 global using Atc.Helpers;
 global using Atc.Installer.Integration;
@@ -41,6 +43,7 @@ global using Atc.Wpf.Mvvm;
 global using Atc.Wpf.Theming.Themes.Dialogs;
 
 global using ClosedXML.Excel;
+
 global using ControlzEx.Theming;
 
 global using Microsoft.Extensions.Configuration;

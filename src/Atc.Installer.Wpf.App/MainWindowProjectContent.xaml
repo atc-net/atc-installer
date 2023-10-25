@@ -34,23 +34,30 @@
     </UserControl.Resources>
 
     <atc:GridEx
-        Margin="10"
-        Columns="600,10,*"
+        Margin="10,0,10,10"
+        Columns="600,20,*"
         Rows="*">
 
         <!--  Left-Content  -->
         <atc:GridEx
             Grid.Row="0"
             Grid.Column="0"
-            Margin="0,0,10,0"
             Columns="*"
             Rows="100,*">
-            <TextBlock
+            <StackPanel
                 Grid.Row="0"
                 Grid.Column="0"
-                Margin="0,20,0,10"
-                FontSize="24"
-                Text="{Binding Path=ProjectName, FallbackValue='- Project Name -'}" />
+                Orientation="Horizontal">
+                <Image
+                    MaxWidth="64"
+                    MaxHeight="64"
+                    Margin="10,0,20,0"
+                    Source="{Binding Path=Icon}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Text="{Binding Path=ProjectName, FallbackValue='- Project Name -'}" />
+            </StackPanel>
             <GroupBox
                 Grid.Row="1"
                 Grid.Column="0"
