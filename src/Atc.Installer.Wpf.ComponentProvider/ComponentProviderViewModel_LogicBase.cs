@@ -212,11 +212,7 @@ public partial class ComponentProviderViewModel
 
         ZipFile.ExtractToDirectory(installationFilePath, UnpackedZipFolderPath, overwriteFiles: true);
 
-        var filesToDelete = Directory.GetFiles(UnpackedZipFolderPath, "appsettings.*.json");
-        foreach (var file in filesToDelete)
-        {
-            File.Delete(file);
-        }
+        DeleteDevelopmentConfigurationFiles(new DirectoryInfo(UnpackedZipFolderPath));
     }
 
     public void AnalyzeAndUpdateStatesInBackgroundThread()
@@ -392,7 +388,24 @@ public partial class ComponentProviderViewModel
             directoryUnpackedZip.CopyAll(directoryInstallation, useRecursive: true, deleteAllFromDestinationBeforeCopy: false);
         }
 
+        DeleteDevelopmentConfigurationFiles(directoryInstallation);
+
         AddLogItem(LogLevel.Information, "Files is copied");
+    }
+
+    private static void DeleteDevelopmentConfigurationFiles(
+        DirectoryInfo path)
+    {
+        if (path is null)
+        {
+            return;
+        }
+
+        var filesToDelete = Directory.GetFiles(path.FullName, "appsettings.*.json");
+        foreach (var file in filesToDelete)
+        {
+            File.Delete(file);
+        }
     }
 
     protected void UpdateConfigurationFiles()
