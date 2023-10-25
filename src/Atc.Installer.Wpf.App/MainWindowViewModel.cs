@@ -20,6 +20,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private string? newVersionIsAvailable;
     private DirectoryInfo? installationDirectory;
     private string? projectName;
+    private string? componentProviderFilter;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
 
@@ -180,6 +181,21 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         {
             selectedComponentProvider = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public string? ComponentProviderFilter
+    {
+        get => componentProviderFilter;
+        set
+        {
+            componentProviderFilter = value;
+            RaisePropertyChanged();
+
+            foreach (var vm in ComponentProviders)
+            {
+                vm.SetFilterTextForMenu(componentProviderFilter ?? string.Empty);
+            }
         }
     }
 
@@ -432,6 +448,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         ComponentProviders.Clear();
+        ComponentProviderFilter = string.Empty;
 
         ComponentProviders.SuppressOnChangedNotification = true;
         foreach (var appInstallationOption in installationOptions.Applications)

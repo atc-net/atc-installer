@@ -63,7 +63,7 @@
                         atc:TextBoxHelper.Watermark="Filter"
                         DockPanel.Dock="Top"
                         Focusable="True"
-                        TextChanged="OnFilterTextChanged" />
+                        Text="{Binding Path=ComponentProviderFilter, UpdateSourceTrigger=PropertyChanged}" />
                     <Border
                         Padding="20"
                         Background="{DynamicResource AtcApps.Brushes.ThemeBackground1}"
