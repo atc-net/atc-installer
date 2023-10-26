@@ -1,6 +1,10 @@
 global using System.Diagnostics.CodeAnalysis;
+global using System.Globalization;
 global using System.IO;
+global using System.Security.Cryptography.X509Certificates;
 global using System.Text.Json;
+global using System.Windows.Data;
+global using System.Windows.Media;
 global using System.Xml;
 
 global using Atc.Installer.Integration;

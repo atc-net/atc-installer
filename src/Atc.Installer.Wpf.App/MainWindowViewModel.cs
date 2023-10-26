@@ -338,6 +338,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
                     {
                         if (!vm.IsBusy)
                         {
+                            vm.CheckPrerequisitesState();
                             vm.CheckServiceState();
                         }
                     }

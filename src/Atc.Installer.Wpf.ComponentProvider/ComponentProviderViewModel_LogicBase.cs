@@ -233,6 +233,8 @@ public partial class ComponentProviderViewModel
 
     public virtual void CheckPrerequisites() { }
 
+    public virtual void CheckPrerequisitesState() { }
+
     public virtual void CheckServiceState() { }
 
     public virtual bool TryGetStringFromApplicationSetting(
@@ -894,6 +896,7 @@ public partial class ComponentProviderViewModel
         }
 
         CheckPrerequisites();
+        CheckPrerequisitesState();
         CheckServiceState();
 
         if (InstallationState == ComponentInstallationState.Checking)

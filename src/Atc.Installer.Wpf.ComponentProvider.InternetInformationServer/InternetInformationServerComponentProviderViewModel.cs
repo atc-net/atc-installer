@@ -1,10 +1,12 @@
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+
 namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IInternetInformationServerInstallerService iisInstallerService;
+    private X509Certificate2? x509Certificate;
 
     public InternetInformationServerComponentProviderViewModel(
         ILogger<ComponentProviderViewModel> logger,
@@ -43,6 +45,16 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public ushort? HttpsPort { get; private set; }
 
+    public X509Certificate2? X509Certificate
+    {
+        get => x509Certificate;
+        private set
+        {
+            x509Certificate = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public override void CheckPrerequisites()
     {
         base.CheckPrerequisites();
@@ -71,6 +83,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         InstallationPrerequisites.SuppressOnChangedNotification = false;
         RaisePropertyChanged(nameof(InstallationPrerequisites));
+    }
+
+    public override void CheckPrerequisitesState()
+    {
+        base.CheckPrerequisitesState();
+
+        X509Certificate = iisInstallerService.GetWebsiteX509Certificate2(Name);
     }
 
     [SuppressMessage("Unknown", "S3440:RemoveThisUselessCondition", Justification = "OK.")]
