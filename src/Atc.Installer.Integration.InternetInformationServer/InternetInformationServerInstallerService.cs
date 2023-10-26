@@ -1,4 +1,5 @@
 // ReSharper disable StringLiteralTypo
+// ReSharper disable LoopCanBeConvertedToQuery
 namespace Atc.Installer.Integration.InternetInformationServer;
 
 /// <summary>
@@ -168,7 +169,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     }
 
     public string? ResolvedVirtualRootFolder(
-        string folder)
+        string? folder)
         => folder is not null &&
            folder.StartsWith(@".\", StringComparison.Ordinal) &&
            IsInstalled &&
@@ -184,7 +185,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                 arguments: "unlock config -section:\"system.webServer/modules\"")
             .ConfigureAwait(false);
 
-        if (isSuccessful && output is not null)
+        if (isSuccessful && !string.IsNullOrEmpty(output))
         {
             return (IsSucceeded: false, ErrorMessage: null);
         }
@@ -667,6 +668,55 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         CancellationToken cancellationToken = default)
         => await StartApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
            await StartWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
+
+    public X509Certificate2? GetWebsiteX509Certificate2(
+        string websiteName)
+    {
+        ArgumentNullException.ThrowIfNull(websiteName);
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return null;
+            }
+
+            foreach (var siteBinding in site.Bindings)
+            {
+                if (siteBinding.SslFlags == SslFlags.None ||
+                    !"https".Equals(siteBinding.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                using var store = new X509Store(
+                    storeName: Enum<StoreName>.Parse(siteBinding.CertificateStoreName),
+                    StoreLocation.LocalMachine);
+
+                store.Open(OpenFlags.ReadOnly);
+
+                var x509Certificates = store.Certificates.Find(
+                    X509FindType.FindByThumbprint,
+                    findValue: siteBinding.CertificateHash.ToHex(),
+                    validOnly: false);
+
+                if (x509Certificates.Count != 1)
+                {
+                    continue;
+                }
+
+                return x509Certificates[0];
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     private string? GetResourceDefaultNodeJsUrlWebConfig()
         => GetResourceTextFile("default-nodejs-urlrewrite-webconfig");

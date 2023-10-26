@@ -107,4 +107,7 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         string applicationPoolName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
+
+    X509Certificate2? GetWebsiteX509Certificate2(
+        string websiteName);
 }
