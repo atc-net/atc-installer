@@ -110,4 +110,8 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     X509Certificate2? GetWebsiteX509Certificate2(
         string websiteName);
+
+    bool AssignX509Certificate2ToWebsite(
+        string websiteName,
+        X509Certificate2 x509Certificate2);
 }

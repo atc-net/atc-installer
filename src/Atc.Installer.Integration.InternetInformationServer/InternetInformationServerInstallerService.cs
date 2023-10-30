@@ -223,7 +223,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public ComponentRunningState GetApplicationPoolState(
         string applicationPoolName)
     {
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
 
         try
         {
@@ -253,7 +253,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public ComponentRunningState GetWebsiteState(
         string websiteName)
     {
-        ArgumentNullException.ThrowIfNull(websiteName);
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
 
         try
         {
@@ -286,7 +286,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
 
         var applicationPoolState = GetApplicationPoolState(applicationPoolName);
         if (applicationPoolState != ComponentRunningState.NotAvailable)
@@ -317,7 +317,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
 
         var applicationPoolState = GetApplicationPoolState(applicationPoolName);
         if (applicationPoolState == ComponentRunningState.NotAvailable)
@@ -378,8 +378,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(websiteName);
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
         ArgumentNullException.ThrowIfNull(physicalPath);
 
         var websiteState = GetWebsiteState(websiteName);
@@ -454,7 +454,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(websiteName);
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
 
         var websiteState = GetWebsiteState(websiteName);
         if (websiteState == ComponentRunningState.NotAvailable)
@@ -672,7 +672,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public X509Certificate2? GetWebsiteX509Certificate2(
         string websiteName)
     {
-        ArgumentNullException.ThrowIfNull(websiteName);
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
 
         try
         {
@@ -715,6 +715,44 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         catch
         {
             return null;
+        }
+    }
+
+    public bool AssignX509Certificate2ToWebsite(
+        string websiteName,
+        X509Certificate2 x509Certificate2)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+        ArgumentNullException.ThrowIfNull(x509Certificate2);
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return false;
+            }
+
+            foreach (var siteBinding in site.Bindings)
+            {
+                if (!"https".Equals(siteBinding.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                siteBinding.CertificateHash = x509Certificate2.GetCertHash();
+                siteBinding.CertificateStoreName = "My";  // TODO: Usually the certificate is in the Personal store, but adjust if needed.
+                siteBinding.SslFlags = SslFlags.Sni;
+                serverManager.CommitChanges();
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
         }
     }
 
