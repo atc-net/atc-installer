@@ -108,10 +108,15 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
 
-    X509Certificate2? GetWebsiteX509Certificate2(
+    IList<X509Certificate2> GetX509Certificates();
+
+    X509Certificate2? GetWebsiteX509Certificate(
         string websiteName);
 
-    bool AssignX509Certificate2ToWebsite(
+    bool AssignX509CertificateToWebsite(
         string websiteName,
-        X509Certificate2 x509Certificate2);
+        X509Certificate2 certificate);
+
+    bool UnAssignX509CertificateOnWebsite(
+        string websiteName);
 }

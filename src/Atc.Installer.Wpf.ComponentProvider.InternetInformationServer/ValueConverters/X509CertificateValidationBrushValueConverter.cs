@@ -7,12 +7,9 @@ public class X509CertificateValidationBrushValueConverter : IValueConverter
     {
         if (value is X509Certificate2 certificate)
         {
-            return certificate.Archived ||
-                   DateTime.Now >= certificate.NotAfter ||
-                   DateTime.Now <= certificate.NotBefore ||
-                   string.IsNullOrEmpty(certificate.FriendlyName)
-                ? Brushes.Red
-                : Brushes.Transparent;
+            return certificate.IsValid()
+                ? Brushes.Transparent
+                : Brushes.Red;
         }
 
         return Brushes.Transparent;

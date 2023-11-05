@@ -138,14 +138,8 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     private void NewJsonCommandHandler(
         ConfigurationSettingsJsonFileViewModel item)
     {
-        var labelControls = CreateLabelControls(updateItem: null);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "New key/value",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForNewConfigurationSettingsFiles(
+            refComponentProvider);
 
         dialogBox.ShowDialog();
 
@@ -212,14 +206,9 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     {
         var updateItem = JsonItems[0].Settings.First(x => x.Key.Equals(item.Key, StringComparison.Ordinal));
 
-        var labelControls = CreateLabelControls(updateItem);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "Edit key/value",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForEditConfigurationSettingsFiles(
+            refComponentProvider,
+            updateItem);
 
         dialogBox.ShowDialog();
 
@@ -269,14 +258,8 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
     private void NewXmlCommandHandler(
         ConfigurationSettingsXmlFileViewModel item)
     {
-        var labelControls = CreateLabelControls(updateItem: null);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "New key/value",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForNewConfigurationSettingsFiles(
+            refComponentProvider);
 
         dialogBox.ShowDialog();
 
@@ -388,14 +371,9 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
             return;
         }
 
-        var labelControls = CreateLabelControls(updateItem);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "Edit key/value",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForEditConfigurationSettingsFiles(
+            refComponentProvider,
+            updateItem);
 
         dialogBox.ShowDialog();
 
@@ -460,104 +438,6 @@ public class ConfigurationSettingsFilesViewModel : ViewModelBase
         }
 
         IsDirty = true;
-    }
-
-    private List<ILabelControlBase> CreateLabelControls(
-        KeyValueTemplateItemViewModel? updateItem)
-    {
-        var labelControls = new List<ILabelControlBase>();
-
-        var labelTextBoxKey = new LabelTextBox
-        {
-            LabelText = "Key",
-            IsMandatory = true,
-            MinLength = 1,
-        };
-
-        if (updateItem is not null)
-        {
-            labelTextBoxKey.IsMandatory = false;
-            labelTextBoxKey.IsEnabled = false;
-            labelTextBoxKey.Text = updateItem.Key;
-        }
-
-        labelControls.Add(labelTextBoxKey);
-
-        var labelTextBoxValue = new LabelTextBox
-        {
-            LabelText = "Value",
-            IsMandatory = false,
-        };
-
-        if (updateItem is not null &&
-            string.IsNullOrEmpty(updateItem.Template))
-        {
-            labelTextBoxValue.Text = updateItem.Value.ToString()!;
-        }
-
-        labelControls.Add(labelTextBoxValue);
-
-        if (refComponentProvider is null)
-        {
-            return labelControls;
-        }
-
-        var labelComboBox = new LabelComboBox
-        {
-            LabelText = "Templates",
-            IsMandatory = false,
-            Items = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                {
-                    DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                    string.Empty
-                },
-            },
-        };
-
-        foreach (var keyValueTemplateItem in refComponentProvider.DefaultApplicationSettings.Items)
-        {
-            labelComboBox.Items.Add(
-                $"Default|{keyValueTemplateItem.Key}",
-                $"Default   -   [[{keyValueTemplateItem.Key}]]   -   {keyValueTemplateItem.GetValueAsString()}");
-        }
-
-        foreach (var keyValueTemplateItem in refComponentProvider.ApplicationSettings.Items)
-        {
-            labelComboBox.Items.Add(
-                $"Current|{keyValueTemplateItem.Key}",
-                $"Current   -   [[{keyValueTemplateItem.Key}]]   -   {keyValueTemplateItem.GetValueAsString()}");
-        }
-
-        if (updateItem is not null &&
-            !string.IsNullOrEmpty(updateItem.Template))
-        {
-            var templateKey = updateItem.Template.GetTemplateKeys()[0];
-            labelComboBox.SelectedKey =
-                labelComboBox.Items.Keys.First(x => x.EndsWith($"|{templateKey}", StringComparison.Ordinal));
-        }
-
-        labelControls.Add(labelComboBox);
-
-        labelTextBoxValue.TextChanged += (_, args) =>
-        {
-            if (args.NewValue is not null &&
-                args.OldValue != args.NewValue)
-            {
-                labelComboBox.SelectedKey = labelComboBox.Items.First().Key;
-            }
-        };
-
-        labelComboBox.SelectorChanged += (_, args) =>
-        {
-            if (args.NewValue is not null &&
-                args.NewValue != DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString())
-            {
-                labelTextBoxValue.Text = string.Empty;
-            }
-        };
-
-        return labelControls;
     }
 
     private void HandleEditDialogResult(

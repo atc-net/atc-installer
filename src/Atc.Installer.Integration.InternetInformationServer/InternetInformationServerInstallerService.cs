@@ -669,7 +669,10 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         => await StartApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
            await StartWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
 
-    public X509Certificate2? GetWebsiteX509Certificate2(
+    public IList<X509Certificate2> GetX509Certificates()
+        => CryptographyHelper.GetX509Certificates();
+
+    public X509Certificate2? GetWebsiteX509Certificate(
         string websiteName)
     {
         ArgumentException.ThrowIfNullOrEmpty(websiteName);
@@ -691,23 +694,9 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                     continue;
                 }
 
-                using var store = new X509Store(
-                    storeName: Enum<StoreName>.Parse(siteBinding.CertificateStoreName),
-                    StoreLocation.LocalMachine);
-
-                store.Open(OpenFlags.ReadOnly);
-
-                var x509Certificates = store.Certificates.Find(
-                    X509FindType.FindByThumbprint,
-                    findValue: siteBinding.CertificateHash.ToHex(),
-                    validOnly: false);
-
-                if (x509Certificates.Count != 1)
-                {
-                    continue;
-                }
-
-                return x509Certificates[0];
+                return CryptographyHelper.FindX509Certificate(
+                    siteBinding.CertificateHash.ToHex(),
+                    Enum<StoreName>.Parse(siteBinding.CertificateStoreName));
             }
 
             return null;
@@ -718,12 +707,12 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         }
     }
 
-    public bool AssignX509Certificate2ToWebsite(
+    public bool AssignX509CertificateToWebsite(
         string websiteName,
-        X509Certificate2 x509Certificate2)
+        X509Certificate2 certificate)
     {
         ArgumentException.ThrowIfNullOrEmpty(websiteName);
-        ArgumentNullException.ThrowIfNull(x509Certificate2);
+        ArgumentNullException.ThrowIfNull(certificate);
 
         try
         {
@@ -741,9 +730,45 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                     continue;
                 }
 
-                siteBinding.CertificateHash = x509Certificate2.GetCertHash();
-                siteBinding.CertificateStoreName = "My";  // TODO: Usually the certificate is in the Personal store, but adjust if needed.
+                siteBinding.CertificateHash = certificate.GetCertHash();
+                siteBinding.CertificateStoreName = nameof(StoreName.My);
                 siteBinding.SslFlags = SslFlags.Sni;
+                serverManager.CommitChanges();
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool UnAssignX509CertificateOnWebsite(
+        string websiteName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return false;
+            }
+
+            foreach (var siteBinding in site.Bindings)
+            {
+                if (!"https".Equals(siteBinding.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                siteBinding.CertificateHash = null;
+                siteBinding.CertificateStoreName = null;
+                siteBinding.SslFlags = SslFlags.None;
                 serverManager.CommitChanges();
                 return true;
             }

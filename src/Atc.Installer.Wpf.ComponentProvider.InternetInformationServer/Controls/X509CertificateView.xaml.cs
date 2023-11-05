@@ -1,4 +1,4 @@
-namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
+namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.Controls;
 
 /// <summary>
 /// Interaction logic for X509CertificateView.

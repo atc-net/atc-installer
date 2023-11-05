@@ -75,14 +75,7 @@ public class FirewallRulesViewModel : ViewModelBase
 
     private void NewCommandHandler()
     {
-        var labelControls = CreateLabelControls(updateItem: null);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "New firewall rule",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForNewFirewallRules(refComponentProvider);
 
         dialogBox.ShowDialog();
 
@@ -125,14 +118,9 @@ public class FirewallRulesViewModel : ViewModelBase
     {
         var updateItem = Items.First(x => x.Name.Equals(item.Name, StringComparison.Ordinal));
 
-        var labelControls = CreateLabelControls(updateItem);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "Edit firewall rule",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForEditFirewallRules(
+            refComponentProvider,
+            updateItem);
 
         dialogBox.ShowDialog();
 
@@ -167,117 +155,6 @@ public class FirewallRulesViewModel : ViewModelBase
         Items.Remove(item);
 
         IsDirty = true;
-    }
-
-    private List<ILabelControlBase> CreateLabelControls(
-        FirewallRuleViewModel? updateItem)
-    {
-        var labelControls = new List<ILabelControlBase>();
-
-        var labelTextBoxName = new LabelTextBox
-        {
-            LabelText = "Name",
-            IsMandatory = true,
-            MinLength = 1,
-        };
-
-        if (updateItem is not null)
-        {
-            labelTextBoxName.IsMandatory = false;
-            labelTextBoxName.IsEnabled = false;
-            labelTextBoxName.Text = updateItem.Name;
-        }
-        else if (refComponentProvider is not null)
-        {
-            labelTextBoxName.Text = refComponentProvider.Name;
-        }
-
-        labelControls.Add(labelTextBoxName);
-
-        var labelIntegerPort = new LabelIntegerBox
-        {
-            LabelText = "Port",
-            IsMandatory = true,
-            Minimum = 0,
-        };
-
-        if (updateItem is not null)
-        {
-            labelIntegerPort.Value = updateItem.Port;
-        }
-        else if (refComponentProvider is not null)
-        {
-            if (refComponentProvider.ApplicationSettings.TryGetUshort("HttpsPort", out var httpsPort))
-            {
-                labelIntegerPort.Value = httpsPort;
-            }
-            else if (refComponentProvider.ApplicationSettings.TryGetUshort("HttpPort", out var httpPort))
-            {
-                labelIntegerPort.Value = httpPort;
-            }
-        }
-
-        labelControls.Add(labelIntegerPort);
-
-        var labelComboBoxDirection = new LabelComboBox
-        {
-            LabelText = "Direction",
-            IsMandatory = true,
-            Items = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                {
-                    DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                    string.Empty
-                },
-            },
-        };
-
-        foreach (var item in Enum<FirewallDirectionType>.ToDictionaryWithStringKey())
-        {
-            labelComboBoxDirection.Items.Add(item.Key, item.Value);
-        }
-
-        if (updateItem is not null)
-        {
-            labelComboBoxDirection.SelectedKey = updateItem.Direction.ToString();
-        }
-        else if (refComponentProvider is not null)
-        {
-            labelComboBoxDirection.SelectedKey = nameof(FirewallDirectionType.Inbound);
-        }
-
-        labelControls.Add(labelComboBoxDirection);
-
-        var labelComboBoxProtocol = new LabelComboBox
-        {
-            LabelText = "Protocol",
-            IsMandatory = true,
-            Items = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                {
-                    DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                    string.Empty
-                },
-            },
-        };
-
-        foreach (var item in Enum<FirewallProtocolType>.ToDictionaryWithStringKey())
-        {
-            labelComboBoxProtocol.Items.Add(item.Key, item.Value);
-        }
-
-        if (updateItem is not null)
-        {
-            labelComboBoxProtocol.SelectedKey = updateItem.Protocol.ToString();
-        }
-        else if (refComponentProvider is not null)
-        {
-            labelComboBoxProtocol.SelectedKey = nameof(FirewallProtocolType.Tcp);
-        }
-
-        labelControls.Add(labelComboBoxProtocol);
-
-        return labelControls;
     }
 
     private void HandleEditDialogResult(

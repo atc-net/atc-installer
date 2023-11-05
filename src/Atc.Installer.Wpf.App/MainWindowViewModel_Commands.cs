@@ -258,11 +258,15 @@ public partial class MainWindowViewModel
             }
             catch (Exception)
             {
-                var infoDialogBox = new InfoDialogBox(
+                var errorMessage = $"Can't override file,{Environment.NewLine}" +
+                                   $"because it is being used by{Environment.NewLine}" +
+                                   $"another process.";
+
+                var dialogBox = new InfoDialogBox(
                     Application.Current.MainWindow!,
                     "Error",
-                    $"Can't override file,{Environment.NewLine}because it is being used by{Environment.NewLine}another process.");
-                infoDialogBox.ShowDialog();
+                    errorMessage);
+                dialogBox.ShowDialog();
                 return;
             }
         }
@@ -288,11 +292,11 @@ public partial class MainWindowViewModel
         }
         catch (Exception ex)
         {
-            var infoDialogBox = new InfoDialogBox(
+            var dialogBox = new InfoDialogBox(
                 Application.Current.MainWindow!,
                 "Error",
                 ex.Message);
-            infoDialogBox.ShowDialog();
+            dialogBox.ShowDialog();
         }
         finally
         {
