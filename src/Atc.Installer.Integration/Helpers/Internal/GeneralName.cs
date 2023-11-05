@@ -1,6 +1,6 @@
 namespace Atc.Installer.Integration.Helpers.Internal;
 
-internal class GeneralName
+internal sealed class GeneralName
 {
     public string DnsName { get; set; } = string.Empty;
 

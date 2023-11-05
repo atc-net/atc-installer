@@ -26,7 +26,8 @@ public static class CertificateStoreHelper
 
             CryptographyHelper.AddCertificateToStore(selfSignedCertificate);
 
-            CryptographyHelper.GrantAccessToCertificateToPrivateKey(selfSignedCertificate,
+            CryptographyHelper.GrantAccessToCertificateToPrivateKey(
+                selfSignedCertificate,
                 Constants.WindowsAccounts.IssUser);
 
             CryptographyHelper.AddCertificateToStore(selfSignedCertificate, StoreName.Root);
