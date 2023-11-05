@@ -5,6 +5,8 @@ public class InstallationOption
 {
     public string Name { get; set; } = string.Empty;
 
+    public string Icon { get; set; } = string.Empty;
+
     public AzureOptions Azure { get; set; } = new();
 
     public IDictionary<string, object> DefaultApplicationSettings { get; set; } = new Dictionary<string, object>(StringComparer.Ordinal);

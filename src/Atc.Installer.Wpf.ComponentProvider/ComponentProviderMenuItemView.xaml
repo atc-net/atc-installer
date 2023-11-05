@@ -23,6 +23,7 @@
         <ContextMenu>
             <MenuItem Command="{Binding Path=ServiceStopCommand}" Header="Stop" />
             <MenuItem Command="{Binding Path=ServiceDeployCommand}" Header="Deploy" />
+            <MenuItem Command="{Binding Path=ServiceRemoveCommand}" Header="Remove" />
             <MenuItem Command="{Binding Path=ServiceStartCommand}" Header="Start" />
             <Separator Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}" />
             <MenuItem Header="Browse links" Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">

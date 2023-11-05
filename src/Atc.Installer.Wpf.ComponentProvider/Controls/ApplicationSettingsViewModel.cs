@@ -2,7 +2,6 @@
 // ReSharper disable MergeSequentialChecks
 namespace Atc.Installer.Wpf.ComponentProvider.Controls;
 
-[SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
 public class ApplicationSettingsViewModel : ViewModelBase
 {
     private readonly ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders;
@@ -96,7 +95,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
                     Items.Add(
                         new KeyValueTemplateItemViewModel(
                             applicationSetting.Key,
-                            resultValue,
+                            value.ReplaceTemplateWithKey(key, resultValue),
                             value,
                             templateLocations: new List<string> { Constants.DefaultTemplateLocation }));
                 }
@@ -188,16 +187,10 @@ public class ApplicationSettingsViewModel : ViewModelBase
         UpdateApplicationOptionsMessage obj)
         => EnableEditingMode = obj.EnableEditingMode;
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void NewCommandHandler()
     {
-        var labelControls = CreateLabelControls(updateItem: null);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "New key/value",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForNewApplicationSettings(defaultSettings);
 
         dialogBox.ShowDialog();
 
@@ -278,14 +271,9 @@ public class ApplicationSettingsViewModel : ViewModelBase
     {
         var updateItem = Items.First(x => x.Key.Equals(item.Key, StringComparison.Ordinal));
 
-        var labelControls = CreateLabelControls(updateItem);
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
-
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "Edit key/value",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForEditApplicationSettings(
+            defaultSettings,
+            updateItem);
 
         dialogBox.ShowDialog();
 
@@ -364,109 +352,6 @@ public class ApplicationSettingsViewModel : ViewModelBase
         IsDirty = true;
     }
 
-    private List<ILabelControlBase> CreateLabelControls(
-        KeyValueTemplateItemViewModel? updateItem)
-    {
-        var labelControls = new List<ILabelControlBase>();
-
-        var labelTextBoxKey = new LabelTextBox
-        {
-            LabelText = "Key",
-            IsMandatory = true,
-            MinLength = 1,
-        };
-
-        if (updateItem is not null)
-        {
-            labelTextBoxKey.IsMandatory = false;
-            labelTextBoxKey.IsEnabled = false;
-            labelTextBoxKey.Text = updateItem.Key;
-        }
-
-        labelControls.Add(labelTextBoxKey);
-
-        if (defaultSettings is null)
-        {
-            var labelTextBoxValue = new LabelTextBox
-            {
-                LabelText = "Value",
-                IsMandatory = false,
-            };
-
-            if (updateItem is not null)
-            {
-                labelTextBoxValue.Text = string.IsNullOrEmpty(updateItem.Template)
-                    ? updateItem.Value.ToString()!
-                    : updateItem.Template;
-            }
-
-            labelControls.Add(labelTextBoxValue);
-        }
-        else
-        {
-            var labelTextBoxValue = new LabelTextBox
-            {
-                LabelText = "Value",
-                IsMandatory = false,
-            };
-
-            var labelComboBox = new LabelComboBox
-            {
-                LabelText = "Templates",
-                IsMandatory = false,
-                Items = new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    {
-                        DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                        string.Empty
-                    },
-                },
-            };
-
-            foreach (var keyValueTemplateItem in defaultSettings.Items)
-            {
-                labelComboBox.Items.Add(
-                    keyValueTemplateItem.Key,
-                    $"[[{keyValueTemplateItem.Key}]]   -   {keyValueTemplateItem.GetValueAsString()}");
-            }
-
-            if (updateItem is not null)
-            {
-                if (string.IsNullOrEmpty(updateItem.Template))
-                {
-                    labelTextBoxValue.Text = updateItem.Value.ToString()!;
-                }
-                else
-                {
-                    labelComboBox.SelectedKey = updateItem.Template.GetTemplateKeys()[0];
-                }
-            }
-
-            labelControls.Add(labelTextBoxValue);
-            labelControls.Add(labelComboBox);
-
-            labelTextBoxValue.TextChanged += (_, args) =>
-            {
-                if (args.NewValue is not null &&
-                    args.OldValue != args.NewValue)
-                {
-                    labelComboBox.SelectedKey = labelComboBox.Items.First().Key;
-                }
-            };
-
-            labelComboBox.SelectorChanged += (_, args) =>
-            {
-                if (args.NewValue is not null &&
-                    args.NewValue != DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString())
-                {
-                    labelTextBoxValue.Text = string.Empty;
-                }
-            };
-        }
-
-        return labelControls;
-    }
-
     private void HandleEditDialogResult(
         InputFormDialogBox dialogBox,
         KeyValueTemplateItemViewModel updateItem)
@@ -528,6 +413,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
         IsDirty = true;
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void UpdateComponentProviders(
         KeyValueTemplateItemViewModel updateItem)
     {

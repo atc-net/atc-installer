@@ -77,14 +77,9 @@ public class FolderPermissionsViewModel : ViewModelBase
 
     private void NewCommandHandler()
     {
-        var labelControls = CreateLabelControls();
-        var labelControlsForm = new LabelControlsForm();
-        labelControlsForm.AddColumn(labelControls);
+        ArgumentNullException.ThrowIfNull(refComponentProvider);
 
-        var dialogBox = new InputFormDialogBox(
-            Application.Current.MainWindow!,
-            "New folder permission",
-            labelControlsForm);
+        var dialogBox = InputFormDialogBoxFactory.CreateForNewFolderPermissions(refComponentProvider);
 
         dialogBox.ShowDialog();
 
@@ -170,119 +165,6 @@ public class FolderPermissionsViewModel : ViewModelBase
         Items.Remove(item);
 
         IsDirty = true;
-    }
-
-    private IList<ILabelControlBase> CreateLabelControls()
-    {
-        ArgumentNullException.ThrowIfNull(refComponentProvider);
-
-        var labelControls = new List<ILabelControlBase>();
-
-        var labelComboBoxUser = new LabelComboBox
-        {
-            LabelText = "User",
-            IsMandatory = true,
-            Items = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                {
-                    DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                    string.Empty
-                },
-                {
-                    "IIS_IUSRS",
-                    "IIS_IUSRS"
-                },
-            },
-        };
-
-        labelControls.Add(labelComboBoxUser);
-
-        var labelComboAccessRights = new LabelComboBox
-        {
-            LabelText = "Access Rights",
-            IsMandatory = true,
-            Items = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                {
-                    DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                    string.Empty
-                },
-                {
-                    nameof(FileSystemRights.Read),
-                    "Read"
-                },
-                {
-                    nameof(FileSystemRights.Write),
-                    "Write"
-                },
-                {
-                    nameof(FileSystemRights.ReadAndExecute),
-                    "Read and Execute"
-                },
-                {
-                    nameof(FileSystemRights.Modify),
-                    "Modify"
-                },
-            },
-        };
-
-        labelControls.Add(labelComboAccessRights);
-
-        var labelTextBoxFolder = new LabelTextBox
-        {
-            LabelText = "Folder",
-            IsMandatory = false,
-        };
-
-        labelControls.Add(labelTextBoxFolder);
-
-        var labelComboBoxFolderTemplate = new LabelComboBox
-        {
-            LabelText = "Templates",
-            IsMandatory = false,
-            Items = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                {
-                    DropDownFirstItemTypeHelper.GetEnumGuid(DropDownFirstItemType.Blank).ToString(),
-                    string.Empty
-                },
-            },
-        };
-
-        foreach (var keyValueTemplateItem in refComponentProvider.DefaultApplicationSettings.Items)
-        {
-            var value = keyValueTemplateItem.GetValueAsString();
-            if (!value.StartsWith(".\\", StringComparison.Ordinal) &&
-                !value.Contains(":\\", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            labelComboBoxFolderTemplate.Items.Add(
-                $"Default|{keyValueTemplateItem.Key}",
-                $"Default   -   [[{keyValueTemplateItem.Key}]]   -   {value}");
-        }
-
-        foreach (var keyValueTemplateItem in refComponentProvider.ApplicationSettings.Items)
-        {
-            var value = keyValueTemplateItem.GetValueAsString();
-            if (!value.StartsWith(".\\", StringComparison.Ordinal) &&
-                !value.Contains(":\\", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            labelComboBoxFolderTemplate.Items.Add(
-                $"Current|{keyValueTemplateItem.Key}",
-                $"Current   -   [[{keyValueTemplateItem.Key}]]   -   {value}");
-        }
-
-        if (labelComboBoxFolderTemplate.Items.Count > 1)
-        {
-            labelControls.Add(labelComboBoxFolderTemplate);
-        }
-
-        return labelControls;
     }
 
     private (string DataTemplate, string TemplateLocation, string DataDefaultValue) TemplateExtract(

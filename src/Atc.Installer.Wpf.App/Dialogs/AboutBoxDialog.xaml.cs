@@ -9,6 +9,8 @@ public partial class AboutBoxDialog
     {
         InitializeComponent();
 
+        IconImage.Source = App.DefaultIcon;
+
         VersionTextBlock.Text = Assembly
             .GetExecutingAssembly()
             .GetName()

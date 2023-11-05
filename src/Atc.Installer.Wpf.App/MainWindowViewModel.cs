@@ -19,7 +19,9 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private readonly ToastNotificationManager notificationManager = new();
     private string? newVersionIsAvailable;
     private DirectoryInfo? installationDirectory;
+    private BitmapImage? icon;
     private string? projectName;
+    private string? componentProviderFilter;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
 
@@ -117,10 +119,11 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         loggerComponentProvider.Log(LogLevel.Trace, $"Starting {AssemblyHelper.GetSystemName()} - Version: {AssemblyHelper.GetSystemVersion()}");
 
-        LoadRecentOpenFiles();
-
         ApplicationOptions = new ApplicationOptionsViewModel(applicationOptionsValue);
+        Icon = ApplicationOptions.Icon ?? App.DefaultIcon;
         AzureOptions = new AzureOptionsViewModel();
+
+        LoadRecentOpenFiles();
 
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
@@ -159,6 +162,16 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
     public FileInfo? InstallationFile { get; private set; }
 
+    public BitmapImage? Icon
+    {
+        get => icon;
+        set
+        {
+            icon = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public string? ProjectName
     {
         get => projectName;
@@ -180,6 +193,21 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         {
             selectedComponentProvider = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public string? ComponentProviderFilter
+    {
+        get => componentProviderFilter;
+        set
+        {
+            componentProviderFilter = value;
+            RaisePropertyChanged();
+
+            foreach (var vm in ComponentProviders)
+            {
+                vm.SetFilterTextForMenu(componentProviderFilter ?? string.Empty);
+            }
         }
     }
 
@@ -310,6 +338,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
                     {
                         if (!vm.IsBusy)
                         {
+                            vm.CheckPrerequisitesState();
                             vm.CheckServiceState();
                         }
                     }
@@ -419,6 +448,9 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     {
         InstallationFile = installationFile;
         ProjectName = installationOptions.Name;
+        Icon = string.IsNullOrEmpty(installationOptions.Icon)
+            ? ApplicationOptions.Icon ?? App.DefaultIcon
+            : Atc.Wpf.Helpers.BitmapImageHelper.ConvertFromBase64(installationOptions.Icon);
         AzureOptions = new AzureOptionsViewModel(installationOptions.Azure);
         DefaultApplicationSettings = new ObservableCollectionEx<KeyValueTemplateItemViewModel>();
         foreach (var item in installationOptions.DefaultApplicationSettings)
@@ -432,6 +464,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         ComponentProviders.Clear();
+        ComponentProviderFilter = string.Empty;
 
         ComponentProviders.SuppressOnChangedNotification = true;
         foreach (var appInstallationOption in installationOptions.Applications)

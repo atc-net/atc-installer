@@ -44,6 +44,11 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
 
+    Task<bool> DeleteApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
     Task<bool> CreateWebsite(
         string websiteName,
         string applicationPoolName,
@@ -63,6 +68,11 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         ushort? httpsPort,
         string? hostName,
         bool requireServerNameIndication,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> DeleteWebsite(
+        string websiteName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
 
@@ -97,4 +107,16 @@ public interface IInternetInformationServerInstallerService : IInstallerService
         string applicationPoolName,
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default);
+
+    IList<X509Certificate2> GetX509Certificates();
+
+    X509Certificate2? GetWebsiteX509Certificate(
+        string websiteName);
+
+    bool AssignX509CertificateToWebsite(
+        string websiteName,
+        X509Certificate2 certificate);
+
+    bool UnAssignX509CertificateOnWebsite(
+        string websiteName);
 }

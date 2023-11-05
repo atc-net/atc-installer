@@ -8,6 +8,7 @@
     xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Controls;assembly=Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
+    xmlns:localControls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{d:DesignInstance Type=local:InternetInformationServerComponentProviderViewModel}"
     d:DesignHeight="450"
@@ -35,6 +36,7 @@
                 Spacing="10">
                 <componentProvider:ComponentProviderServiceActionsView />
                 <componentProvider:ComponentProviderServiceLinksView Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}" />
+                <localControls:X509CertificateView />
             </atc:UniformSpacingPanel>
             <atc:UniformSpacingPanel
                 Grid.Row="0"

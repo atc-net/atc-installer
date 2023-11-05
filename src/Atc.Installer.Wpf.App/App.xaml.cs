@@ -9,6 +9,10 @@ public partial class App
     private readonly IHost host;
     private IConfiguration? configuration;
 
+    [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "OK.")]
+    [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "OK.")]
+    public static readonly BitmapImage DefaultIcon = new(new Uri("pack://application:,,,/Resources/AppIcon.ico", UriKind.Absolute));
+
     public static DirectoryInfo InstallerTempDirectory => new(Path.Combine(Path.GetTempPath(), "atc-installer"));
 
     public static DirectoryInfo InstallerProgramDataDirectory => new(Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "ATC"), "atc-installer"));

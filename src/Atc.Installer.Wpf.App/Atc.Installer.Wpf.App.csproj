@@ -37,21 +37,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\AppIcon.ico" />
+    <Resource Include="Resources\AppIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc.Wpf" Version="2.0.265" />
-    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.265" />
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.265" />
-    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.265" />
-    <PackageReference Include="ClosedXML" Version="0.103.0-beta" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Serilog" Version="3.1.0-dev-02072" />
+    <PackageReference Include="Atc.Wpf" Version="2.0.285" />
+    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.285" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.285" />
+    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.285" />
+    <PackageReference Include="ClosedXML" Version="0.104.0-preview2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="Serilog" Version="3.1.0-dev-02086" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00968" />

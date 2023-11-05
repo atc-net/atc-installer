@@ -38,7 +38,7 @@ public partial class MainWindowViewModel
             OpenApplicationCheckForUpdatesCommandHandler,
             CanOpenApplicationCheckForUpdatesCommandHandler);
 
-    public static IRelayCommand OpenApplicationAboutCommand
+    public IRelayCommand OpenApplicationAboutCommand
         => new RelayCommand(
             OpenApplicationAboutCommandHandler);
 
@@ -51,6 +51,11 @@ public partial class MainWindowViewModel
         => new RelayCommandAsync(
             ServiceDeployAllCommandHandler,
             CanServiceDeployAllCommandHandler);
+
+    public IRelayCommandAsync ServiceRemoveAllCommand
+        => new RelayCommandAsync(
+            ServiceRemoveAllCommandHandler,
+            CanServiceRemoveAllCommandHandler);
 
     public IRelayCommandAsync ServiceStartAllCommand
         => new RelayCommandAsync(
@@ -253,11 +258,15 @@ public partial class MainWindowViewModel
             }
             catch (Exception)
             {
-                var infoDialogBox = new InfoDialogBox(
+                var errorMessage = $"Can't override file,{Environment.NewLine}" +
+                                   $"because it is being used by{Environment.NewLine}" +
+                                   $"another process.";
+
+                var dialogBox = new InfoDialogBox(
                     Application.Current.MainWindow!,
                     "Error",
-                    $"Can't override file,{Environment.NewLine}because it is being used by{Environment.NewLine}another process.");
-                infoDialogBox.ShowDialog();
+                    errorMessage);
+                dialogBox.ShowDialog();
                 return;
             }
         }
@@ -283,11 +292,11 @@ public partial class MainWindowViewModel
         }
         catch (Exception ex)
         {
-            var infoDialogBox = new InfoDialogBox(
+            var dialogBox = new InfoDialogBox(
                 Application.Current.MainWindow!,
                 "Error",
                 ex.Message);
-            infoDialogBox.ShowDialog();
+            dialogBox.ShowDialog();
         }
         finally
         {
@@ -301,8 +310,13 @@ public partial class MainWindowViewModel
     private void OpenApplicationCheckForUpdatesCommandHandler()
         => new CheckForUpdatesBoxDialog(checkForUpdatesBoxDialogViewModel).ShowDialog();
 
-    private static void OpenApplicationAboutCommandHandler()
-        => new AboutBoxDialog().ShowDialog();
+    private void OpenApplicationAboutCommandHandler()
+    {
+        // ReSharper disable once UseObjectOrCollectionInitializer
+        var aboutBoxDialog = new AboutBoxDialog();
+        aboutBoxDialog.IconImage.Source = ApplicationOptions.Icon ?? App.DefaultIcon;
+        aboutBoxDialog.ShowDialog();
+    }
 
     private bool CanServiceStopAllCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStopCommandHandler());
@@ -332,6 +346,23 @@ public partial class MainWindowViewModel
             if (vm.CanServiceDeployCommandHandler())
             {
                 tasks.Add(vm.ServiceDeployCommand.ExecuteAsync(this));
+            }
+        }
+
+        return TaskHelper.WhenAll(tasks);
+    }
+
+    private bool CanServiceRemoveAllCommandHandler()
+        => ComponentProviders.Any(x => x.CanServiceRemoveCommandHandler());
+
+    private Task ServiceRemoveAllCommandHandler()
+    {
+        var tasks = new List<Task>();
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.CanServiceRemoveCommandHandler())
+            {
+                tasks.Add(vm.ServiceRemoveCommand.ExecuteAsync(this));
             }
         }
 

@@ -203,6 +203,73 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     public override Task ServiceDeployAndStartCommandHandler()
         => ServiceDeployAndStart(useAutoStart: true);
 
+    public override bool CanServiceRemoveCommandHandler()
+    {
+        if (InstallationFolderPath is null ||
+            InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        return RunningState switch
+        {
+            ComponentRunningState.Stopped => true,
+            _ => false,
+        };
+    }
+
+    public override async Task ServiceRemoveCommandHandler()
+    {
+        if (!CanServiceRemoveCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        AddLogItem(LogLevel.Trace, "Remove");
+
+        var isDone = false;
+
+        if (IsWindowsService)
+        {
+            if (InstallationState is
+                    ComponentInstallationState.Installed or
+                    ComponentInstallationState.InstalledWithOldVersion &&
+                InstallationFolderPath is not null)
+            {
+                isDone = await ServiceRemoveWindowService().ConfigureAwait(true);
+            }
+        }
+        else
+        {
+            if (InstallationState is
+                    ComponentInstallationState.Installed or
+                    ComponentInstallationState.InstalledWithOldVersion &&
+                InstallationFolderPath is not null)
+            {
+                isDone = await ServiceRemoveWindowApplication().ConfigureAwait(true);
+            }
+        }
+
+        if (isDone)
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Removed");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Not Removed");
+        }
+
+        IsBusy = false;
+    }
+
     public override void CheckPrerequisites()
     {
         base.CheckPrerequisites();
@@ -584,6 +651,67 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         return isDone;
     }
 
+    private static async Task<bool> SetupInstalledMainFilePathAsService(
+        FileInfo installedMainFile)
+    {
+        var (isSuccessful, output) = await ProcessHelper
+            .Execute(
+                installedMainFile.Directory!,
+                new FileInfo(installedMainFile.FullName),
+                "install",
+                runAsAdministrator: true)
+            .ConfigureAwait(true);
+
+        return isSuccessful &&
+               output is not null &&
+               output.Contains("successfully installed", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<bool> ServiceRemoveWindowService()
+    {
+        if (InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        var installedMainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
+        var (isSuccessful, output) = await ProcessHelper
+            .Execute(
+                installedMainFile.Directory!,
+                new FileInfo(installedMainFile.FullName),
+                "uninstall")
+            .ConfigureAwait(true);
+
+        if (!isSuccessful ||
+            output is null ||
+            !output.Contains("successfully removed", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        Directory.Delete(installedMainFile.DirectoryName!, recursive: true);
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
+        return true;
+    }
+
+    private Task<bool> ServiceRemoveWindowApplication()
+    {
+        if (InstalledMainFilePath is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        var installedMainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
+
+        Directory.Delete(installedMainFile.DirectoryName!, recursive: true);
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
+        return Task.FromResult(true);
+    }
+
     private async Task ServiceDeployWindowServicePostProcessing(
         bool useAutoStart)
     {
@@ -703,21 +831,5 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         isDone = true;
 
         return isDone;
-    }
-
-    private static async Task<bool> SetupInstalledMainFilePathAsService(
-        FileInfo installedMainFile)
-    {
-        var (isSuccessful, output) = await ProcessHelper
-            .Execute(
-                installedMainFile.Directory!,
-                new FileInfo(installedMainFile.FullName),
-                "install",
-                runAsAdministrator: true)
-            .ConfigureAwait(true);
-
-        return isSuccessful &&
-               output is not null &&
-               output.Contains("successfully installed", StringComparison.OrdinalIgnoreCase);
     }
 }

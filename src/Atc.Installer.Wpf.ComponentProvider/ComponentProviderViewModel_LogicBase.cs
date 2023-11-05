@@ -212,11 +212,7 @@ public partial class ComponentProviderViewModel
 
         ZipFile.ExtractToDirectory(installationFilePath, UnpackedZipFolderPath, overwriteFiles: true);
 
-        var filesToDelete = Directory.GetFiles(UnpackedZipFolderPath, "appsettings.*.json");
-        foreach (var file in filesToDelete)
-        {
-            File.Delete(file);
-        }
+        DeleteDevelopmentConfigurationFiles(new DirectoryInfo(UnpackedZipFolderPath));
     }
 
     public void AnalyzeAndUpdateStatesInBackgroundThread()
@@ -236,6 +232,8 @@ public partial class ComponentProviderViewModel
     }
 
     public virtual void CheckPrerequisites() { }
+
+    public virtual void CheckPrerequisitesState() { }
 
     public virtual void CheckServiceState() { }
 
@@ -392,7 +390,24 @@ public partial class ComponentProviderViewModel
             directoryUnpackedZip.CopyAll(directoryInstallation, useRecursive: true, deleteAllFromDestinationBeforeCopy: false);
         }
 
+        DeleteDevelopmentConfigurationFiles(directoryInstallation);
+
         AddLogItem(LogLevel.Information, "Files is copied");
+    }
+
+    private static void DeleteDevelopmentConfigurationFiles(
+        DirectoryInfo path)
+    {
+        if (path is null)
+        {
+            return;
+        }
+
+        var filesToDelete = Directory.GetFiles(path.FullName, "appsettings.*.json");
+        foreach (var file in filesToDelete)
+        {
+            File.Delete(file);
+        }
     }
 
     protected void UpdateConfigurationFiles()
@@ -881,6 +896,7 @@ public partial class ComponentProviderViewModel
         }
 
         CheckPrerequisites();
+        CheckPrerequisitesState();
         CheckServiceState();
 
         if (InstallationState == ComponentInstallationState.Checking)
@@ -902,6 +918,11 @@ public partial class ComponentProviderViewModel
         if (!File.Exists(installationMainFile))
         {
             installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.dll");
+        }
+
+        if (!File.Exists(InstalledMainFilePath.GetValueAsString()))
+        {
+            InstallationState = ComponentInstallationState.NotInstalled;
         }
 
         if (File.Exists(installationMainFile) &&
@@ -938,6 +959,11 @@ public partial class ComponentProviderViewModel
             InstallationFolderPath is null)
         {
             return;
+        }
+
+        if (!Directory.Exists(InstallationFolderPath.GetValueAsString()))
+        {
+            InstallationState = ComponentInstallationState.NotInstalled;
         }
 
         string? sourceVersion = null;

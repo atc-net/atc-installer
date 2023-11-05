@@ -5,6 +5,8 @@ namespace Atc.Installer.Wpf.ComponentProvider.InternetInformationServer;
 public class InternetInformationServerComponentProviderViewModel : ComponentProviderViewModel
 {
     private readonly IInternetInformationServerInstallerService iisInstallerService;
+    private X509Certificate2? x509Certificate;
+    private bool enableEditingMode;
 
     public InternetInformationServerComponentProviderViewModel(
         ILogger<ComponentProviderViewModel> logger,
@@ -33,6 +35,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
 
         InitializeFromApplicationOptions(applicationOption);
+
+        Messenger.Default.Register<UpdateApplicationOptionsMessage>(this, HandleUpdateApplicationOptionsMessage);
     }
 
     public bool IsRequiredWebSockets { get; private set; }
@@ -42,6 +46,41 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public ushort? HttpPort { get; private set; }
 
     public ushort? HttpsPort { get; private set; }
+
+    public X509Certificate2? X509Certificate
+    {
+        get => x509Certificate;
+        private set
+        {
+            x509Certificate = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public bool EnableEditingMode
+    {
+        get => enableEditingMode;
+        set
+        {
+            if (enableEditingMode == value)
+            {
+                return;
+            }
+
+            enableEditingMode = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public IRelayCommand EditX509CertificateCommand
+        => new RelayCommand(
+            EditX509CertificateCommandHandler,
+            CanEditX509CertificateCommandHandler);
+
+    public IRelayCommandAsync NewX509CertificateCommand
+        => new RelayCommandAsync(
+            NewX509CertificateCommandHandler,
+            CanNewX509CertificateCommandHandler);
 
     public override void CheckPrerequisites()
     {
@@ -71,6 +110,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         InstallationPrerequisites.SuppressOnChangedNotification = false;
         RaisePropertyChanged(nameof(InstallationPrerequisites));
+    }
+
+    public override void CheckPrerequisitesState()
+    {
+        base.CheckPrerequisitesState();
+
+        X509Certificate = iisInstallerService.GetWebsiteX509Certificate(Name);
     }
 
     [SuppressMessage("Unknown", "S3440:RemoveThisUselessCondition", Justification = "OK.")]
@@ -305,6 +351,60 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override Task ServiceDeployAndStartCommandHandler()
         => ServiceDeployAndStart(useAutoStart: true);
+
+    public override bool CanServiceRemoveCommandHandler()
+    {
+        if (InstallationFolderPath is null ||
+            InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        return RunningState switch
+        {
+            ComponentRunningState.Stopped => true,
+            _ => false,
+        };
+    }
+
+    public override async Task ServiceRemoveCommandHandler()
+    {
+        if (!CanServiceRemoveCommandHandler())
+        {
+            return;
+        }
+
+        IsBusy = true;
+
+        AddLogItem(LogLevel.Trace, "Remove");
+
+        var isDone = false;
+
+        if (InstallationState is
+                ComponentInstallationState.Installed or
+                ComponentInstallationState.InstalledWithOldVersion &&
+            InstallationFolderPath is not null)
+        {
+            isDone = await ServiceRemoveWebsite().ConfigureAwait(true);
+        }
+
+        if (isDone)
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Removed");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Not Removed");
+        }
+
+        IsBusy = false;
+    }
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void InitializeFromApplicationOptions(
@@ -722,6 +822,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
             await ServiceDeployWebsitePostProcessing(useAutoStart).ConfigureAwait(true);
 
+            await HandleCertificateIfNeeded().ConfigureAwait(true);
+
             isDone = true;
         }
         else
@@ -743,9 +845,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return isDone;
         }
 
+        AddLogItem(LogLevel.Trace, "Update Website");
+
         BackupConfigurationFilesAndLog();
 
         await ServiceDeployWebsitePostProcessing(useAutoStart).ConfigureAwait(true);
+
+        AddLogItem(LogLevel.Information, "Website is updated");
 
         isDone = true;
 
@@ -811,10 +917,64 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         WorkOnAnalyzeAndUpdateStatesForVersion();
     }
 
+    private async Task<bool> ServiceRemoveWebsite()
+    {
+        var isDone = false;
+
+        if (InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        AddLogItem(LogLevel.Trace, "Remove Website");
+
+        var stop1 = true;
+        var stop2 = true;
+        var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
+        if (applicationPoolState == ComponentRunningState.Running)
+        {
+            stop1 = await iisInstallerService
+                .StopApplicationPool(Name)
+                .ConfigureAwait(true);
+        }
+
+        var websitePoolState = iisInstallerService.GetWebsiteState(Name);
+        if (websitePoolState == ComponentRunningState.Running)
+        {
+            stop2 = await iisInstallerService
+                .StopWebsite(Name)
+                .ConfigureAwait(true);
+        }
+
+        if (stop1 && stop2)
+        {
+            var isWebsiteDeleted = await iisInstallerService
+                .DeleteWebsite(Name)
+                .ConfigureAwait(true);
+
+            var isApplicationPoolDeleted = await iisInstallerService
+                .DeleteApplicationPool(Name)
+                .ConfigureAwait(true);
+
+            isDone = isWebsiteDeleted && isApplicationPoolDeleted;
+        }
+        else
+        {
+            AddLogItem(LogLevel.Error, "Website is not removed");
+        }
+
+        var installedMainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
+        Directory.Delete(installedMainFile.DirectoryName!, recursive: true);
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
+        return isDone;
+    }
+
     private async Task ServiceDeployWebsiteStart()
     {
         await Task
-            .Delay(100)
+            .Delay(TimeSpan.FromSeconds(1))
             .ConfigureAwait(false);
 
         RunningState = iisInstallerService.GetWebsiteState(Name);
@@ -822,7 +982,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         if (RunningState == ComponentRunningState.Stopped)
         {
             var isWebsiteStarted = await iisInstallerService
-                .StartWebsite(Name)
+                .StartWebsiteAndApplicationPool(Name, Name)
                 .ConfigureAwait(true);
 
             if (!isWebsiteStarted)
@@ -831,6 +991,155 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             }
 
             RunningState = iisInstallerService.GetWebsiteState(Name);
+        }
+    }
+
+    private void HandleUpdateApplicationOptionsMessage(
+        UpdateApplicationOptionsMessage obj)
+        => EnableEditingMode = obj.EnableEditingMode;
+
+    private async Task HandleCertificateIfNeeded()
+    {
+        if (!string.IsNullOrEmpty(HostName) &&
+            HttpsPort is not null)
+        {
+            var certificate = iisInstallerService.GetX509Certificates()
+                .FirstOrDefault(x => x.GetNameIdentifier() == ProjectName);
+            if (certificate is null)
+            {
+                await CreateSelfSignedCertificateAndAssign(
+                        subjectName: ProjectName,
+                        friendlyName: ProjectName,
+                        dnsName: HostName,
+                        password: ProjectName,
+                        yearsUntilExpiry: 10)
+                    .ConfigureAwait(true);
+            }
+            else
+            {
+                iisInstallerService.AssignX509CertificateToWebsite(Name, certificate);
+                X509Certificate = certificate;
+            }
+        }
+    }
+
+    private bool CanEditX509CertificateCommandHandler()
+        => InstallationState is
+            ComponentInstallationState.Installed or
+            ComponentInstallationState.InstalledWithOldVersion;
+
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+    private void EditX509CertificateCommandHandler()
+    {
+        var iisCertificates = iisInstallerService.GetX509Certificates();
+
+        var dialogBox = InputFormDialogBoxFactory.CreateForEditX509Certificate(
+            iisCertificates,
+            X509Certificate);
+
+        dialogBox.ShowDialog();
+
+        if (!dialogBox.DialogResult.HasValue ||
+            !dialogBox.DialogResult.Value)
+        {
+            return;
+        }
+
+        var data = dialogBox.Data.GetKeyValues();
+
+        var thumbprint = data["Certificate"].ToString();
+
+        if (X509Certificate?.Thumbprint != thumbprint)
+        {
+            if ("#Remove#".Equals(thumbprint, StringComparison.Ordinal))
+            {
+                iisInstallerService.UnAssignX509CertificateOnWebsite(Name);
+                X509Certificate = null;
+            }
+            else
+            {
+                var certificate = iisCertificates.First(x => x.Thumbprint == thumbprint);
+                iisInstallerService.AssignX509CertificateToWebsite(Name, certificate);
+                X509Certificate = certificate;
+            }
+        }
+    }
+
+    private bool CanNewX509CertificateCommandHandler()
+        => InstallationState is
+            ComponentInstallationState.Installed or
+            ComponentInstallationState.InstalledWithOldVersion;
+
+    private async Task NewX509CertificateCommandHandler()
+    {
+        var dialogBox = InputFormDialogBoxFactory.CreateForNewX509Certificate();
+
+        dialogBox.ShowDialog();
+
+        if (!dialogBox.DialogResult.HasValue ||
+            !dialogBox.DialogResult.Value)
+        {
+            return;
+        }
+
+        var data = dialogBox.Data.GetKeyValues();
+
+        var friendlyName = data["Friendly"].ToString()!;
+        var subjectName = data["Subject"].ToString()!;
+        var dnsName = data["Dns"].ToString()!;
+        var password = data["Password"].ToString()!;
+        var yearsUntilExpiry = NumberHelper.ParseToInt(data["Years"].ToString()!);
+
+        var certificates = iisInstallerService.GetX509Certificates();
+
+        if (certificates.FirstOrDefault(x => x.GetNameIdentifier().Equals(friendlyName, StringComparison.OrdinalIgnoreCase)) is null &&
+            certificates.FirstOrDefault(x => x.GetNameIdentifier().Equals(subjectName, StringComparison.OrdinalIgnoreCase)) is null)
+        {
+            await CreateSelfSignedCertificateAndAssign(
+                    subjectName,
+                    friendlyName,
+                    dnsName,
+                    password,
+                    yearsUntilExpiry)
+                .ConfigureAwait(true);
+        }
+    }
+
+    private async Task CreateSelfSignedCertificateAndAssign(
+        string subjectName,
+        string friendlyName,
+        string dnsName,
+        string password,
+        int yearsUntilExpiry)
+    {
+        X509Certificate = await CertificateStoreHelper
+            .CreateSelfSignedCertificateAndAddToStore(
+                subjectName,
+                friendlyName,
+                dnsName,
+                password,
+                yearsUntilExpiry)
+            .ConfigureAwait(false);
+
+        var openInternetBrowsers = InternetBrowserHelper.GetRunningInternetBrowsers();
+        if (openInternetBrowsers.Any())
+        {
+            var message = $"We have to close internet browsers,{Environment.NewLine}" +
+                          $"because internet browsers have to 'reload'{Environment.NewLine}" +
+                          $"the new certificate.";
+
+            var dialogBoxKill = new InfoDialogBox(
+                Application.Current.MainWindow!,
+                new DialogBoxSettings(DialogBoxType.Ok)
+                {
+                    TitleBarText = "Information",
+                    Width = 380,
+                    Height = 220,
+                },
+                message);
+            dialogBoxKill.ShowDialog();
+
+            InternetBrowserHelper.CloseMainWindowOnAllRunningInternetBrowsers();
         }
     }
 }

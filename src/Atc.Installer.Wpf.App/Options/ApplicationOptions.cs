@@ -8,6 +8,8 @@ public sealed class ApplicationOptions
 
     public string Theme { get; set; } = string.Empty;
 
+    public string Icon { get; set; } = string.Empty;
+
     public bool OpenRecentConfigurationFileOnStartup { get; set; } = true;
 
     public bool EnableEditingMode { get; set; }

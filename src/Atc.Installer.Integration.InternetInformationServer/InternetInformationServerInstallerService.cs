@@ -1,4 +1,5 @@
 // ReSharper disable StringLiteralTypo
+// ReSharper disable LoopCanBeConvertedToQuery
 namespace Atc.Installer.Integration.InternetInformationServer;
 
 /// <summary>
@@ -168,7 +169,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     }
 
     public string? ResolvedVirtualRootFolder(
-        string folder)
+        string? folder)
         => folder is not null &&
            folder.StartsWith(@".\", StringComparison.Ordinal) &&
            IsInstalled &&
@@ -184,7 +185,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                 arguments: "unlock config -section:\"system.webServer/modules\"")
             .ConfigureAwait(false);
 
-        if (isSuccessful && output is not null)
+        if (isSuccessful && !string.IsNullOrEmpty(output))
         {
             return (IsSucceeded: false, ErrorMessage: null);
         }
@@ -222,7 +223,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public ComponentRunningState GetApplicationPoolState(
         string applicationPoolName)
     {
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
 
         try
         {
@@ -252,7 +253,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public ComponentRunningState GetWebsiteState(
         string websiteName)
     {
-        ArgumentNullException.ThrowIfNull(websiteName);
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
 
         try
         {
@@ -285,7 +286,7 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
 
         var applicationPoolState = GetApplicationPoolState(applicationPoolName);
         if (applicationPoolState != ComponentRunningState.NotAvailable)
@@ -302,6 +303,38 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
                 : "Classic";
             applicationPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
             applicationPool.StartMode = StartMode.AlwaysRunning;
+            serverManager.CommitChanges();
+            return Task.FromResult(true);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    public Task<bool> DeleteApplicationPool(
+        string applicationPoolName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
+
+        var applicationPoolState = GetApplicationPoolState(applicationPoolName);
+        if (applicationPoolState == ComponentRunningState.NotAvailable)
+        {
+            return Task.FromResult(false);
+        }
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var applicationPool = serverManager.ApplicationPools[applicationPoolName];
+            if (applicationPool is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            applicationPool.Delete();
             serverManager.CommitChanges();
             return Task.FromResult(true);
         }
@@ -345,8 +378,8 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         ushort timeoutInSeconds = 60,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(websiteName);
-        ArgumentNullException.ThrowIfNull(applicationPoolName);
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+        ArgumentException.ThrowIfNullOrEmpty(applicationPoolName);
         ArgumentNullException.ThrowIfNull(physicalPath);
 
         var websiteState = GetWebsiteState(websiteName);
@@ -413,6 +446,38 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         catch
         {
             return false;
+        }
+    }
+
+    public Task<bool> DeleteWebsite(
+        string websiteName,
+        ushort timeoutInSeconds = 60,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+
+        var websiteState = GetWebsiteState(websiteName);
+        if (websiteState == ComponentRunningState.NotAvailable)
+        {
+            return Task.FromResult(false);
+        }
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            site.Delete();
+            serverManager.CommitChanges();
+            return Task.FromResult(true);
+        }
+        catch
+        {
+            return Task.FromResult(false);
         }
     }
 
@@ -603,6 +668,118 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
         CancellationToken cancellationToken = default)
         => await StartApplicationPool(applicationPoolName, timeoutInSeconds, cancellationToken).ConfigureAwait(false) &&
            await StartWebsite(websiteName, timeoutInSeconds, cancellationToken).ConfigureAwait(false);
+
+    public IList<X509Certificate2> GetX509Certificates()
+        => CryptographyHelper.GetX509Certificates();
+
+    public X509Certificate2? GetWebsiteX509Certificate(
+        string websiteName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return null;
+            }
+
+            foreach (var siteBinding in site.Bindings)
+            {
+                if (siteBinding.SslFlags == SslFlags.None ||
+                    !"https".Equals(siteBinding.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                return CryptographyHelper.FindX509Certificate(
+                    siteBinding.CertificateHash.ToHex(),
+                    Enum<StoreName>.Parse(siteBinding.CertificateStoreName));
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public bool AssignX509CertificateToWebsite(
+        string websiteName,
+        X509Certificate2 certificate)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+        ArgumentNullException.ThrowIfNull(certificate);
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return false;
+            }
+
+            foreach (var siteBinding in site.Bindings)
+            {
+                if (!"https".Equals(siteBinding.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                siteBinding.CertificateHash = certificate.GetCertHash();
+                siteBinding.CertificateStoreName = nameof(StoreName.My);
+                siteBinding.SslFlags = SslFlags.Sni;
+                serverManager.CommitChanges();
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool UnAssignX509CertificateOnWebsite(
+        string websiteName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(websiteName);
+
+        try
+        {
+            using var serverManager = new ServerManager();
+            var site = serverManager.Sites[websiteName];
+            if (site is null)
+            {
+                return false;
+            }
+
+            foreach (var siteBinding in site.Bindings)
+            {
+                if (!"https".Equals(siteBinding.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                siteBinding.CertificateHash = null;
+                siteBinding.CertificateStoreName = null;
+                siteBinding.SslFlags = SslFlags.None;
+                serverManager.CommitChanges();
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     private string? GetResourceDefaultNodeJsUrlWebConfig()
         => GetResourceTextFile("default-nodejs-urlrewrite-webconfig");
