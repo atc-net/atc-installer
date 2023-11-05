@@ -26,6 +26,7 @@
         Header="X509 Certificate">
         <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
             <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
+
                 <atc:LabelTextInfo
                     HideAreas="InformationAndValidation"
                     LabelText="Name"
