@@ -1012,7 +1012,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                         friendlyName: ProjectName,
                         dnsName: HostName,
                         password: ProjectName,
-                        yearsUntilExpiry: 10)
+                        yearsUntilExpiry: 100)
                     .ConfigureAwait(true);
             }
             else
