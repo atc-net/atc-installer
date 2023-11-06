@@ -197,22 +197,25 @@ public partial class ComponentProviderViewModel
 
         UnpackedZipFolderPath = Path.Combine(InstallerTempDirectory.FullName, @$"{ProjectName}\Unpacked\{Name}");
 
-        if (!unpackIfExist &&
-            Directory.Exists(UnpackedZipFolderPath))
-        {
-            return;
-        }
-
-        if (Directory.Exists(UnpackedZipFolderPath))
+        if (Directory.Exists(UnpackedZipFolderPath) &&
+            Directory.GetFiles(UnpackedZipFolderPath).Length == 0)
         {
             Directory.Delete(UnpackedZipFolderPath, recursive: true);
         }
 
-        Directory.CreateDirectory(UnpackedZipFolderPath);
+        if (unpackIfExist)
+        {
+            if (Directory.Exists(UnpackedZipFolderPath))
+            {
+                Directory.Delete(UnpackedZipFolderPath, recursive: true);
+            }
 
-        ZipFile.ExtractToDirectory(installationFilePath, UnpackedZipFolderPath, overwriteFiles: true);
+            Directory.CreateDirectory(UnpackedZipFolderPath);
 
-        DeleteDevelopmentConfigurationFiles(new DirectoryInfo(UnpackedZipFolderPath));
+            ZipFile.ExtractToDirectory(installationFilePath, UnpackedZipFolderPath, overwriteFiles: true);
+
+            DeleteDevelopmentConfigurationFiles(new DirectoryInfo(UnpackedZipFolderPath));
+        }
     }
 
     public void AnalyzeAndUpdateStatesInBackgroundThread()
