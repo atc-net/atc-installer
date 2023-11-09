@@ -188,6 +188,7 @@ public partial class MainWindowViewModel
                 GetComponentsWithInstallationFileContentHash())
             .ConfigureAwait(true);
 
+        var handledUnpackedZipFolderPaths = new List<string>();
         foreach (var vm in ComponentProviders)
         {
             var fileInfo = componentFiles.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
@@ -200,6 +201,23 @@ public partial class MainWindowViewModel
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
 
             loggerComponentProvider.Log(LogLevel.Information, $"Downloaded installation file: {fileInfo.Name}");
+            if (vm.UnpackedZipFolderPath is not null)
+            {
+                handledUnpackedZipFolderPaths.Add(vm.UnpackedZipFolderPath);
+            }
+        }
+
+        foreach (var vm in ComponentProviders)
+        {
+            if (vm.UnpackedZipFolderPath is null ||
+                handledUnpackedZipFolderPaths.Contains(vm.UnpackedZipFolderPath, StringComparer.Ordinal) ||
+                DirectoryHelper.ExistsAndContainsFiles(vm.UnpackedZipFolderPath))
+            {
+                continue;
+            }
+
+            vm.PrepareInstallationFiles(unpackIfExist: true);
+            vm.AnalyzeAndUpdateStatesInBackgroundThread();
         }
 
         loggerComponentProvider.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");

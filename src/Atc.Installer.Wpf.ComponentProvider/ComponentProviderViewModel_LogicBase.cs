@@ -206,7 +206,9 @@ public partial class ComponentProviderViewModel
             Directory.Delete(UnpackedZipFolderPath, recursive: true);
         }
 
-        if (unpackIfExist)
+        if (unpackIfExist ||
+            !Directory.Exists(UnpackedZipFolderPath) ||
+            DirectoryHelper.ExistsAndContainsNoFiles(UnpackedZipFolderPath))
         {
             if (Directory.Exists(UnpackedZipFolderPath))
             {

@@ -16,6 +16,7 @@ global using Atc.Helpers;
 global using Atc.Installer.Integration;
 global using Atc.Installer.Integration.Azure;
 global using Atc.Installer.Integration.ElasticSearch;
+global using Atc.Installer.Integration.Helpers;
 global using Atc.Installer.Integration.InstallationConfigurations;
 global using Atc.Installer.Integration.InternetInformationServer;
 global using Atc.Installer.Integration.PostgreSql;
