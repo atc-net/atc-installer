@@ -71,6 +71,6 @@ jobs:
           $vsWhereExePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $vsInstallationPath = & $vsWhereExePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
           $vstestPath = Join-Path $vsInstallationPath "Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe"
-          $testAssemblies = (Get-ChildItem -Recurse -Filter *.UnitTest.dll).FullName
+          $testAssemblies = (Get-ChildItem -Recurse -Filter *.Test.dll).FullName
           & $vstestPath $testAssemblies
         shell: pwsh
