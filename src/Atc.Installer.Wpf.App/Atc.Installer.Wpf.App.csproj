@@ -43,10 +43,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc.Wpf" Version="2.0.285" />
-    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.285" />
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.285" />
-    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.285" />
+    <PackageReference Include="Atc.Wpf" Version="2.0.290" />
+    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.290" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.290" />
+    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.290" />
     <PackageReference Include="ClosedXML" Version="0.104.0-preview2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.2.23479.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.2.23479.6" />

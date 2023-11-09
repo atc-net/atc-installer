@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atc="https://github.com/atc-net/atc-wpf/tree/main/schemas"
+    xmlns:atcValueConverters="https://github.com/atc-net/atc-wpf/tree/main/schemas/value-converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Atc.Installer.Wpf.ComponentProvider.InternetInformationServer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,25 +16,36 @@
     <UserControl.Resources>
         <valueConverters:X509CertificateNameValueConverter x:Key="X509CertificateNameValueConverter" />
         <valueConverters:X509CertificateDnsNameValueConverter x:Key="X509CertificateDnsNameValueConverter" />
-        <valueConverters:X509CertificateValidationBrushValueConverter x:Key="X509CertificateValidationBrushValueConverter" />
+        <valueConverters:X509CertificateValidationInvalidToVisibilityVisibleValueConverter x:Key="X509CertificateValidationInvalidToVisibilityVisibleValueConverter" />
+        <atcValueConverters:ObjectNullToVisibilityCollapsedValueConverter x:Key="ObjectNullToVisibilityCollapsedValueConverter" />
     </UserControl.Resources>
 
     <GroupBox
         Padding="5"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Background="{Binding Path=X509Certificate, Converter={StaticResource X509CertificateValidationBrushValueConverter}}"
         Header="X509 Certificate">
-        <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
-            <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
+        <StackPanel Orientation="Vertical">
 
-                <atc:LabelTextInfo
-                    HideAreas="InformationAndValidation"
-                    LabelText="Name"
-                    Orientation="Vertical"
-                    Text="{Binding Path=X509Certificate, Converter={StaticResource X509CertificateNameValueConverter}}">
-                    <atc:LabelTextInfo.ToolTip>
-                        <Grid Background="{Binding Path=X509Certificate, Converter={StaticResource X509CertificateValidationBrushValueConverter}}">
+            <atc:UniformSpacingPanel
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="10"
+                Visibility="{Binding Path=X509Certificate, Converter={StaticResource ObjectNullToVisibilityCollapsedValueConverter}}">
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    Foreground="Red"
+                    Text="Invalid certificate"
+                    Visibility="{Binding Path=X509Certificate, Converter={StaticResource X509CertificateValidationInvalidToVisibilityVisibleValueConverter}}" />
+                <atc:SvgImage
+                    Width="20"
+                    Height="20"
+                    ControlSizeType="ContentToSizeNoStretch"
+                    OverrideColor="DodgerBlue"
+                    Source="/Atc.Installer.Wpf.ComponentProvider;component/Resources/info_help.svg">
+                    <atc:SvgImage.ToolTip>
+                        <Grid>
                             <atc:UniformSpacingPanel
                                 Margin="10"
                                 Orientation="Vertical"
@@ -76,8 +88,17 @@
                                     Text="{Binding Path=X509Certificate.Thumbprint, FallbackValue='N/A'}" />
                             </atc:UniformSpacingPanel>
                         </Grid>
-                    </atc:LabelTextInfo.ToolTip>
-                </atc:LabelTextInfo>
+                    </atc:SvgImage.ToolTip>
+                </atc:SvgImage>
+            </atc:UniformSpacingPanel>
+
+            <atc:UniformSpacingPanel Orientation="Vertical" Spacing="10">
+
+                <atc:LabelTextInfo
+                    HideAreas="InformationAndValidation"
+                    LabelText="Name"
+                    Orientation="Vertical"
+                    Text="{Binding Path=X509Certificate, Converter={StaticResource X509CertificateNameValueConverter}}" />
 
                 <Grid>
                     <atc:UniformSpacingPanel
@@ -85,7 +106,7 @@
                         IsEnabled="{Binding Path=EnableEditingMode}"
                         Spacing="10">
                         <Button
-                            Width="80"
+                            Width="70"
                             Background="Transparent"
                             BorderBrush="Transparent"
                             BorderThickness="0"
@@ -103,7 +124,7 @@
                             </StackPanel>
                         </Button>
                         <Button
-                            Width="80"
+                            Width="70"
                             Background="Transparent"
                             BorderBrush="Transparent"
                             BorderThickness="0"
@@ -124,6 +145,7 @@
                 </Grid>
 
             </atc:UniformSpacingPanel>
-        </atc:UniformSpacingPanel>
+
+        </StackPanel>
     </GroupBox>
 </UserControl>

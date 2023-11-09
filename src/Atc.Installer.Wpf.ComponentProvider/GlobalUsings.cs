@@ -16,6 +16,7 @@ global using Atc.Data;
 global using Atc.Data.Models;
 global using Atc.Helpers;
 global using Atc.Installer.Integration;
+global using Atc.Installer.Integration.Helpers;
 global using Atc.Installer.Integration.InstallationConfigurations;
 global using Atc.Installer.Wpf.ComponentProvider.Controls;
 global using Atc.Installer.Wpf.ComponentProvider.Factories;

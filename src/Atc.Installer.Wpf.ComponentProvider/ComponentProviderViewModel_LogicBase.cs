@@ -147,7 +147,10 @@ public partial class ComponentProviderViewModel
             case HostingFrameworkType.DotNet7:
             case HostingFrameworkType.DotNet8:
             {
-                var appSettingsFile = new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json"));
+                var appSettingsFile = IsDotNetBlazorWebAssembly()
+                    ? new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "wwwroot", "appsettings.json"))
+                    : new FileInfo(Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json"));
+
                 if (appSettingsFile.Exists)
                 {
                     var dynamicJson = new DynamicJson(appSettingsFile);
@@ -203,7 +206,9 @@ public partial class ComponentProviderViewModel
             Directory.Delete(UnpackedZipFolderPath, recursive: true);
         }
 
-        if (unpackIfExist)
+        if (unpackIfExist ||
+            !Directory.Exists(UnpackedZipFolderPath) ||
+            DirectoryHelper.ExistsAndContainsNoFiles(UnpackedZipFolderPath))
         {
             if (Directory.Exists(UnpackedZipFolderPath))
             {
@@ -330,7 +335,13 @@ public partial class ComponentProviderViewModel
             AddLogItem(LogLevel.Trace, $"Backup file: {destinationAppSettingsFile}");
         }
 
-        sourceAppSettingsFile = Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json");
+        sourceAppSettingsFile = IsDotNetBlazorWebAssembly()
+            ? Path.Combine(
+                InstallationFolderPath.GetValueAsString(),
+                "wwwroot",
+                "appsettings.json")
+            : Path.Combine(InstallationFolderPath.GetValueAsString(), "appsettings.json");
+
         if (File.Exists(sourceAppSettingsFile))
         {
             var destinationAppSettingsFile = Path.Combine(backupFolder, $"appsettings_{timestamp}.json");
@@ -811,6 +822,28 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    private void ResolveDirectoriesForFolderPermissions()
+    {
+        foreach (var vm in FolderPermissions.Items)
+        {
+            if (vm.Directory is null)
+            {
+                continue;
+            }
+
+            var folder = vm.Folder;
+
+            if (folder.StartsWith(@".\", StringComparison.Ordinal))
+            {
+                folder = ResolvedVirtualRootFolder(folder);
+            }
+
+            folder = ResolveTemplateIfNeededByApplicationSettingsLookup(folder);
+
+            vm.Directory = new DirectoryInfo(folder);
+        }
+    }
+
     private string GetInstallationFolderPathAsTemplateValue()
     {
         if (InstallationFolderPath is null)
@@ -842,26 +875,67 @@ public partial class ComponentProviderViewModel
         return instFolderPath;
     }
 
-    private void ResolveDirectoriesForFolderPermissions()
+    private bool IsDotNetBlazorWebAssembly()
     {
-        foreach (var vm in FolderPermissions.Items)
+        if (UnpackedZipFolderPath is null &&
+            InstalledMainFilePath is null)
         {
-            if (vm.Directory is null)
-            {
-                continue;
-            }
-
-            var folder = vm.Folder;
-
-            if (folder.StartsWith(@".\", StringComparison.Ordinal))
-            {
-                folder = ResolvedVirtualRootFolder(folder);
-            }
-
-            folder = ResolveTemplateIfNeededByApplicationSettingsLookup(folder);
-
-            vm.Directory = new DirectoryInfo(folder);
+            return false;
         }
+
+        if (UnpackedZipFolderPath is not null)
+        {
+            var path = Path.Combine(UnpackedZipFolderPath, "wwwroot", "_framework");
+            return Directory.Exists(path);
+        }
+
+        if (InstalledMainFilePath is not null)
+        {
+            var tmpInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
+            if (tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
+            {
+                return Directory.Exists(tmpInstalledMainFilePath);
+            }
+
+            var path = Path.Combine(
+                tmpInstalledMainFilePath,
+                "wwwroot",
+                "_framework");
+
+            return Directory.Exists(path);
+        }
+
+        return false;
+    }
+
+    private string AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath()
+    {
+        if (UnpackedZipFolderPath is null ||
+            InstalledMainFilePath is null)
+        {
+            return string.Empty;
+        }
+
+        if (IsDotNetBlazorWebAssembly())
+        {
+            var tmpInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
+            if (!tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
+            {
+                var fileInfo = new FileInfo(tmpInstalledMainFilePath);
+                InstalledMainFilePath.Value = Path.Combine(
+                    fileInfo.Directory!.FullName,
+                    "wwwroot",
+                    "_framework",
+                    fileInfo.Name);
+
+                return Path.Combine(
+                    UnpackedZipFolderPath,
+                    "wwwroot",
+                    "_framework");
+            }
+        }
+
+        return UnpackedZipFolderPath;
     }
 
     private void WorkOnAnalyzeAndUpdateStates()
@@ -885,6 +959,7 @@ public partial class ComponentProviderViewModel
         if (InstallationFolderPath is not null &&
             InstalledMainFilePath is not null)
         {
+            _ = AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath();
             if (File.Exists(InstalledMainFilePath.GetValueAsString()))
             {
                 InstallationState = ComponentInstallationState.Installed;
@@ -917,10 +992,12 @@ public partial class ComponentProviderViewModel
             return;
         }
 
-        var installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.exe");
+        var installationMainPath = AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath();
+
+        var installationMainFile = Path.Combine(installationMainPath, $"{Name}.exe");
         if (!File.Exists(installationMainFile))
         {
-            installationMainFile = Path.Combine(UnpackedZipFolderPath, $"{Name}.dll");
+            installationMainFile = Path.Combine(installationMainPath, $"{Name}.dll");
         }
 
         if (!File.Exists(InstalledMainFilePath.GetValueAsString()))
@@ -956,6 +1033,8 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+    [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
     private void WorkOnAnalyzeAndUpdateStatesForNodeJsVersion()
     {
         if (UnpackedZipFolderPath is null ||
@@ -1004,15 +1083,25 @@ public partial class ComponentProviderViewModel
             }
             else
             {
-                var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
+                try
+                {
+                    var isNewerThan = new Version(sourceVersion).IsNewerThan(new Version(destinationVersion));
+                    InstallationState = isNewerThan
+                        ? ComponentInstallationState.InstalledWithOldVersion
+                        : ComponentInstallationState.Installed;
+                }
+                catch
+                {
+                    var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
                     {
                         sourceVersion,
                         destinationVersion,
                     };
 
-                InstallationState = destinationVersion == sortedSet.First()
-                    ? ComponentInstallationState.InstalledWithOldVersion
-                    : ComponentInstallationState.Installed;
+                    InstallationState = destinationVersion == sortedSet.First()
+                        ? ComponentInstallationState.InstalledWithOldVersion
+                        : ComponentInstallationState.Installed;
+                }
             }
         }
     }

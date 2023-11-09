@@ -6,6 +6,36 @@ namespace System.IO;
 
 public static class DirectoryInfoExtensions
 {
+    public static bool ExistsAndContainsFiles(
+        this DirectoryInfo directoryInfo,
+        string searchPattern = "*",
+        bool useRecursive = true)
+    {
+        ArgumentNullException.ThrowIfNull(directoryInfo);
+
+        var searchOption = useRecursive
+            ? SearchOption.AllDirectories
+            : SearchOption.TopDirectoryOnly;
+
+        return Directory.Exists(directoryInfo.FullName) &&
+               Directory.GetFiles(directoryInfo.FullName, searchPattern, searchOption).Length > 0;
+    }
+
+    public static bool ExistsAndContainsNoFiles(
+        this DirectoryInfo directoryInfo,
+        string searchPattern = "*",
+        bool useRecursive = true)
+    {
+        ArgumentNullException.ThrowIfNull(directoryInfo);
+
+        var searchOption = useRecursive
+            ? SearchOption.AllDirectories
+            : SearchOption.TopDirectoryOnly;
+
+        return Directory.Exists(directoryInfo.FullName) &&
+               Directory.GetFiles(directoryInfo.FullName, searchPattern, searchOption).Length == 0;
+    }
+
     public static void CopyAll(
         this DirectoryInfo source,
         DirectoryInfo destination,
@@ -14,6 +44,11 @@ public static class DirectoryInfoExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(destination);
+
+        if (!Directory.Exists(source.FullName))
+        {
+            return;
+        }
 
         if (Directory.Exists(destination.FullName))
         {
