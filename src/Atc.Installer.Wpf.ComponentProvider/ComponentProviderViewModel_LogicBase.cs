@@ -1031,6 +1031,8 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
+    [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
     private void WorkOnAnalyzeAndUpdateStatesForNodeJsVersion()
     {
         if (UnpackedZipFolderPath is null ||
@@ -1079,15 +1081,25 @@ public partial class ComponentProviderViewModel
             }
             else
             {
-                var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
+                try
+                {
+                    var isNewerThan = new Version(sourceVersion).IsNewerThan(new Version(destinationVersion));
+                    InstallationState = isNewerThan
+                        ? ComponentInstallationState.InstalledWithOldVersion
+                        : ComponentInstallationState.Installed;
+                }
+                catch
+                {
+                    var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
                     {
                         sourceVersion,
                         destinationVersion,
                     };
 
-                InstallationState = destinationVersion == sortedSet.First()
-                    ? ComponentInstallationState.InstalledWithOldVersion
-                    : ComponentInstallationState.Installed;
+                    InstallationState = destinationVersion == sortedSet.First()
+                        ? ComponentInstallationState.InstalledWithOldVersion
+                        : ComponentInstallationState.Installed;
+                }
             }
         }
     }
