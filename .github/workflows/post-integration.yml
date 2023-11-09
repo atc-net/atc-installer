@@ -48,11 +48,22 @@ jobs:
       - name: 🔁 Restore packages
         run: dotnet restore Atc.Installer-WithoutSetup.sln
 
-      # - name: 🛠️ Build
-        # run: dotnet build Atc.Installer-WithoutSetup.sln -c Release --no-restore /p:UseSourceLink=true
+      - name: 🛠️ Building library in release mode with MSBuild
+        run: |
+          $vsWhereExePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallationPath = & $vsWhereExePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+          $msBuildExePath = Join-Path $vsInstallationPath "MSBuild\Current\Bin\MSBuild.exe"
+          & $msBuildExePath Atc.Installer-WithoutSetup.sln -p:Configuration=Release -p:Platform="Any CPU" -m
+        shell: pwsh
 
-      # - name: 🧪 Run unit tests
-        # run: dotnet test Atc.Installer-WithoutSetup.sln -c Release --no-build --filter "Category!=Integration"
+      - name: 🧪 Run unit tests with MSBuild
+        run: |
+          $vsWhereExePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallationPath = & $vsWhereExePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+          $vstestPath = Join-Path $vsInstallationPath "Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe"
+          $testAssemblies = (Get-ChildItem -Recurse -Filter *.UnitTest.dll).FullName
+          & $vstestPath $testAssemblies
+        shell: pwsh
 
       # - name: 🌩️ SonarCloud install scanner
         # run: dotnet tool install --global dotnet-sonarscanner
