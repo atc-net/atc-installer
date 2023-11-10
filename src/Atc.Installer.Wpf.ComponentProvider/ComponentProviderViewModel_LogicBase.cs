@@ -1000,13 +1000,14 @@ public partial class ComponentProviderViewModel
             installationMainFile = Path.Combine(installationMainPath, $"{Name}.dll");
         }
 
-        if (!File.Exists(InstalledMainFilePath.GetValueAsString()))
+        var resolvedInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
+        if (!File.Exists(resolvedInstalledMainFilePath))
         {
             InstallationState = ComponentInstallationState.NotInstalled;
         }
 
         if (File.Exists(installationMainFile) &&
-            File.Exists(InstalledMainFilePath.GetValueAsString()))
+            File.Exists(resolvedInstalledMainFilePath))
         {
             Version? sourceVersion = null;
             var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
@@ -1017,16 +1018,23 @@ public partial class ComponentProviderViewModel
             }
 
             Version? destinationVersion = null;
-            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(InstalledMainFilePath.GetValueAsString());
+            var installedMainFileVersion = FileVersionInfo.GetVersionInfo(resolvedInstalledMainFilePath);
             if (installedMainFileVersion?.FileVersion is not null)
             {
                 destinationVersion = new Version(installedMainFileVersion.FileVersion);
                 InstalledVersion = installedMainFileVersion.FileVersion;
             }
 
-            if (sourceVersion is not null &&
-                destinationVersion is not null &&
-                sourceVersion.IsNewerThan(destinationVersion))
+            if (VersionHelper.IsDefault(sourceVersion, destinationVersion))
+            {
+                var sourcePath = new DirectoryInfo(installationMainFile).Parent!;
+                var destinationPath = new DirectoryInfo(resolvedInstalledMainFilePath).Parent!;
+                if (sourcePath.GetTotalFilesLength("*.dll") != destinationPath.GetTotalFilesLength("*.dll"))
+                {
+                    InstallationState = ComponentInstallationState.InstalledWithOldVersion;
+                }
+            }
+            else if (VersionHelper.IsSourceNewerThanDestination(sourceVersion, destinationVersion))
             {
                 InstallationState = ComponentInstallationState.InstalledWithOldVersion;
             }
@@ -1083,25 +1091,9 @@ public partial class ComponentProviderViewModel
             }
             else
             {
-                try
-                {
-                    var isNewerThan = new Version(sourceVersion).IsNewerThan(new Version(destinationVersion));
-                    InstallationState = isNewerThan
-                        ? ComponentInstallationState.InstalledWithOldVersion
-                        : ComponentInstallationState.Installed;
-                }
-                catch
-                {
-                    var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
-                    {
-                        sourceVersion,
-                        destinationVersion,
-                    };
-
-                    InstallationState = destinationVersion == sortedSet.First()
-                        ? ComponentInstallationState.InstalledWithOldVersion
-                        : ComponentInstallationState.Installed;
-                }
+                InstallationState = VersionHelper.IsSourceNewerThanDestination(sourceVersion, destinationVersion)
+                    ? ComponentInstallationState.InstalledWithOldVersion
+                    : ComponentInstallationState.Installed;
             }
         }
     }
