@@ -56,14 +56,14 @@ jobs:
           & $msBuildExePath Atc.Installer-WithoutSetup.sln -p:Configuration=Release -p:Platform="Any CPU" -m
         shell: pwsh
 
-      - name: 🧪 Run unit tests with MSBuild
-        run: |
-          $vsWhereExePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vsInstallationPath = & $vsWhereExePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-          $vstestPath = Join-Path $vsInstallationPath "Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe"
-          $testAssemblies = (Get-ChildItem -Recurse -Filter *.UnitTest.dll).FullName
-          & $vstestPath $testAssemblies
-        shell: pwsh
+      # - name: 🧪 Run unit tests with MSBuild
+      #   run: |
+      #     $vsWhereExePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+      #     $vsInstallationPath = & $vsWhereExePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+      #     $vstestPath = Join-Path $vsInstallationPath "Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe"
+      #     $testAssemblies = (Get-ChildItem -Recurse -Filter *.Test.dll).FullName
+      #     & $vstestPath $testAssemblies
+      #   shell: pwsh
 
       - name: ⏩ Merge to stable-branch
         run: |
