@@ -304,4 +304,13 @@ public static class DirectoryInfoExtensions
 
         return result;
     }
+
+    public static long GetTotalFilesLength(
+        this DirectoryInfo directoryInfo,
+        string searchPattern = "*",
+        bool useRecursive = true)
+    {
+        var files = SearchForFiles(directoryInfo, searchPattern, useRecursive);
+        return files.Sum(file => file.Length);
+    }
 }
