@@ -25,11 +25,11 @@ public class ComponentProviderVersionCompareVisibilityVisibleValueConverter : IV
             HostingFrameworkType.DotNet7 or
             HostingFrameworkType.DotNet8)
         {
-            return AnalyzeForForDotNet(vm);
+            return AnalyzeVersion(vm);
         }
 
         return vm.ComponentType == ComponentType.InternetInformationService
-            ? AnalyzeForJsVersion(vm)
+            ? AnalyzeVersion(vm)
             : Visibility.Collapsed;
     }
 
@@ -39,32 +39,9 @@ public class ComponentProviderVersionCompareVisibilityVisibleValueConverter : IV
         object? parameter,
         CultureInfo culture) => null;
 
-    private static Visibility AnalyzeForJsVersion(
+    private static Visibility AnalyzeVersion(
         ComponentProviderViewModel vm)
-    {
-        if (vm.InstallationVersion == vm.InstalledVersion)
-        {
-            return Visibility.Collapsed;
-        }
-
-        var sortedSet = new SortedSet<string>(StringComparer.Ordinal)
-        {
-            vm.InstallationVersion!,
-            vm.InstalledVersion!,
-        };
-
-        return vm.InstalledVersion == sortedSet.First()
+        => VersionHelper.IsSourceNewerThanDestination(vm.InstallationVersion, vm.InstalledVersion)
             ? Visibility.Visible
             : Visibility.Collapsed;
-    }
-
-    private static Visibility AnalyzeForForDotNet(
-        ComponentProviderViewModel vm)
-    {
-        var sourceVersion = new Version(vm.InstallationVersion!);
-        var destinationVersion = new Version(vm.InstalledVersion!);
-        return sourceVersion.IsNewerThan(destinationVersion)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-    }
 }

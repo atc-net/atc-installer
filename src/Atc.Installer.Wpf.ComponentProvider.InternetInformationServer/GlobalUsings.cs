@@ -5,7 +5,6 @@ global using System.Security.Cryptography.X509Certificates;
 global using System.Text.Json;
 global using System.Windows;
 global using System.Windows.Data;
-global using System.Windows.Media;
 global using System.Xml;
 
 global using Atc.Helpers;
