@@ -31,10 +31,6 @@ public interface IWindowsApplicationInstallerService : IInstallerService
         ushort timeoutInSeconds = 60);
 
     bool StartApplication(
-        string applicationName,
-        ushort timeoutInSeconds = 60);
-
-    bool StartApplication(
         FileInfo applicationFile,
         ushort timeoutInSeconds = 60);
 }
