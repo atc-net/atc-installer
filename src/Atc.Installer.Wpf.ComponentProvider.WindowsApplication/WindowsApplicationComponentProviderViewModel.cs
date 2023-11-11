@@ -87,7 +87,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 .StopService(ServiceName!)
                 .ConfigureAwait(true);
 
-            if (isStopped)
+            if (isStopped ||
+                waInstallerService.GetServiceState(ServiceName!) == ComponentRunningState.Stopped)
             {
                 RunningState = ComponentRunningState.Stopped;
                 LogAndSendToastNotificationMessage(
