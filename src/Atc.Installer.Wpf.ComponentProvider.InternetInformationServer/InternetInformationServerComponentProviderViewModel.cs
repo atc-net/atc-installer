@@ -623,7 +623,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return;
         }
 
-        IsBusy = true;
+        await SetIsBusy(value: true, delayInMs: 500).ConfigureAwait(true);
 
         AddLogItem(LogLevel.Trace, "Deploy");
 
