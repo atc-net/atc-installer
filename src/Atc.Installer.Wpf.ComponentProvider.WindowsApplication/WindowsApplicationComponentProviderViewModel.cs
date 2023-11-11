@@ -570,7 +570,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return;
         }
 
-        await SetIsBusy(true, 500).ConfigureAwait(true);
+        await SetIsBusy(value: true, delayInMs: 500).ConfigureAwait(true);
 
         AddLogItem(LogLevel.Trace, "Deploy");
 
