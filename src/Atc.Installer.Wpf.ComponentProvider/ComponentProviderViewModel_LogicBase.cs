@@ -933,6 +933,8 @@ public partial class ComponentProviderViewModel
                     "wwwroot",
                     "_framework");
             }
+
+            return tmpInstalledMainFilePath;
         }
 
         return UnpackedZipFolderPath;
