@@ -47,9 +47,19 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         base.CheckServiceState();
 
-        RunningState = IsWindowsService
-            ? waInstallerService.GetServiceState(ServiceName!)
-            : waInstallerService.GetApplicationState(Name);
+        if (IsWindowsService)
+        {
+            RunningState = waInstallerService.GetServiceState(ServiceName!);
+        }
+        else
+        {
+            RunningState = waInstallerService.GetApplicationState(Name);
+            if (RunningState == ComponentRunningState.NotAvailable &&
+                InstallationState is ComponentInstallationState.Installed or ComponentInstallationState.InstalledWithOldVersion)
+            {
+                RunningState = ComponentRunningState.Stopped;
+            }
+        }
 
         if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
@@ -77,7 +87,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 .StopService(ServiceName!)
                 .ConfigureAwait(true);
 
-            if (isStopped)
+            if (isStopped ||
+                waInstallerService.GetServiceState(ServiceName!) == ComponentRunningState.Stopped)
             {
                 RunningState = ComponentRunningState.Stopped;
                 LogAndSendToastNotificationMessage(
@@ -159,7 +170,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         else
         {
             var isStarted = waInstallerService
-                .StartApplication(InstalledMainFilePath!.GetValueAsString());
+                .StartApplication(new FileInfo(InstalledMainFilePath!.GetValueAsString()));
 
             if (isStarted)
             {
@@ -559,7 +570,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return;
         }
 
-        IsBusy = true;
+        await SetIsBusy(value: true, delayInMs: 500).ConfigureAwait(true);
 
         AddLogItem(LogLevel.Trace, "Deploy");
 

@@ -933,6 +933,8 @@ public partial class ComponentProviderViewModel
                     "wwwroot",
                     "_framework");
             }
+
+            return tmpInstalledMainFilePath;
         }
 
         return UnpackedZipFolderPath;
@@ -992,25 +994,19 @@ public partial class ComponentProviderViewModel
             return;
         }
 
-        var installationMainPath = AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath();
-
-        var installationMainFile = Path.Combine(installationMainPath, $"{Name}.exe");
-        if (!File.Exists(installationMainFile))
-        {
-            installationMainFile = Path.Combine(installationMainPath, $"{Name}.dll");
-        }
-
         var resolvedInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
         if (!File.Exists(resolvedInstalledMainFilePath))
         {
             InstallationState = ComponentInstallationState.NotInstalled;
         }
 
-        if (File.Exists(installationMainFile) &&
+        var installationMainFilePath = GetInstallationMainFilePath();
+
+        if (installationMainFilePath is not null &&
             File.Exists(resolvedInstalledMainFilePath))
         {
             Version? sourceVersion = null;
-            var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFile);
+            var installationMainFileVersion = FileVersionInfo.GetVersionInfo(installationMainFilePath);
             if (installationMainFileVersion?.FileVersion != null)
             {
                 sourceVersion = new Version(installationMainFileVersion.FileVersion);
@@ -1027,7 +1023,7 @@ public partial class ComponentProviderViewModel
 
             if (VersionHelper.IsDefault(sourceVersion, destinationVersion))
             {
-                var sourcePath = new DirectoryInfo(installationMainFile).Parent!;
+                var sourcePath = new DirectoryInfo(installationMainFilePath).Parent!;
                 var destinationPath = new DirectoryInfo(resolvedInstalledMainFilePath).Parent!;
                 if (sourcePath.GetTotalFilesLength("*.dll") != destinationPath.GetTotalFilesLength("*.dll"))
                 {
@@ -1096,5 +1092,22 @@ public partial class ComponentProviderViewModel
                     : ComponentInstallationState.Installed;
             }
         }
+    }
+
+    private string? GetInstallationMainFilePath()
+    {
+        var installationMainPath = AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath();
+        var installationMainFile = installationMainPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+            ? installationMainPath
+            : Path.Combine(installationMainPath, $"{Name}.exe");
+
+        if (!File.Exists(installationMainFile))
+        {
+            installationMainFile = Path.Combine(installationMainPath, $"{Name}.dll");
+        }
+
+        return File.Exists(installationMainFile)
+            ? installationMainFile
+            : null;
     }
 }

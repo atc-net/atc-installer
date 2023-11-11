@@ -60,8 +60,8 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         try
         {
             var services = ServiceController.GetServices();
-            var service =
-                services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+
             if (service is null ||
                 service.Status != ServiceControllerStatus.Running)
             {
@@ -93,8 +93,8 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         try
         {
             var services = ServiceController.GetServices();
-            var service =
-                services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+            var service = services.FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
+
             if (service is null ||
                 service.Status != ServiceControllerStatus.Stopped)
             {
@@ -196,23 +196,6 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
     }
 
     public bool StartApplication(
-        string applicationName,
-        ushort timeoutInSeconds = 60)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(applicationName);
-
-        try
-        {
-            Process.Start(applicationName);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    public bool StartApplication(
         FileInfo applicationFile,
         ushort timeoutInSeconds = 60)
     {
@@ -220,7 +203,7 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
 
         try
         {
-            Process.Start(applicationFile.FullName);
+            ProcessHelper.Execute(applicationFile.Directory!, applicationFile, string.Empty);
             return true;
         }
         catch

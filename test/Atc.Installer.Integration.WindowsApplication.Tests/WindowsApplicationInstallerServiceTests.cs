@@ -8,29 +8,6 @@ namespace Atc.Installer.Integration.WindowsApplication.Tests;
 public class WindowsApplicationInstallerServiceTests
 {
     [Fact]
-    public void StopAndStartApplicationFlow_ApplicationName()
-    {
-        var iaInstallerService = new InstalledAppsInstallerService();
-        var sut = new WindowsApplicationInstallerService(iaInstallerService);
-
-        const string applicationName = "notepad";
-
-        var runningState = sut.GetApplicationState(applicationName);
-        Assert.Equal(ComponentRunningState.NotAvailable, runningState);
-
-        var isStarted = sut.StartApplication(applicationName);
-        Assert.True(isStarted);
-
-        Thread.Sleep(1_000);
-
-        runningState = sut.GetApplicationState(applicationName);
-        Assert.Equal(ComponentRunningState.Running, runningState);
-
-        var isStopped = sut.StopApplication(applicationName);
-        Assert.True(isStopped);
-    }
-
-    [Fact]
     public void StopAndStartApplicationFlow_ApplicationFile()
     {
         var iaInstallerService = new InstalledAppsInstallerService();

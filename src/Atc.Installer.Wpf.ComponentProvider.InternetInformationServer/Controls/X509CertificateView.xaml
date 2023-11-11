@@ -106,10 +106,7 @@
                         IsEnabled="{Binding Path=EnableEditingMode}"
                         Spacing="10">
                         <Button
-                            Width="70"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
+                            Width="60"
                             Command="{Binding Path=EditX509CertificateCommand}"
                             CommandParameter="{Binding}"
                             ToolTip="Edit">
@@ -124,10 +121,7 @@
                             </StackPanel>
                         </Button>
                         <Button
-                            Width="70"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
+                            Width="60"
                             Command="{Binding Path=NewX509CertificateCommand}"
                             CommandParameter="{Binding}"
                             ToolTip="New">
