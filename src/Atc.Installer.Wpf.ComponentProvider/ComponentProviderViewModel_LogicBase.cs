@@ -594,6 +594,39 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    protected bool IsDotNetBlazorWebAssembly()
+    {
+        if (UnpackedZipFolderPath is null &&
+            InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        if (UnpackedZipFolderPath is not null)
+        {
+            var path = Path.Combine(UnpackedZipFolderPath, "wwwroot", "_framework");
+            return Directory.Exists(path);
+        }
+
+        if (InstalledMainFilePath is not null)
+        {
+            var tmpInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
+            if (tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
+            {
+                return Directory.Exists(tmpInstalledMainFilePath);
+            }
+
+            var path = Path.Combine(
+                tmpInstalledMainFilePath,
+                "wwwroot",
+                "_framework");
+
+            return Directory.Exists(path);
+        }
+
+        return false;
+    }
+
     public (string Value, IList<string> TemplateLocations) ResolveValueAndTemplateLocations(
         string value)
     {
@@ -873,39 +906,6 @@ public partial class ComponentProviderViewModel
         }
 
         return instFolderPath;
-    }
-
-    private bool IsDotNetBlazorWebAssembly()
-    {
-        if (UnpackedZipFolderPath is null &&
-            InstalledMainFilePath is null)
-        {
-            return false;
-        }
-
-        if (UnpackedZipFolderPath is not null)
-        {
-            var path = Path.Combine(UnpackedZipFolderPath, "wwwroot", "_framework");
-            return Directory.Exists(path);
-        }
-
-        if (InstalledMainFilePath is not null)
-        {
-            var tmpInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
-            if (tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
-            {
-                return Directory.Exists(tmpInstalledMainFilePath);
-            }
-
-            var path = Path.Combine(
-                tmpInstalledMainFilePath,
-                "wwwroot",
-                "_framework");
-
-            return Directory.Exists(path);
-        }
-
-        return false;
     }
 
     private string AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath()
