@@ -13,6 +13,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <atcValueConverters:BoolToVisibilityCollapsedValueConverter x:Key="BoolToVisibilityCollapsedValueConverter" />
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
         <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
@@ -20,7 +21,7 @@
     </UserControl.Resources>
 
     <UserControl.ContextMenu>
-        <ContextMenu>
+        <ContextMenu Visibility="{Binding Path=DisableInstallationActions, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
             <MenuItem Command="{Binding Path=ServiceStopCommand}" Header="Stop" />
             <MenuItem Command="{Binding Path=ServiceDeployCommand}" Header="Deploy" />
             <MenuItem Command="{Binding Path=ServiceRemoveCommand}" Header="Remove" />

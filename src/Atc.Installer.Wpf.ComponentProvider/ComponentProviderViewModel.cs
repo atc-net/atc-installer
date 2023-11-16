@@ -68,6 +68,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         InstallationDirectory = installationDirectory;
         ProjectName = projectName;
         Name = applicationOption.Name;
+        DisableInstallationActions = applicationOption.DisableInstallationActions;
 
         DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, refComponentProviders);
         DefaultApplicationSettings.Populate(defaultApplicationSettings);
@@ -117,6 +118,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public DirectoryInfo InstallerTempDirectory { get; }
 
     public DirectoryInfo InstallationDirectory { get; }
+
+    public bool DisableInstallationActions { get; }
 
     public string ProjectName { get; }
 

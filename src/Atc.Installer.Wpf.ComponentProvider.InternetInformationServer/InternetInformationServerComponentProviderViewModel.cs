@@ -235,7 +235,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     }
 
     public override bool CanServiceStopCommandHandler()
-        => RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
+        => !DisableInstallationActions &&
+           RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
 
     public override async Task ServiceStopCommandHandler()
     {

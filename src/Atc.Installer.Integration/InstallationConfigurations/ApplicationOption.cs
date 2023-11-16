@@ -16,6 +16,8 @@ public class ApplicationOption
 
     public string? RawInstallationPath { get; set; }
 
+    public bool DisableInstallationActions { get; set; }
+
     public IList<string> DependentComponents { get; set; } = new List<string>();
 
     public IList<string> DependentServices { get; init; } = new List<string>();
