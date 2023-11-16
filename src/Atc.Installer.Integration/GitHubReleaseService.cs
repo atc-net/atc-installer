@@ -23,7 +23,7 @@ public class GitHubReleaseService : IGitHubReleaseService
                 .GetProperty("tag_name")
                 .ToString();
 
-            if (versionString.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+            if (versionString.StartsWith('v'))
             {
                 versionString = versionString[1..];
             }

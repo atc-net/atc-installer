@@ -170,7 +170,7 @@ public partial class App
         }
     }
 
-    private static Serilog.ILogger CreateLoggerConfigurationForSerilogFileLog()
+    private static Serilog.Core.Logger CreateLoggerConfigurationForSerilogFileLog()
     {
         var systemName = AssemblyHelper.GetSystemNameAsKebabCasing();
         var loggerConfig = new LoggerConfiguration();

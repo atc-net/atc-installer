@@ -191,6 +191,7 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     }
 
     [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "OK.")]
+    [SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "OK.")]
     private async Task<bool> IsNodeJs(
         ushort mainVersion)
     {
