@@ -235,7 +235,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     }
 
     public override bool CanServiceStopCommandHandler()
-        => RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
+        => !DisableInstallationActions &&
+           RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
 
     public override async Task ServiceStopCommandHandler()
     {
@@ -726,6 +727,18 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                     AddToInstallationPrerequisites("IsComponentInstalledMicrosoftAspNetCoreModule2", LogCategoryType.Warning, "IIS module 'Microsoft ASP.NET Core Module V2' is not installed");
                 }
 
+                if (IsDotNetBlazorWebAssembly())
+                {
+                    if (iisInstallerService.IsComponentInstalledUrlRewriteModule2())
+                    {
+                        AddToInstallationPrerequisites("IsComponentInstalledUrlRewriteModule2", LogCategoryType.Information, "IIS module 'URL Rewrite Module 2' is installed");
+                    }
+                    else
+                    {
+                        AddToInstallationPrerequisites("IsComponentInstalledUrlRewriteModule2", LogCategoryType.Warning, "IIS module 'URL Rewrite Module 2' is not installed");
+                    }
+                }
+
                 break;
 
             case HostingFrameworkType.DotNet8:
@@ -745,6 +758,18 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 else
                 {
                     AddToInstallationPrerequisites("IsComponentInstalledMicrosoftAspNetCoreModule2", LogCategoryType.Warning, "IIS module 'Microsoft ASP.NET Core Module V2' is not installed");
+                }
+
+                if (IsDotNetBlazorWebAssembly())
+                {
+                    if (iisInstallerService.IsComponentInstalledUrlRewriteModule2())
+                    {
+                        AddToInstallationPrerequisites("IsComponentInstalledUrlRewriteModule2", LogCategoryType.Information, "IIS module 'URL Rewrite Module 2' is installed");
+                    }
+                    else
+                    {
+                        AddToInstallationPrerequisites("IsComponentInstalledUrlRewriteModule2", LogCategoryType.Warning, "IIS module 'URL Rewrite Module 2' is not installed");
+                    }
                 }
 
                 break;

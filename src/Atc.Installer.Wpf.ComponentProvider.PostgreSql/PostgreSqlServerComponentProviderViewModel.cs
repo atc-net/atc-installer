@@ -121,7 +121,8 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     }
 
     public override bool CanServiceStopCommandHandler()
-        => RunningState == ComponentRunningState.Running;
+        => !DisableInstallationActions &&
+           RunningState == ComponentRunningState.Running;
 
     public override async Task ServiceStopCommandHandler()
     {

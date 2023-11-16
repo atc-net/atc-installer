@@ -9,7 +9,7 @@ public static class CryptographyHelper
         StoreLocation storeLocation = StoreLocation.LocalMachine,
         bool validOnly = true)
     {
-        IList<X509Certificate2> certificates = new List<X509Certificate2>();
+        var certificates = new List<X509Certificate2>();
 
         using var store = new X509Store(
             storeName,

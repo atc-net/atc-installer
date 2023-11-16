@@ -594,6 +594,39 @@ public partial class ComponentProviderViewModel
         }
     }
 
+    protected bool IsDotNetBlazorWebAssembly()
+    {
+        if (UnpackedZipFolderPath is null &&
+            InstalledMainFilePath is null)
+        {
+            return false;
+        }
+
+        if (UnpackedZipFolderPath is not null)
+        {
+            var path = Path.Combine(UnpackedZipFolderPath, "wwwroot", "_framework");
+            return Directory.Exists(path);
+        }
+
+        if (InstalledMainFilePath is not null)
+        {
+            var tmpInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
+            if (tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
+            {
+                return Directory.Exists(tmpInstalledMainFilePath);
+            }
+
+            var path = Path.Combine(
+                tmpInstalledMainFilePath,
+                "wwwroot",
+                "_framework");
+
+            return Directory.Exists(path);
+        }
+
+        return false;
+    }
+
     public (string Value, IList<string> TemplateLocations) ResolveValueAndTemplateLocations(
         string value)
     {
@@ -875,39 +908,6 @@ public partial class ComponentProviderViewModel
         return instFolderPath;
     }
 
-    private bool IsDotNetBlazorWebAssembly()
-    {
-        if (UnpackedZipFolderPath is null &&
-            InstalledMainFilePath is null)
-        {
-            return false;
-        }
-
-        if (UnpackedZipFolderPath is not null)
-        {
-            var path = Path.Combine(UnpackedZipFolderPath, "wwwroot", "_framework");
-            return Directory.Exists(path);
-        }
-
-        if (InstalledMainFilePath is not null)
-        {
-            var tmpInstalledMainFilePath = InstalledMainFilePath.GetValueAsString();
-            if (tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
-            {
-                return Directory.Exists(tmpInstalledMainFilePath);
-            }
-
-            var path = Path.Combine(
-                tmpInstalledMainFilePath,
-                "wwwroot",
-                "_framework");
-
-            return Directory.Exists(path);
-        }
-
-        return false;
-    }
-
     private string AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath()
     {
         if (UnpackedZipFolderPath is null ||
@@ -922,11 +922,21 @@ public partial class ComponentProviderViewModel
             if (!tmpInstalledMainFilePath.Contains("_framework", StringComparison.Ordinal))
             {
                 var fileInfo = new FileInfo(tmpInstalledMainFilePath);
-                InstalledMainFilePath.Value = Path.Combine(
-                    fileInfo.Directory!.FullName,
-                    "wwwroot",
-                    "_framework",
-                    fileInfo.Name);
+
+                InstalledMainFilePath.Value = HostingFramework switch
+                {
+                    HostingFrameworkType.DotNet7 => Path.Combine(
+                        fileInfo.Directory!.FullName,
+                        "wwwroot",
+                        "_framework",
+                        fileInfo.Name),
+                    HostingFrameworkType.DotNet8 => Path.Combine(
+                        fileInfo.Directory!.FullName,
+                        "wwwroot",
+                        "_framework",
+                        fileInfo.Name.Replace(".dll", ".wasm", StringComparison.OrdinalIgnoreCase)),
+                    _ => InstalledMainFilePath.Value,
+                };
 
                 return Path.Combine(
                     UnpackedZipFolderPath,
@@ -1097,7 +1107,8 @@ public partial class ComponentProviderViewModel
     private string? GetInstallationMainFilePath()
     {
         var installationMainPath = AdjustInstalledMainFilePathIfNeededAndGetInstallationMainPath();
-        var installationMainFile = installationMainPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+        var installationMainFile = installationMainPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                                   installationMainPath.EndsWith(".wasm", StringComparison.OrdinalIgnoreCase)
             ? installationMainPath
             : Path.Combine(installationMainPath, $"{Name}.exe");
 
