@@ -295,7 +295,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     }
 
     public override bool CanServiceStartCommandHandler()
-        => RunningState == ComponentRunningState.Stopped;
+        => !DisableInstallationActions &&
+           RunningState == ComponentRunningState.Stopped;
 
     public override async Task ServiceStartCommandHandler()
     {
@@ -333,7 +334,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceDeployCommandHandler()
     {
-        if (UnpackedZipFolderPath is null)
+        if (DisableInstallationActions ||
+            UnpackedZipFolderPath is null)
         {
             return false;
         }
@@ -355,7 +357,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceRemoveCommandHandler()
     {
-        if (InstallationFolderPath is null ||
+        if (DisableInstallationActions ||
+            InstallationFolderPath is null ||
             InstalledMainFilePath is null)
         {
             return false;
