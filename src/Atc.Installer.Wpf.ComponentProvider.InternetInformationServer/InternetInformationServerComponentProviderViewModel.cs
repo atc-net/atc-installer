@@ -745,7 +745,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 break;
 
             case HostingFrameworkType.DotNet8:
-                if (iisInstallerService.IsComponentInstalledMicrosoftNetHost7())
+                if (iisInstallerService.IsComponentInstalledMicrosoftNetHost8())
                 {
                     AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost8", LogCategoryType.Information, "IIS module 'Microsoft .NET Host - 8' is installed");
                 }
