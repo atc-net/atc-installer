@@ -12,6 +12,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\Atc.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
