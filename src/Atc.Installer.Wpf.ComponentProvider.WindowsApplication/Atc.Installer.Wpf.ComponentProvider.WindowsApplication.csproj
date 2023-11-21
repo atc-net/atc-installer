@@ -5,6 +5,8 @@
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\Atc.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
