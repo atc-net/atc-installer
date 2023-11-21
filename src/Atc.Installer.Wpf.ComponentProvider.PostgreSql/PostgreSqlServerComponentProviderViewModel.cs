@@ -83,6 +83,8 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         }
     }
 
+    public override string Description => $"Database / {ComponentType.GetDescription()}";
+
     public override void CheckServiceState()
     {
         base.CheckServiceState();
@@ -122,6 +124,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
     public override bool CanServiceStopCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState == ComponentRunningState.Running;
 
     public override async Task ServiceStopCommandHandler()
@@ -160,6 +163,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
 
     public override bool CanServiceStartCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState == ComponentRunningState.Stopped;
 
     public override async Task ServiceStartCommandHandler()

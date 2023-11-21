@@ -20,6 +20,8 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     bool IsComponentInstalledMicrosoftNetHost7();
 
+    bool IsComponentInstalledMicrosoftNetHost8();
+
     bool IsComponentInstalledMicrosoftAspNetCoreModule2();
 
     bool IsComponentInstalledUrlRewriteModule2();

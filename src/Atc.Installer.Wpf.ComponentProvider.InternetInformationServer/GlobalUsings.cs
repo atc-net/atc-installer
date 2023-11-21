@@ -15,6 +15,7 @@ global using Atc.Installer.Integration.InternetInformationServer;
 global using Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.Factories;
 global using Atc.Installer.Wpf.ComponentProvider.InternetInformationServer.Helpers;
 global using Atc.Installer.Wpf.ComponentProvider.Messages;
+global using Atc.Installer.Wpf.ComponentProvider.Models;
 global using Atc.Installer.Wpf.ComponentProvider.ViewModels;
 global using Atc.Serialization;
 global using Atc.Wpf.Collections;

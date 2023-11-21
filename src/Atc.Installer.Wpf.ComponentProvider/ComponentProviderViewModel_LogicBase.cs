@@ -627,6 +627,20 @@ public partial class ComponentProviderViewModel
         return false;
     }
 
+    protected void ApplyDependentServicesToRunningStateIssues()
+    {
+        foreach (var vm in DependentServices.Where(x => x.RunningState != ComponentRunningState.Running))
+        {
+            RunningStateIssues.Add(
+                new RunningStateIssue
+                {
+                    Name = vm.Name,
+                    InstallationState = vm.InstallationState,
+                    RunningState = vm.RunningState,
+                });
+        }
+    }
+
     public (string Value, IList<string> TemplateLocations) ResolveValueAndTemplateLocations(
         string value)
     {

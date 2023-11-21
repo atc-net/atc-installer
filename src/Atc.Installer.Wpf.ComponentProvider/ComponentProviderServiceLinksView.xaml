@@ -6,11 +6,16 @@
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters"
     x:Name="UcComponentProviderServiceLinksView"
     d:DataContext="{d:DesignInstance Type=componentProvider:ComponentProviderViewModel}"
     d:DesignHeight="200"
     d:DesignWidth="400"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <valueConverters:PortFromUrlValueConverter x:Key="PortFromUrlValueConverter" />
+    </UserControl.Resources>
 
     <GroupBox
         Padding="10"
@@ -25,7 +30,25 @@
                             Margin="0,5"
                             Command="{Binding ElementName=UcComponentProviderServiceLinksView, Path=DataContext.ServiceEndpointBrowserLinkCommand}"
                             CommandParameter="{Binding Path=Endpoint}"
-                            Content="{Binding Path=Name}" />
+                            Content="{Binding Path=Name}">
+                            <Button.ToolTip>
+                                <Grid>
+                                    <atc:UniformSpacingPanel
+                                        Margin="10"
+                                        Orientation="Vertical"
+                                        Spacing="10">
+                                        <atc:LabelTextInfo
+                                            HideAreas="InformationAndValidation"
+                                            LabelText="Url"
+                                            Text="{Binding Path=Endpoint}" />
+                                        <atc:LabelTextInfo
+                                            HideAreas="InformationAndValidation"
+                                            LabelText="Port"
+                                            Text="{Binding Path=Endpoint, Converter={StaticResource PortFromUrlValueConverter}}" />
+                                    </atc:UniformSpacingPanel>
+                                </Grid>
+                            </Button.ToolTip>
+                        </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

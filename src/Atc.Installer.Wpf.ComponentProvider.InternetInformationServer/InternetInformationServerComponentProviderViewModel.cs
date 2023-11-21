@@ -82,6 +82,25 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             NewX509CertificateCommandHandler,
             CanNewX509CertificateCommandHandler);
 
+    public override string Description
+    {
+        get
+        {
+            if (IsDotNetBlazorWebAssembly())
+            {
+                return $"{base.Description} / Blazor WebAssembly";
+            }
+
+            if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
+                swaggerEnabledValue)
+            {
+                return $"{base.Description} / API";
+            }
+
+            return base.Description;
+        }
+    }
+
     public override void CheckPrerequisites()
     {
         base.CheckPrerequisites();
@@ -129,22 +148,47 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return;
         }
 
+        RunningStateIssues.SuppressOnChangedNotification = true;
+        RunningStateIssues.Clear();
+
         var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
         var websiteState = iisInstallerService.GetWebsiteState(Name);
 
-        RunningState = applicationPoolState switch
+        switch (applicationPoolState)
         {
-            ComponentRunningState.Stopped when websiteState == ComponentRunningState.Stopped => ComponentRunningState.Stopped,
-            ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
-            _ => applicationPoolState == ComponentRunningState.Running || websiteState == ComponentRunningState.Running
-                ? ComponentRunningState.PartiallyRunning
-                : ComponentRunningState.NotAvailable,
-        };
+            case ComponentRunningState.Stopped when
+                websiteState == ComponentRunningState.Stopped:
+                RunningState = ComponentRunningState.Stopped;
+                break;
+            case ComponentRunningState.Running when
+                websiteState == ComponentRunningState.Running &&
+                DependentServices.All(x => x.RunningState == ComponentRunningState.Running):
+                RunningState = ComponentRunningState.Running;
+                break;
+            default:
+            {
+                if (applicationPoolState == ComponentRunningState.Running ||
+                    websiteState == ComponentRunningState.Running)
+                {
+                    RunningState = ComponentRunningState.PartiallyRunning;
+                    ApplyToRunningStateIssues(applicationPoolState, websiteState);
+                    ApplyDependentServicesToRunningStateIssues();
+                }
+                else
+                {
+                    RunningState = ComponentRunningState.NotAvailable;
+                }
+
+                break;
+            }
+        }
 
         if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
+
+        RunningStateIssues.SuppressOnChangedNotification = false;
     }
 
     public override void UpdateConfigurationDynamicJson(
@@ -236,6 +280,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceStopCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
 
     public override async Task ServiceStopCommandHandler()
@@ -296,6 +341,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceStartCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState == ComponentRunningState.Stopped;
 
     public override async Task ServiceStartCommandHandler()
@@ -335,6 +381,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public override bool CanServiceDeployCommandHandler()
     {
         if (DisableInstallationActions ||
+            HideMenuItem ||
             UnpackedZipFolderPath is null)
         {
             return false;
@@ -358,6 +405,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public override bool CanServiceRemoveCommandHandler()
     {
         if (DisableInstallationActions ||
+            HideMenuItem ||
             InstallationFolderPath is null ||
             InstalledMainFilePath is null)
         {
@@ -619,6 +667,33 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         }
     }
 
+    private void ApplyToRunningStateIssues(
+        ComponentRunningState applicationPoolState,
+        ComponentRunningState websiteState)
+    {
+        if (applicationPoolState != ComponentRunningState.Running)
+        {
+            RunningStateIssues.Add(
+                new RunningStateIssue
+                {
+                    Name = "ApplicationPool",
+                    InstallationState = ComponentInstallationState.Installed,
+                    RunningState = ComponentRunningState.Stopped,
+                });
+        }
+
+        if (websiteState != ComponentRunningState.Running)
+        {
+            RunningStateIssues.Add(
+                new RunningStateIssue
+                {
+                    Name = "Website",
+                    InstallationState = ComponentInstallationState.Installed,
+                    RunningState = ComponentRunningState.Stopped,
+                });
+        }
+    }
+
     private async Task ServiceDeployAndStart(
         bool useAutoStart)
     {
@@ -745,7 +820,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 break;
 
             case HostingFrameworkType.DotNet8:
-                if (iisInstallerService.IsComponentInstalledMicrosoftNetHost7())
+                if (iisInstallerService.IsComponentInstalledMicrosoftNetHost8())
                 {
                     AddToInstallationPrerequisites("IsComponentInstalledMicrosoftNetHost8", LogCategoryType.Information, "IIS module 'Microsoft .NET Host - 8' is installed");
                 }

@@ -52,6 +52,8 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         }
     }
 
+    public override string Description => ComponentType.GetDescription();
+
     public override void CheckPrerequisites()
     {
         base.CheckPrerequisites();
@@ -95,6 +97,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
 
     public override bool CanServiceStopCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState == ComponentRunningState.Running;
 
     public override async Task ServiceStopCommandHandler()
@@ -133,6 +136,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
 
     public override bool CanServiceStartCommandHandler()
         => DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState == ComponentRunningState.Stopped;
 
     public override async Task ServiceStartCommandHandler()

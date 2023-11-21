@@ -108,6 +108,9 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
     public bool IsComponentInstalledMicrosoftNetHost7()
         => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET Host - 7.");
 
+    public bool IsComponentInstalledMicrosoftNetHost8()
+        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft .NET Host - 8.");
+
     public bool IsComponentInstalledMicrosoftAspNetCoreModule2()
     {
         if (!iaInstallerService.IsAppInstalledByDisplayName("Microsoft ASP.NET Core Module V2"))
