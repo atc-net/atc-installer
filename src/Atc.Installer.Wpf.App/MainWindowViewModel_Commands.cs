@@ -42,25 +42,25 @@ public partial class MainWindowViewModel
         => new RelayCommand(
             OpenApplicationAboutCommandHandler);
 
-    public IRelayCommandAsync ServiceStopAllCommand
+    public IRelayCommandAsync ServiceStopSelectedCommand
         => new RelayCommandAsync(
-            ServiceStopAllCommandHandler,
-            CanServiceStopAllCommandHandler);
+            ServiceStopSelectedCommandHandler,
+            CanServiceStopSelectedCommandHandler);
 
-    public IRelayCommandAsync ServiceDeployAllCommand
+    public IRelayCommandAsync ServiceDeploySelectedCommand
         => new RelayCommandAsync(
-            ServiceDeployAllCommandHandler,
-            CanServiceDeployAllCommandHandler);
+            ServiceDeploySelectedCommandHandler,
+            CanServiceDeploySelectedCommandHandler);
 
-    public IRelayCommandAsync ServiceRemoveAllCommand
+    public IRelayCommandAsync ServiceRemoveSelectedCommand
         => new RelayCommandAsync(
-            ServiceRemoveAllCommandHandler,
-            CanServiceRemoveAllCommandHandler);
+            ServiceRemoveSelectedCommandHandler,
+            CanServiceRemoveSelectedCommandHandler);
 
-    public IRelayCommandAsync ServiceStartAllCommand
+    public IRelayCommandAsync ServiceStartSelectedCommand
         => new RelayCommandAsync(
-            ServiceStartAllCommandHandler,
-            CanServiceStartAllCommandHandler);
+            ServiceStartSelectedCommandHandler,
+            CanServiceStartSelectedCommandHandler);
 
     public new ICommand ApplicationExitCommand
         => new RelayCommand(ApplicationExitCommandHandler);
@@ -336,10 +336,10 @@ public partial class MainWindowViewModel
         aboutBoxDialog.ShowDialog();
     }
 
-    private bool CanServiceStopAllCommandHandler()
+    private bool CanServiceStopSelectedCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStopCommandHandler());
 
-    private Task ServiceStopAllCommandHandler()
+    private Task ServiceStopSelectedCommandHandler()
     {
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
@@ -353,10 +353,10 @@ public partial class MainWindowViewModel
         return TaskHelper.WhenAll(tasks);
     }
 
-    private bool CanServiceDeployAllCommandHandler()
+    private bool CanServiceDeploySelectedCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceDeployCommandHandler());
 
-    private Task ServiceDeployAllCommandHandler()
+    private Task ServiceDeploySelectedCommandHandler()
     {
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
@@ -370,10 +370,10 @@ public partial class MainWindowViewModel
         return TaskHelper.WhenAll(tasks);
     }
 
-    private bool CanServiceRemoveAllCommandHandler()
+    private bool CanServiceRemoveSelectedCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceRemoveCommandHandler());
 
-    private Task ServiceRemoveAllCommandHandler()
+    private Task ServiceRemoveSelectedCommandHandler()
     {
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
@@ -387,10 +387,10 @@ public partial class MainWindowViewModel
         return TaskHelper.WhenAll(tasks);
     }
 
-    private bool CanServiceStartAllCommandHandler()
+    private bool CanServiceStartSelectedCommandHandler()
         => ComponentProviders.Any(x => x.CanServiceStartCommandHandler());
 
-    private Task ServiceStartAllCommandHandler()
+    private Task ServiceStartSelectedCommandHandler()
     {
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)

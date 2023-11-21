@@ -81,7 +81,7 @@
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.ColumnSpan="5"
-                                Text="All components:" />
+                                Text="Selected components:" />
                             <Button
                                 Grid.Row="2"
                                 Grid.Column="0"
