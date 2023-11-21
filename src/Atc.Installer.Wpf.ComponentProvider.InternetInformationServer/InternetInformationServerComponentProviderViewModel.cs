@@ -280,6 +280,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceStopCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
 
     public override async Task ServiceStopCommandHandler()
@@ -340,6 +341,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override bool CanServiceStartCommandHandler()
         => !DisableInstallationActions &&
+           !HideMenuItem &&
            RunningState == ComponentRunningState.Stopped;
 
     public override async Task ServiceStartCommandHandler()
@@ -379,6 +381,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public override bool CanServiceDeployCommandHandler()
     {
         if (DisableInstallationActions ||
+            HideMenuItem ||
             UnpackedZipFolderPath is null)
         {
             return false;
@@ -402,6 +405,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     public override bool CanServiceRemoveCommandHandler()
     {
         if (DisableInstallationActions ||
+            HideMenuItem ||
             InstallationFolderPath is null ||
             InstalledMainFilePath is null)
         {
