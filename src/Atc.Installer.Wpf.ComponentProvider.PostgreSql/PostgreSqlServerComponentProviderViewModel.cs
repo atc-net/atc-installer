@@ -83,6 +83,8 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         }
     }
 
+    public override string Description => $"Database / {ComponentType.GetDescription()}";
+
     public override void CheckServiceState()
     {
         base.CheckServiceState();

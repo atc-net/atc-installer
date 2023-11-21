@@ -85,17 +85,17 @@
                             <Button
                                 Grid.Row="2"
                                 Grid.Column="0"
-                                Command="{Binding Path=ServiceStopAllCommand}"
+                                Command="{Binding Path=ServiceStopSelectedCommand}"
                                 Content="Stop" />
                             <Button
                                 Grid.Row="2"
                                 Grid.Column="2"
-                                Command="{Binding Path=ServiceDeployAllCommand}"
+                                Command="{Binding Path=ServiceDeploySelectedCommand}"
                                 Content="Deploy" />
                             <Button
                                 Grid.Row="2"
                                 Grid.Column="4"
-                                Command="{Binding Path=ServiceStartAllCommand}"
+                                Command="{Binding Path=ServiceStartSelectedCommand}"
                                 Content="Start" />
                         </atc:GridEx>
                     </Border>

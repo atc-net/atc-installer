@@ -52,6 +52,8 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         }
     }
 
+    public override string Description => ComponentType.GetDescription();
+
     public override void CheckPrerequisites()
     {
         base.CheckPrerequisites();
