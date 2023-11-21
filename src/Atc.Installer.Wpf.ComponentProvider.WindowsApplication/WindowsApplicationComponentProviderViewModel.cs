@@ -47,6 +47,9 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     {
         base.CheckServiceState();
 
+        RunningStateIssues.SuppressOnChangedNotification = true;
+        RunningStateIssues.Clear();
+
         if (IsWindowsService)
         {
             RunningState = waInstallerService.GetServiceState(ServiceName!);
@@ -61,10 +64,19 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             }
         }
 
+        if (RunningState == ComponentRunningState.Running &&
+            DependentServices.Any(x => x.RunningState != ComponentRunningState.Running))
+        {
+            RunningState = ComponentRunningState.PartiallyRunning;
+            ApplyDependentServicesToRunningStateIssues();
+        }
+
         if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
+
+        RunningStateIssues.SuppressOnChangedNotification = false;
     }
 
     public override bool CanServiceStopCommandHandler()

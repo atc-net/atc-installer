@@ -304,6 +304,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         }
     }
 
+    public ObservableCollectionEx<RunningStateIssue> RunningStateIssues { get; } = new();
+
     public ObservableCollectionEx<LogItem> LogItems { get; } = new();
 
     public ObservableCollectionEx<InstallationPrerequisiteViewModel> InstallationPrerequisites { get; } = new();

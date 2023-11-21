@@ -129,22 +129,47 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             return;
         }
 
+        RunningStateIssues.SuppressOnChangedNotification = true;
+        RunningStateIssues.Clear();
+
         var applicationPoolState = iisInstallerService.GetApplicationPoolState(Name);
         var websiteState = iisInstallerService.GetWebsiteState(Name);
 
-        RunningState = applicationPoolState switch
+        switch (applicationPoolState)
         {
-            ComponentRunningState.Stopped when websiteState == ComponentRunningState.Stopped => ComponentRunningState.Stopped,
-            ComponentRunningState.Running when websiteState == ComponentRunningState.Running => ComponentRunningState.Running,
-            _ => applicationPoolState == ComponentRunningState.Running || websiteState == ComponentRunningState.Running
-                ? ComponentRunningState.PartiallyRunning
-                : ComponentRunningState.NotAvailable,
-        };
+            case ComponentRunningState.Stopped when
+                websiteState == ComponentRunningState.Stopped:
+                RunningState = ComponentRunningState.Stopped;
+                break;
+            case ComponentRunningState.Running when
+                websiteState == ComponentRunningState.Running &&
+                DependentServices.All(x => x.RunningState == ComponentRunningState.Running):
+                RunningState = ComponentRunningState.Running;
+                break;
+            default:
+            {
+                if (applicationPoolState == ComponentRunningState.Running ||
+                    websiteState == ComponentRunningState.Running)
+                {
+                    RunningState = ComponentRunningState.PartiallyRunning;
+                    ApplyToRunningStateIssues(applicationPoolState, websiteState);
+                    ApplyDependentServicesToRunningStateIssues();
+                }
+                else
+                {
+                    RunningState = ComponentRunningState.NotAvailable;
+                }
+
+                break;
+            }
+        }
 
         if (RunningState is ComponentRunningState.Unknown or ComponentRunningState.Checking)
         {
             RunningState = ComponentRunningState.NotAvailable;
         }
+
+        RunningStateIssues.SuppressOnChangedNotification = false;
     }
 
     public override void UpdateConfigurationDynamicJson(
@@ -616,6 +641,33 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                         template: null,
                         templateLocations: null));
             }
+        }
+    }
+
+    private void ApplyToRunningStateIssues(
+        ComponentRunningState applicationPoolState,
+        ComponentRunningState websiteState)
+    {
+        if (applicationPoolState != ComponentRunningState.Running)
+        {
+            RunningStateIssues.Add(
+                new RunningStateIssue
+                {
+                    Name = "ApplicationPool",
+                    InstallationState = ComponentInstallationState.Installed,
+                    RunningState = ComponentRunningState.Stopped,
+                });
+        }
+
+        if (websiteState != ComponentRunningState.Running)
+        {
+            RunningStateIssues.Add(
+                new RunningStateIssue
+                {
+                    Name = "Website",
+                    InstallationState = ComponentInstallationState.Installed,
+                    RunningState = ComponentRunningState.Stopped,
+                });
         }
     }
 

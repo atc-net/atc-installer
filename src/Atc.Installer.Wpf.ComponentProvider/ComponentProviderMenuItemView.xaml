@@ -7,6 +7,7 @@
     xmlns:componentProvider="clr-namespace:Atc.Installer.Wpf.ComponentProvider"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Models"
     xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters"
     x:Name="UcComponentProviderMenuItemView"
     d:DataContext="{d:DesignInstance Type=componentProvider:ComponentProviderViewModel}"
@@ -18,6 +19,15 @@
         <valueConverters:ComponentInstallationStateToBrushValueConverter x:Key="ComponentInstallationStateToBrushValueConverter" />
         <valueConverters:ComponentRunningStateToBrushValueConverter x:Key="ComponentRunningStateToBrushValueConverter" />
         <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
+
+        <Style
+            x:Key="BorderLessListViewStyle"
+            BasedOn="{StaticResource AtcApps.Styles.ListView}"
+            TargetType="{x:Type ListView}" />
+        <Style
+            x:Key="BorderLessListViewItemStyle"
+            BasedOn="{StaticResource AtcApps.Styles.ListViewItem}"
+            TargetType="{x:Type ListViewItem}" />
     </UserControl.Resources>
 
     <UserControl.ContextMenu>
@@ -105,6 +115,49 @@
                     Width="20"
                     Height="20"
                     Fill="{Binding Path=RunningState, FallbackValue=Red, Converter={StaticResource ComponentRunningStateToBrushValueConverter}}" />
+                <StackPanel.ToolTip>
+                    <atc:UniformSpacingPanel
+                        Margin="20"
+                        Orientation="Vertical"
+                        Spacing="10">
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Text="Depending issues:" />
+                        <ListView ItemsSource="{Binding Path=RunningStateIssues}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn
+                                        Width="Auto"
+                                        DisplayMemberBinding="{Binding Path=Name}"
+                                        Header="Name" />
+                                    <GridViewColumn Width="Auto" Header="Installation state">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate DataType="{x:Type models:RunningStateIssue}">
+                                                <Ellipse
+                                                    Width="20"
+                                                    Height="20"
+                                                    Fill="{Binding Path=InstallationState, FallbackValue=Red, Converter={StaticResource ComponentInstallationStateToBrushValueConverter}}"
+                                                    ToolTip="{Binding Path=InstallationState}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Width="Auto" Header="Running state">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate DataType="{x:Type models:RunningStateIssue}">
+                                                <Ellipse
+                                                    Width="20"
+                                                    Height="20"
+                                                    Fill="{Binding Path=RunningState, FallbackValue=Red, Converter={StaticResource ComponentRunningStateToBrushValueConverter}}"
+                                                    ToolTip="{Binding Path=RunningState}" />
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </atc:UniformSpacingPanel>
+                </StackPanel.ToolTip>
             </StackPanel>
 
         </atc:GridEx>
