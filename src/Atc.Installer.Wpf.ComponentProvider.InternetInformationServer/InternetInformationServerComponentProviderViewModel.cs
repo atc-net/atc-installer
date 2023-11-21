@@ -82,6 +82,25 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             NewX509CertificateCommandHandler,
             CanNewX509CertificateCommandHandler);
 
+    public override string Description
+    {
+        get
+        {
+            if (IsDotNetBlazorWebAssembly())
+            {
+                return $"{base.Description} / Blazor WebAssembly";
+            }
+
+            if (TryGetBooleanFromApplicationSettings("SwaggerEnabled", out var swaggerEnabledValue) &&
+                swaggerEnabledValue)
+            {
+                return $"{base.Description} / API";
+            }
+
+            return base.Description;
+        }
+    }
+
     public override void CheckPrerequisites()
     {
         base.CheckPrerequisites();

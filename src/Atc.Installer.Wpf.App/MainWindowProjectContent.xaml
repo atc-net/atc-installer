@@ -149,27 +149,41 @@
                     Margin="0,20,0,10"
                     FontSize="26"
                     Text="{Binding Path=SelectedComponentProvider.Name}" />
-                <StackPanel Orientation="Horizontal" Visibility="{Binding Path=ComponentProviders, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider.InstalledVersion, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
-                        <TextBlock FontSize="18" Text="Version" />
+                <atc:GridEx Columns="Auto,*,Auto,10" Visibility="{Binding Path=ComponentProviders, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}">
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider.InstalledVersion, Converter={StaticResource StringNullOrEmptyToVisibilityCollapsedValueConverter}}">
+                            <TextBlock FontSize="18" Text="Version" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                FontSize="18"
+                                Text="{Binding Path=SelectedComponentProvider.InstalledVersion}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider, Converter={StaticResource ComponentProviderVersionCompareVisibilityVisibleValueConverter}}">
+                            <TextBlock
+                                Margin="20,0,0,0"
+                                FontSize="18"
+                                Foreground="DarkOrange"
+                                Text="New version available" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                FontSize="18"
+                                Foreground="DarkOrange"
+                                Text="{Binding Path=SelectedComponentProvider.InstallationVersion}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Orientation="Horizontal">
                         <TextBlock
                             Margin="10,0,0,0"
                             FontSize="18"
-                            Text="{Binding Path=SelectedComponentProvider.InstalledVersion}" />
+                            Text="{Binding Path=SelectedComponentProvider.Description}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SelectedComponentProvider, Converter={StaticResource ComponentProviderVersionCompareVisibilityVisibleValueConverter}}">
-                        <TextBlock
-                            Margin="20,0,0,0"
-                            FontSize="18"
-                            Foreground="DarkOrange"
-                            Text="New version available" />
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            FontSize="18"
-                            Foreground="DarkOrange"
-                            Text="{Binding Path=SelectedComponentProvider.InstallationVersion}" />
-                    </StackPanel>
-                </StackPanel>
+                </atc:GridEx>
             </StackPanel>
 
             <!--  Right-Content-ContentControls  -->

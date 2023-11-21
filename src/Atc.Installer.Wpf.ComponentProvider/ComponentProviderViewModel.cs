@@ -180,6 +180,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
     public string Name { get; }
 
+    public virtual string Description => $"{ComponentType.GetDescription()} / {HostingFramework.GetDescription()}";
+
     public string? ServiceName { get; set; }
 
     public ComponentType ComponentType { get; }
