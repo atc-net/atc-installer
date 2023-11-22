@@ -1,3 +1,4 @@
+// ReSharper disable ConvertIfStatementToReturnStatement
 // ReSharper disable InvertIf
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 // ReSharper disable SuggestBaseTypeForParameter
@@ -163,46 +164,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (IsWindowsService)
         {
-            var isStarted = await waInstallerService
-                .StartService(ServiceName!)
-                .ConfigureAwait(true);
-
-            if (isStarted)
-            {
-                RunningState = ComponentRunningState.Running;
-                LogAndSendToastNotificationMessage(
-                    ToastNotificationType.Information,
-                    Name,
-                    "Service is started");
-            }
-            else
-            {
-                LogAndSendToastNotificationMessage(
-                    ToastNotificationType.Error,
-                    Name,
-                    "Could not start service");
-            }
+            await StartWindowsService();
         }
         else
         {
-            var isStarted = waInstallerService
-                .StartApplication(new FileInfo(InstalledMainFilePath!.GetValueAsString()));
-
-            if (isStarted)
-            {
-                RunningState = ComponentRunningState.Running;
-                LogAndSendToastNotificationMessage(
-                    ToastNotificationType.Information,
-                    Name,
-                    "Application is started");
-            }
-            else
-            {
-                LogAndSendToastNotificationMessage(
-                    ToastNotificationType.Error,
-                    Name,
-                    "Could not start application");
-            }
+            StartApplication();
         }
 
         IsBusy = false;
@@ -299,6 +265,19 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
 
         IsBusy = false;
+    }
+
+    public override string Description
+    {
+        get
+        {
+            if (IsDotNetWpf())
+            {
+                return $"{base.Description} / WPF";
+            }
+
+            return base.Description;
+        }
     }
 
     public override void CheckPrerequisites()
@@ -509,27 +488,52 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private void CheckPrerequisitesForHostingFramework()
     {
         switch (HostingFramework)
         {
-            case HostingFrameworkType.DotNet7 when waInstallerService.IsMicrosoftDonNet7():
-                AddToInstallationPrerequisites("IsMicrosoftDonNet7", LogCategoryType.Information, "Microsoft .NET 7 is installed");
+            case HostingFrameworkType.DotNet7 when waInstallerService.IsMicrosoftDotNet7():
+                AddToInstallationPrerequisites("IsMicrosoftDotNet7", LogCategoryType.Information, "Microsoft .NET 7 is installed");
+                if (IsDotNetWpf())
+                {
+                    if (waInstallerService.IsComponentInstalledMicrosoftNetDesktop7())
+                    {
+                        AddToInstallationPrerequisites("IsMicrosoftDotNet7Desktop", LogCategoryType.Information, "Microsoft .NET 7 Windows Desktop is installed");
+                    }
+                    else
+                    {
+                        AddToInstallationPrerequisites("IsMicrosoftDotNet7Desktop", LogCategoryType.Warning, "Microsoft .NET 7 Windows Desktop is not installed");
+                    }
+                }
+
                 break;
             case HostingFrameworkType.DotNet7:
-                AddToInstallationPrerequisites("IsMicrosoftDonNet7", LogCategoryType.Warning, "Microsoft .NET 7 is not installed");
+                AddToInstallationPrerequisites("IsMicrosoftDotNet7", LogCategoryType.Warning, "Microsoft .NET 7 is not installed");
                 break;
-            case HostingFrameworkType.DotNet8 when waInstallerService.IsMicrosoftDonNet8():
-                AddToInstallationPrerequisites("IsMicrosoftDonNet8", LogCategoryType.Information, "Microsoft .NET 8 is installed");
+            case HostingFrameworkType.DotNet8 when waInstallerService.IsMicrosoftDotNet8():
+                AddToInstallationPrerequisites("IsMicrosoftDotNet8", LogCategoryType.Information, "Microsoft .NET 8 is installed");
+                if (IsDotNetWpf())
+                {
+                    if (waInstallerService.IsComponentInstalledMicrosoftNetDesktop8())
+                    {
+                        AddToInstallationPrerequisites("IsMicrosoftDotNet8Desktop", LogCategoryType.Information, "Microsoft .NET 8 Windows Desktop is installed");
+                    }
+                    else
+                    {
+                        AddToInstallationPrerequisites("IsMicrosoftDotNet8Desktop", LogCategoryType.Warning, "Microsoft .NET 8 Windows Desktop is not installed");
+                    }
+                }
+
                 break;
             case HostingFrameworkType.DotNet8:
-                AddToInstallationPrerequisites("IsMicrosoftDonNet8", LogCategoryType.Warning, "Microsoft .NET 8 is not installed");
+                AddToInstallationPrerequisites("IsMicrosoftDotNet8", LogCategoryType.Warning, "Microsoft .NET 8 is not installed");
                 break;
-            case HostingFrameworkType.DonNetFramework48 when waInstallerService.IsMicrosoftDonNetFramework48():
-                AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
+            case HostingFrameworkType.DonNetFramework48 when waInstallerService.IsMicrosoftDotNetFramework48():
+                AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
                 break;
             case HostingFrameworkType.DonNetFramework48:
-                AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
+                AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
                 break;
             case HostingFrameworkType.Native:
             case HostingFrameworkType.NativeNoSettings:
@@ -568,6 +572,50 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
                 break;
         }
+    }
+
+    [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK.")]
+    private bool IsDotNetWpf()
+    {
+        var mainFilePath = string.Empty;
+        if (UnpackedZipFolderPath is not null)
+        {
+            var filePath = Path.Combine(UnpackedZipFolderPath, $"{Name}.exe");
+            if (File.Exists(filePath))
+            {
+                mainFilePath = filePath;
+            }
+        }
+        else if (InstalledMainFilePath is not null)
+        {
+            var filePath = InstalledMainFilePath.GetValueAsString();
+            if (File.Exists(filePath))
+            {
+                mainFilePath = filePath;
+            }
+        }
+
+        if (string.IsNullOrEmpty(mainFilePath))
+        {
+            return true;
+        }
+
+        try
+        {
+            var assembly = AssemblyHelper.Load(new FileInfo(mainFilePath));
+            if (assembly
+                .GetReferencedAssemblies()
+                .Any(x => x.Name!.Equals("PresentationFramework", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+        }
+        catch
+        {
+            // Dummy
+        }
+
+        return false;
     }
 
     private void AddToInstallationPrerequisites(
@@ -617,12 +665,12 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 UnpackedZipFolderPath is not null &&
                 InstallationFolderPath is not null)
             {
-                isDone = await ServiceDeployWindowApplicationCreate().ConfigureAwait(true);
+                isDone = await ServiceDeployWindowApplicationCreate(useAutoStart).ConfigureAwait(true);
             }
             else if (UnpackedZipFolderPath is not null &&
                      InstallationFolderPath is not null)
             {
-                isDone = ServiceDeployWindowApplicationUpdate();
+                isDone = ServiceDeployWindowApplicationUpdate(useAutoStart);
             }
         }
 
@@ -657,6 +705,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         await ServiceDeployWindowServicePostProcessing(useAutoStart).ConfigureAwait(true);
 
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
         isDone = true;
 
         return isDone;
@@ -676,6 +726,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         BackupConfigurationFilesAndLog();
 
         await ServiceDeployWindowServicePostProcessing(useAutoStart).ConfigureAwait(true);
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
 
         isDone = true;
 
@@ -727,25 +779,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         return true;
     }
 
-    private Task<bool> ServiceRemoveWindowApplication()
-    {
-        if (InstalledMainFilePath is null)
-        {
-            return Task.FromResult(false);
-        }
-
-        var installedMainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
-
-        Directory.Delete(installedMainFile.DirectoryName!, recursive: true);
-
-        WorkOnAnalyzeAndUpdateStatesForVersion();
-
-        return Task.FromResult(true);
-    }
-
     private async Task ServiceDeployWindowServicePostProcessing(
         bool useAutoStart)
     {
+        BackupConfigurationFilesAndLog();
+
         CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
@@ -774,8 +812,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             File.Exists(InstalledMainFilePath.GetValueAsString()) &&
             InstalledMainFilePath.GetValueAsString().EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
-            var isInstalled = await SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath.GetValueAsString()))
-                .ConfigureAwait(true);
+            var isInstalled = await SetupInstalledMainFilePathAsService(new FileInfo(InstalledMainFilePath.GetValueAsString())).ConfigureAwait(true);
 
             if (isInstalled)
             {
@@ -801,15 +838,11 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
                 AddLogItem(LogLevel.Warning, "Service is not started");
             }
         }
-
-        WorkOnAnalyzeAndUpdateStatesForVersion();
     }
 
     private async Task ServiceDeployWindowServiceStart()
     {
-        await Task
-            .Delay(100)
-        .ConfigureAwait(false);
+        await Task.Delay(100).ConfigureAwait(false);
 
         RunningState = waInstallerService.GetServiceState(Name);
 
@@ -828,7 +861,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         }
     }
 
-    private Task<bool> ServiceDeployWindowApplicationCreate()
+    private Task<bool> ServiceDeployWindowApplicationCreate(
+        bool useAutoStart)
     {
         var isDone = false;
 
@@ -838,14 +872,32 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             return Task.FromResult(isDone);
         }
 
+        BackupConfigurationFilesAndLog();
+
         CopyUnpackedFiles();
+
+        UpdateConfigurationFiles();
+
+        EnsureFolderPermissions();
+
+        EnsureFirewallRules();
+
+        InstallationState = ComponentInstallationState.Installed;
+
+        if (useAutoStart)
+        {
+            StartApplication();
+        }
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
 
         isDone = true;
 
         return Task.FromResult(isDone);
     }
 
-    private bool ServiceDeployWindowApplicationUpdate()
+    private bool ServiceDeployWindowApplicationUpdate(
+        bool useAutoStart)
     {
         var isDone = false;
 
@@ -859,8 +911,86 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         CopyUnpackedFiles();
 
+        UpdateConfigurationFiles();
+
+        EnsureFolderPermissions();
+
+        EnsureFirewallRules();
+
+        InstallationState = ComponentInstallationState.Installed;
+
+        if (useAutoStart)
+        {
+            StartApplication();
+        }
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
         isDone = true;
 
         return isDone;
+    }
+
+    private Task<bool> ServiceRemoveWindowApplication()
+    {
+        if (InstalledMainFilePath is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        var installedMainFile = new FileInfo(InstalledMainFilePath.GetValueAsString());
+
+        Directory.Delete(installedMainFile.DirectoryName!, recursive: true);
+
+        InstallationState = ComponentInstallationState.NotInstalled;
+
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
+        return Task.FromResult(true);
+    }
+
+    private async Task StartWindowsService()
+    {
+        var isStarted = await waInstallerService
+            .StartService(ServiceName!)
+            .ConfigureAwait(true);
+
+        if (isStarted)
+        {
+            RunningState = ComponentRunningState.Running;
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Service is started");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not start service");
+        }
+    }
+
+    private void StartApplication()
+    {
+        var isStarted = waInstallerService
+            .StartApplication(new FileInfo(InstalledMainFilePath!.GetValueAsString()));
+
+        if (isStarted)
+        {
+            RunningState = ComponentRunningState.Running;
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Information,
+                Name,
+                "Application is started");
+        }
+        else
+        {
+            LogAndSendToastNotificationMessage(
+                ToastNotificationType.Error,
+                Name,
+                "Could not start application");
+        }
     }
 }
