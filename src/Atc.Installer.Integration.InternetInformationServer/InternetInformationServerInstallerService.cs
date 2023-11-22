@@ -66,11 +66,11 @@ public sealed class InternetInformationServerInstallerService : IInternetInforma
             : null;
     }
 
-    public bool IsMicrosoftDonNetFramework48()
-        => iaInstallerService.IsMicrosoftDonNetFramework48();
+    public bool IsMicrosoftDotNetFramework48()
+        => iaInstallerService.IsMicrosoftDotNetFramework48();
 
-    public bool IsMicrosoftDonNet7()
-        => iaInstallerService.IsMicrosoftDonNet7();
+    public bool IsMicrosoftDotNet7()
+        => iaInstallerService.IsMicrosoftDotNet7();
 
     public bool IsNodeJs18()
         => TaskHelper.RunSync(iaInstallerService.IsNodeJs18);

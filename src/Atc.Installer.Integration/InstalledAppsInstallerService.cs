@@ -17,14 +17,14 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
     private const int DonNetFramework480Value = 528040;
     private readonly FileInfo cmdFile = new(@"C:\Windows\System32\cmd.exe");
 
-    public bool IsMicrosoftDonNetFramework48()
-        => IsMicrosoftDonNetFramework(DonNetFramework480Value);
+    public bool IsMicrosoftDotNetFramework48()
+        => IsMicrosoftDotNetFramework(DonNetFramework480Value);
 
-    public bool IsMicrosoftDonNet7()
-        => IsMicrosoftDonNet(7);
+    public bool IsMicrosoftDotNet7()
+        => IsMicrosoftDotNet(7);
 
-    public bool IsMicrosoftDonNet8()
-        => IsMicrosoftDonNet(8);
+    public bool IsMicrosoftDotNet8()
+        => IsMicrosoftDotNet(8);
 
     public bool IsJavaRuntime8()
         => IsJavaRuntime(8);
@@ -124,7 +124,7 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
         }
     }
 
-    private static bool IsMicrosoftDonNetFramework(
+    private static bool IsMicrosoftDotNetFramework(
         int versionValue)
     {
         try
@@ -140,7 +140,7 @@ public class InstalledAppsInstallerService : IInstalledAppsInstallerService
         }
     }
 
-    private static bool IsMicrosoftDonNet(
+    private static bool IsMicrosoftDotNet(
         ushort mainVersion)
     {
         try

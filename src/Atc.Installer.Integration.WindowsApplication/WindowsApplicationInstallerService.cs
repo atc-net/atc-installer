@@ -14,14 +14,20 @@ public sealed class WindowsApplicationInstallerService : IWindowsApplicationInst
         this.iaInstallerService = installedAppsInstallerService ?? throw new ArgumentNullException(nameof(installedAppsInstallerService));
     }
 
-    public bool IsMicrosoftDonNetFramework48()
-        => iaInstallerService.IsMicrosoftDonNetFramework48();
+    public bool IsMicrosoftDotNetFramework48()
+        => iaInstallerService.IsMicrosoftDotNetFramework48();
 
-    public bool IsMicrosoftDonNet7()
-        => iaInstallerService.IsMicrosoftDonNet7();
+    public bool IsMicrosoftDotNet7()
+        => iaInstallerService.IsMicrosoftDotNet7();
 
-    public bool IsMicrosoftDonNet8()
-        => iaInstallerService.IsMicrosoftDonNet8();
+    public bool IsMicrosoftDotNet8()
+        => iaInstallerService.IsMicrosoftDotNet8();
+
+    public bool IsComponentInstalledMicrosoftNetDesktop7()
+        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft Windows Desktop Runtime - 7.");
+
+    public bool IsComponentInstalledMicrosoftNetDesktop8()
+        => iaInstallerService.IsAppInstalledByDisplayName("Microsoft Windows Desktop Runtime - 8.");
 
     public ComponentRunningState GetServiceState(
         string serviceName)

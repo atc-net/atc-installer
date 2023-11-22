@@ -775,13 +775,13 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         switch (HostingFramework)
         {
             case HostingFrameworkType.DonNetFramework48:
-                if (iisInstallerService.IsMicrosoftDonNetFramework48())
+                if (iisInstallerService.IsMicrosoftDotNetFramework48())
                 {
-                    AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
+                    AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
                 }
                 else
                 {
-                    AddToInstallationPrerequisites("IsMicrosoftDonNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
+                    AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
                 }
 
                 break;
@@ -934,6 +934,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
             AddLogItem(LogLevel.Error, "Website is not created");
         }
 
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
         return isDone;
     }
 
@@ -956,6 +958,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         AddLogItem(LogLevel.Information, "Website is updated");
 
+        WorkOnAnalyzeAndUpdateStatesForVersion();
+
         isDone = true;
 
         return isDone;
@@ -964,6 +968,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     private async Task ServiceDeployWebsitePostProcessing(
         bool useAutoStart)
     {
+        BackupConfigurationFilesAndLog();
+
         CopyUnpackedFiles();
 
         UpdateConfigurationFiles();
@@ -1016,8 +1022,6 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 .StopApplicationPool(Name)
                 .ConfigureAwait(true);
         }
-
-        WorkOnAnalyzeAndUpdateStatesForVersion();
     }
 
     private async Task<bool> ServiceRemoveWebsite()
