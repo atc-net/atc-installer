@@ -597,12 +597,18 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (string.IsNullOrEmpty(mainFilePath))
         {
-            return true;
+            return false;
+        }
+
+        var mainDllFilePath = mainFilePath.Replace(".exe", ".dll", StringComparison.OrdinalIgnoreCase);
+        if (!File.Exists(mainDllFilePath))
+        {
+            return false;
         }
 
         try
         {
-            var assembly = AssemblyHelper.Load(new FileInfo(mainFilePath));
+            var assembly = AssemblyHelper.Load(new FileInfo(mainDllFilePath));
             if (assembly
                 .GetReferencedAssemblies()
                 .Any(x => x.Name!.Equals("PresentationFramework", StringComparison.OrdinalIgnoreCase)))
