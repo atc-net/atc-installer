@@ -2,11 +2,11 @@ namespace Atc.Installer.Integration;
 
 public interface IInstalledAppsInstallerService : IInstallerService
 {
-    bool IsMicrosoftDonNetFramework48();
+    bool IsMicrosoftDotNetFramework48();
 
-    bool IsMicrosoftDonNet7();
+    bool IsMicrosoftDotNet7();
 
-    bool IsMicrosoftDonNet8();
+    bool IsMicrosoftDotNet8();
 
     Task<bool> IsNodeJs18();
 

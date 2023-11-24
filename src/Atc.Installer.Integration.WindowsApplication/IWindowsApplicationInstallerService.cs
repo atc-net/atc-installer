@@ -2,11 +2,15 @@ namespace Atc.Installer.Integration.WindowsApplication;
 
 public interface IWindowsApplicationInstallerService : IInstallerService
 {
-    bool IsMicrosoftDonNetFramework48();
+    bool IsMicrosoftDotNetFramework48();
 
-    bool IsMicrosoftDonNet7();
+    bool IsMicrosoftDotNet7();
 
-    bool IsMicrosoftDonNet8();
+    bool IsMicrosoftDotNet8();
+
+    bool IsComponentInstalledMicrosoftNetDesktop7();
+
+    bool IsComponentInstalledMicrosoftNetDesktop8();
 
     ComponentRunningState GetServiceState(
         string serviceName);

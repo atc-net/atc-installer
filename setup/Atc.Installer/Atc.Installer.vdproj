@@ -58,10 +58,10 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.7.0.x64"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x86"
                     {
-                    "Name" = "8:.NET Runtime 7.0.5 (x64)"
-                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.7.0.x64"
+                    "Name" = "8:.NET Desktop Runtime 8.0.0 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x86"
                     }
                 }
             }
@@ -130,7 +130,7 @@
         {
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_212A195A69224FB38464859874499544"
             {
-            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\bin\\Debug\\net7.0-windows\\Atc.Installer.Wpf.App.deps.json"
+            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\bin\\Debug\\net8.0-windows\\Atc.Installer.Wpf.App.deps.json"
             "TargetName" = "8:Atc.Installer.Wpf.App.deps.json"
             "Tag" = "8:"
             "Folder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"
@@ -760,7 +760,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_B80DFB6270524AC7B2F3C294312B6821"
             {
-            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\obj\\Debug\\net7.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\..\\src\\Atc.Installer.Wpf.App\\obj\\Debug\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_91076E7FEDE74F62A97DBDFD99B106F9"

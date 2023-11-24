@@ -8,9 +8,9 @@ public interface IInternetInformationServerInstallerService : IInstallerService
 
     DirectoryInfo? GetWwwRootPath();
 
-    bool IsMicrosoftDonNetFramework48();
+    bool IsMicrosoftDotNetFramework48();
 
-    bool IsMicrosoftDonNet7();
+    bool IsMicrosoftDotNet7();
 
     bool IsNodeJs18();
 
