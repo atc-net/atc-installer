@@ -107,6 +107,9 @@ public static class LabelControlsFactory
         return labelControls;
     }
 
+    [SuppressMessage("Security", "MA0009:Add regex evaluation timeout", Justification = "OK - For now.")]
+    [SuppressMessage("Performance", "MA0110:Use the Regex source generator", Justification = "OK - For now.")]
+    [SuppressMessage("Performance", "SYSLIB1045:Convert to 'GeneratedRegexAttribute'.", Justification = "OK - For now.")]
     public static IList<ILabelControlBase> CreateForConfigurationSettingsFiles(
         ComponentProviderViewModel? refComponentProvider,
         KeyValueTemplateItemViewModel? updateItem)
@@ -120,25 +123,50 @@ public static class LabelControlsFactory
             MinLength = 1,
         };
 
+        var valueLabelRegexPattern = string.Empty;
+        var sbValueLabelText = new StringBuilder();
+        sbValueLabelText.Append("Value");
+
         if (updateItem is not null)
         {
             labelTextBoxKey.IsMandatory = false;
             labelTextBoxKey.IsEnabled = false;
             labelTextBoxKey.Text = updateItem.Key;
+
+            if (ConfigurationKeyToUnitTypeValueConverter.TryParse(updateItem.Key, out var unitType))
+            {
+                sbValueLabelText.Append(" in ");
+                sbValueLabelText.Append(unitType.ToLower(GlobalizationConstants.EnglishCultureInfo));
+                valueLabelRegexPattern = ConfigurationKeyToUnitTypeValueConverter.GetRegexPatternFromUnitType(unitType);
+            }
         }
 
         labelControls.Add(labelTextBoxKey);
 
         var labelTextBoxValue = new LabelTextBox
         {
-            LabelText = "Value",
+            Tag = "Value",
+            LabelText = sbValueLabelText.ToString(),
             IsMandatory = false,
         };
+
+        if (!string.IsNullOrEmpty(valueLabelRegexPattern))
+        {
+            labelTextBoxValue.RegexPattern = valueLabelRegexPattern;
+        }
 
         if (updateItem is not null &&
             string.IsNullOrEmpty(updateItem.Template))
         {
-            labelTextBoxValue.Text = updateItem.Value.ToString()!;
+            var value = updateItem.Value.ToString()!;
+            if (string.IsNullOrEmpty(valueLabelRegexPattern) &&
+                Regex.IsMatch(value, RegexPatternConstants.Boolean.Strict, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture))
+            {
+                labelTextBoxValue.ValidationText = "True/False";
+                labelTextBoxValue.RegexPattern = RegexPatternConstants.Boolean.Optional;
+            }
+
+            labelTextBoxValue.Text = value;
         }
 
         labelControls.Add(labelTextBoxValue);
