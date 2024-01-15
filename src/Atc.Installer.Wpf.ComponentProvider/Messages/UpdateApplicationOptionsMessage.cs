@@ -1,19 +1,12 @@
 namespace Atc.Installer.Wpf.ComponentProvider.Messages;
 
-[SuppressMessage("Minor Code Smell", "S2094:Classes should not be empty", Justification = "OK - used for MVVM message.")]
-public class UpdateApplicationOptionsMessage : MessageBase
+public class UpdateApplicationOptionsMessage(
+    bool enableEditingMode,
+    bool showOnlyBaseSettings) : MessageBase
 {
-    public UpdateApplicationOptionsMessage(
-        bool enableEditingMode,
-        bool showOnlyBaseSettings)
-    {
-        EnableEditingMode = enableEditingMode;
-        ShowOnlyBaseSettings = showOnlyBaseSettings;
-    }
+    public bool EnableEditingMode { get; } = enableEditingMode;
 
-    public bool EnableEditingMode { get; }
-
-    public bool ShowOnlyBaseSettings { get; }
+    public bool ShowOnlyBaseSettings { get; } = showOnlyBaseSettings;
 
     public override string ToString()
         => $"{nameof(EnableEditingMode)}: {EnableEditingMode}, {nameof(ShowOnlyBaseSettings)}: {ShowOnlyBaseSettings}";
