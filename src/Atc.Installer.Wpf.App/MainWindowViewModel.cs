@@ -322,6 +322,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
     }
 
+    [SuppressMessage("Blocker Bug", "S2930:\"IDisposables\" should be disposed", Justification = "OK.")]
     private void StartMonitoringServices()
     {
         cancellationTokenSource = new CancellationTokenSource();
@@ -336,11 +337,13 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
                     foreach (var vm in ComponentProviders)
                     {
-                        if (!vm.IsBusy)
+                        if (vm.IsBusy)
                         {
-                            vm.CheckPrerequisitesState();
-                            vm.CheckServiceState();
+                            continue;
                         }
+
+                        vm.CheckPrerequisitesState();
+                        vm.CheckServiceState();
                     }
                 }
             },
@@ -442,6 +445,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         ComponentProviders.Add(vm);
     }
 
+    [SuppressMessage("Major Bug", "S2583:Conditionally executed code should be reachable", Justification = "OK.")]
     private void Populate(
         FileInfo installationFile,
         InstallationOption installationOptions)

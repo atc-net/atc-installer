@@ -1,18 +1,13 @@
 namespace Atc.Installer.Wpf.ComponentProvider.Messages;
 
-public class UpdateDefaultApplicationSettingsMessage : MessageBase
+public class UpdateDefaultApplicationSettingsMessage(
+    TriggerActionType triggerActionType,
+    KeyValueTemplateItemViewModel keyValueTemplateItem)
+    : MessageBase
 {
-    public UpdateDefaultApplicationSettingsMessage(
-        TriggerActionType triggerActionType,
-        KeyValueTemplateItemViewModel keyValueTemplateItem)
-    {
-        TriggerActionType = triggerActionType;
-        KeyValueTemplateItem = keyValueTemplateItem;
-    }
+    public TriggerActionType TriggerActionType { get; } = triggerActionType;
 
-    public TriggerActionType TriggerActionType { get; }
-
-    public KeyValueTemplateItemViewModel KeyValueTemplateItem { get; }
+    public KeyValueTemplateItemViewModel KeyValueTemplateItem { get; } = keyValueTemplateItem;
 
     public override string ToString()
         => $"{nameof(TriggerActionType)}: {TriggerActionType}, {nameof(KeyValueTemplateItem)}: {KeyValueTemplateItem}";

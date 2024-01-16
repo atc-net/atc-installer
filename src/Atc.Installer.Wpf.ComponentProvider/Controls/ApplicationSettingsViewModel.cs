@@ -471,7 +471,8 @@ public class ApplicationSettingsViewModel : ViewModelBase
                         keyValueTemplateItem.TemplateLocations is not null &&
                         keyValueTemplateItem.Template.Contains(updateItem.Key, StringComparison.Ordinal))
                     {
-                        keyValueTemplateItem.Value = ResolveTemplateValue(updateItem, componentProvider, keyValueTemplateItem.Template);
+                        var (resolvedValue, _) = componentProvider.ResolveValueAndTemplateLocations(keyValueTemplateItem.Template);
+                        keyValueTemplateItem.Value = resolvedValue;
                     }
                 }
             }
@@ -486,7 +487,8 @@ public class ApplicationSettingsViewModel : ViewModelBase
                             keyValueTemplateItem.TemplateLocations is not null &&
                             keyValueTemplateItem.Template.Contains(updateItem.Key, StringComparison.Ordinal))
                         {
-                            keyValueTemplateItem.Value = ResolveTemplateValue(updateItem, componentProvider, keyValueTemplateItem.Template);
+                            var (resolvedValue, _) = componentProvider.ResolveValueAndTemplateLocations(keyValueTemplateItem.Template);
+                            keyValueTemplateItem.Value = resolvedValue;
                         }
                     }
                 }

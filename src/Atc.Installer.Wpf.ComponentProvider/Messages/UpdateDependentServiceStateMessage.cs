@@ -1,22 +1,16 @@
 namespace Atc.Installer.Wpf.ComponentProvider.Messages;
 
-public class UpdateDependentServiceStateMessage : MessageBase
+public class UpdateDependentServiceStateMessage(
+    string name,
+    ComponentInstallationState installationState,
+    ComponentRunningState runningState)
+    : MessageBase
 {
-    public UpdateDependentServiceStateMessage(
-        string name,
-        ComponentInstallationState installationState,
-        ComponentRunningState runningState)
-    {
-        Name = name;
-        InstallationState = installationState;
-        RunningState = runningState;
-    }
+    public string Name { get; } = name;
 
-    public string Name { get; }
+    public ComponentInstallationState InstallationState { get; } = installationState;
 
-    public ComponentInstallationState InstallationState { get; }
-
-    public ComponentRunningState RunningState { get; }
+    public ComponentRunningState RunningState { get; } = runningState;
 
     public override string ToString()
         => $"{nameof(Name)}: {Name}, {nameof(InstallationState)}: {InstallationState}";

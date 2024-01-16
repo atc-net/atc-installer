@@ -6,11 +6,16 @@
     xmlns:controls="clr-namespace:Atc.Installer.Wpf.ComponentProvider.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:valueConverters="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ValueConverters"
     xmlns:viewModels="clr-namespace:Atc.Installer.Wpf.ComponentProvider.ViewModels"
     d:DataContext="{d:DesignInstance Type=controls:ConfigurationSettingsFilesViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <valueConverters:ConfigurationKeyToUnitTypeValueConverter x:Key="ConfigurationKeyToUnitTypeValueConverter" />
+    </UserControl.Resources>
 
     <StackPanel Orientation="Vertical">
         <ItemsControl ItemsSource="{Binding Path=JsonItems}">
@@ -90,9 +95,13 @@
                                         DisplayMemberBinding="{Binding Path=Key}"
                                         Header="Key" />
                                     <GridViewColumn
-                                        Width="500"
+                                        Width="150"
                                         DisplayMemberBinding="{Binding Path=Value}"
                                         Header="Value" />
+                                    <GridViewColumn
+                                        Width="80"
+                                        DisplayMemberBinding="{Binding Path=Key, Converter={StaticResource ConfigurationKeyToUnitTypeValueConverter}}"
+                                        Header="UnitType" />
                                     <GridViewColumn
                                         Width="Auto"
                                         DisplayMemberBinding="{Binding Path=Template}"
