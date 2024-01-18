@@ -66,7 +66,7 @@ public partial class ComponentProviderViewModel
 
     private bool CanServiceEndpointBrowserLinkCommandHandler(
         string endpoint)
-        => RunningState == ComponentRunningState.Running;
+        => RunningState is ComponentRunningState.Running or ComponentRunningState.PartiallyRunning;
 
     private static void ServiceEndpointBrowserLinkCommandHandler(
         string endpoint)
