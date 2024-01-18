@@ -21,6 +21,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private DirectoryInfo? installationDirectory;
     private BitmapImage? icon;
     private string? projectName;
+    private bool compactMode;
     private string? componentProviderFilter;
     private ComponentProviderViewModel? selectedComponentProvider;
     private CancellationTokenSource? cancellationTokenSource;
@@ -179,6 +180,21 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         {
             projectName = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public bool CompactMode
+    {
+        get => compactMode;
+        set
+        {
+            compactMode = value;
+            RaisePropertyChanged();
+
+            foreach (var provider in ComponentProviders)
+            {
+                provider.CompactMode = compactMode;
+            }
         }
     }
 

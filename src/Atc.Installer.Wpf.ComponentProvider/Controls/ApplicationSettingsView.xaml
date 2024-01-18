@@ -32,7 +32,10 @@
             </StackPanel>
         </Button>
 
-        <ListView ItemsSource="{Binding Path=Items}">
+        <ListView
+            ItemsSource="{Binding Path=Items}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="Auto" Header="Actions">

@@ -26,14 +26,15 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-
     <atc:BusyOverlay IsBusy="{Binding Path=IsBusy}">
-        <atc:GridEx Columns="0,200,20,*,10" Rows="Auto">
+        <atc:GridEx Columns="0,Auto,20,*,10" Rows="Auto">
             <atc:UniformSpacingPanel
                 Grid.Row="0"
                 Grid.Column="1"
+                Width="200"
                 Orientation="Vertical"
-                Spacing="10">
+                Spacing="10"
+                Visibility="{Binding Path=CompactMode, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                 <componentProvider:ComponentProviderServiceActionsView />
                 <componentProvider:ComponentProviderServiceLinksView Visibility="{Binding Path=BrowserLinkEndpoints, Converter={StaticResource CollectionNullOrEmptyToVisibilityCollapsedValueConverter}}" />
                 <localControls:X509CertificateView />
