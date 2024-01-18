@@ -87,7 +87,7 @@ public class XmlElementViewModel : ViewModelBase
 
         foreach (var (attributeKey, attributeValue) in xmlElementSettingsOptions.Attributes)
         {
-            if (attributeValue.ContainsTemplateKeyBrackets())
+            if (attributeValue.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
             {
                 var (resolvedValue, templateLocations) = refComponentProviderViewModel.ResolveValueAndTemplateLocations(attributeValue);
 

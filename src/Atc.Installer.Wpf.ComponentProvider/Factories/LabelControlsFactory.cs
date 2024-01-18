@@ -78,7 +78,7 @@ public static class LabelControlsFactory
                 }
                 else
                 {
-                    labelComboBox.SelectedKey = updateItem.Template.GetTemplateKeys()[0];
+                    labelComboBox.SelectedKey = updateItem.Template.GetTemplateKeys(TemplatePatternType.DoubleHardBrackets)[0];
                 }
             }
 
@@ -206,7 +206,7 @@ public static class LabelControlsFactory
         if (updateItem is not null &&
             !string.IsNullOrEmpty(updateItem.Template))
         {
-            var templateKey = updateItem.Template.GetTemplateKeys()[0];
+            var templateKey = updateItem.Template.GetTemplateKeys(TemplatePatternType.DoubleHardBrackets)[0];
             labelComboBox.SelectedKey =
                 labelComboBox.Items.Keys.First(x => x.EndsWith($"|{templateKey}", StringComparison.Ordinal));
         }

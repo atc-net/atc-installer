@@ -48,7 +48,7 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
         foreach (var keyValuePair in configurationSettingsFileOption.JsonSettings)
         {
             var value = keyValuePair.Value.ToString()!;
-            if (value.ContainsTemplateKeyBrackets())
+            if (value.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
             {
                 if (refComponentProviderViewModel is null)
                 {
@@ -91,7 +91,7 @@ public class ConfigurationSettingsJsonFileViewModel : ViewModelBase
         foreach (var keyValuePair in Settings)
         {
             var value = keyValuePair.Value.ToString()!;
-            if (!value.ContainsTemplateKeyBrackets())
+            if (!value.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
             {
                 continue;
             }

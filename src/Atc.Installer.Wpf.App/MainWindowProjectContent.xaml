@@ -23,6 +23,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <atcValueConverters:BoolToVisibilityCollapsedValueConverter x:Key="BoolToVisibilityCollapsedValueConverter" />
         <atcValueConverters:CollectionNullOrEmptyToVisibilityCollapsedValueConverter x:Key="CollectionNullOrEmptyToVisibilityCollapsedValueConverter" />
         <atcValueConverters:EnumDescriptionToStringValueConverter x:Key="EnumDescriptionToStringValueConverter" />
         <atcValueConverters:IntegerGreaterThenZeroToVisibilityVisibleValueConverter x:Key="IntegerGreaterThenZeroToVisibilityVisibleValueConverter" />
@@ -35,15 +36,16 @@
 
     <atc:GridEx
         Margin="10,0,10,10"
-        Columns="600,20,*"
+        Columns="Auto,20,*"
         Rows="*">
 
         <!--  Left-Content  -->
+
         <atc:GridEx
             Grid.Row="0"
             Grid.Column="0"
             Columns="*"
-            Rows="100,*">
+            Rows="100,Auto,*">
             <StackPanel
                 Grid.Row="0"
                 Grid.Column="0"
@@ -58,11 +60,21 @@
                     FontSize="24"
                     Text="{Binding Path=ProjectName, FallbackValue='- Project Name -'}" />
             </StackPanel>
-            <GroupBox
+            <atc:ToggleSwitch
+                x:Name="twShowHide"
                 Grid.Row="1"
                 Grid.Column="0"
+                Width="50"
+                Margin="5"
+                Content="Compact mode"
+                IsOn="{Binding Path=CompactMode}" />
+            <GroupBox
+                Grid.Row="2"
+                Grid.Column="0"
+                MinWidth="200"
                 Padding="0"
-                Header="Components">
+                Header="Components"
+                Visibility="{Binding Path=CompactMode, Converter={StaticResource BoolToVisibilityCollapsedValueConverter}}">
                 <DockPanel>
                     <TextBox
                         Margin="5"

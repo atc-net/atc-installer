@@ -639,7 +639,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
                 }
             }
 
-            if (endpoint.Endpoint.ContainsTemplateKeyBrackets())
+            if (endpoint.Endpoint.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
             {
                 var (resolvedValue, templateLocations) = ResolveValueAndTemplateLocations(endpoint.Endpoint);
 

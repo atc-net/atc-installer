@@ -16,6 +16,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     private string? installationVersion;
     private string filterTextForMenu = string.Empty;
     private bool showOnlyBaseSettings;
+    private bool compactMode;
     private bool hideMenuItem;
 
     public ComponentProviderViewModel()
@@ -112,6 +113,16 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public ILogger<ComponentProviderViewModel> Logger { get; }
+
+    public bool CompactMode
+    {
+        get => compactMode;
+        set
+        {
+            compactMode = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public ObservableCollectionEx<ComponentProviderViewModel> RefComponentProviders { get; }
 
