@@ -70,7 +70,7 @@ public class ConfigurationSettingsXmlFileViewModel : ViewModelBase
             }
 
             var value = attributeItem.Value?.ToString()!;
-            if (!value.ContainsTemplateKeyBrackets())
+            if (!value.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
             {
                 continue;
             }

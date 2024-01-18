@@ -87,15 +87,15 @@ public class ApplicationSettingsViewModel : ViewModelBase
         foreach (var applicationSetting in applicationSettings)
         {
             var value = applicationSetting.Value.ToString()!;
-            if (applicationSetting.Value.ToString()!.ContainsTemplateKeyBrackets())
+            if (applicationSetting.Value.ToString()!.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
             {
-                var key = value.GetTemplateKeys()[0];
+                var key = value.GetTemplateKeys(TemplatePatternType.DoubleHardBrackets)[0];
                 if (defaultApplicationSettings.TryGetString(key, out var resultValue))
                 {
                     Items.Add(
                         new KeyValueTemplateItemViewModel(
                             applicationSetting.Key,
-                            value.ReplaceTemplateWithKey(key, resultValue),
+                            value.ReplaceTemplateKeyWithValue(key, resultValue, TemplatePatternType.DoubleHardBrackets),
                             value,
                             templateLocations: new List<string> { Constants.DefaultTemplateLocation }));
                 }
@@ -501,7 +501,7 @@ public class ApplicationSettingsViewModel : ViewModelBase
         ComponentProviderViewModel componentProvider,
         string template)
     {
-        var terms = template.SplitTemplate();
+        var terms = template.GetTemplateKeys(TemplatePatternType.DoubleHardBrackets);
         var sb = new StringBuilder();
         foreach (var term in terms)
         {

@@ -539,9 +539,9 @@ public partial class ComponentProviderViewModel
         string value,
         int recursiveCallCount = 0)
     {
-        if (value.ContainsTemplateKeyBrackets())
+        if (value.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
         {
-            var keys = value.GetTemplateKeys();
+            var keys = value.GetTemplateKeys(TemplatePatternType.DoubleHardBrackets);
             foreach (var key in keys)
             {
                 if (key.Contains('|', StringComparison.Ordinal))
@@ -553,19 +553,19 @@ public partial class ComponentProviderViewModel
                         if (refComponentProvider is not null &&
                             refComponentProvider.TryGetStringFromApplicationSetting(sa[1], out var resultValue))
                         {
-                            value = value.ReplaceTemplateWithKey(key, resultValue);
+                            value = value.ReplaceTemplateKeyWithValue(key, resultValue, TemplatePatternType.DoubleHardBrackets);
                         }
                     }
                 }
                 else if (TryGetStringFromApplicationSettings(key, out var resultValue))
                 {
-                    value = value.ReplaceTemplateWithKey(key, resultValue);
+                    value = value.ReplaceTemplateKeyWithValue(key, resultValue, TemplatePatternType.DoubleHardBrackets);
                 }
             }
         }
 
         if (recursiveCallCount <= 3 &&
-            value.ContainsTemplateKeyBrackets())
+            value.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
         {
             value = ResolveTemplateIfNeededByApplicationSettingsLookup(value, recursiveCallCount + 1);
         }
@@ -645,7 +645,7 @@ public partial class ComponentProviderViewModel
         string value)
     {
         var templateLocations = new List<string>();
-        var keys = value.GetTemplateKeys();
+        var keys = value.GetTemplateKeys(TemplatePatternType.DoubleHardBrackets);
         foreach (var key in keys)
         {
             if (key.Contains('|', StringComparison.Ordinal))
@@ -659,7 +659,7 @@ public partial class ComponentProviderViewModel
                     {
                         templateLocations.Add(resultValue);
                         templateLocations.Add(sa[1]);
-                        value = value.ReplaceTemplateWithKey(key, resultValue);
+                        value = value.ReplaceTemplateKeyWithValue(key, resultValue, TemplatePatternType.DoubleHardBrackets);
                     }
                 }
             }
@@ -671,7 +671,7 @@ public partial class ComponentProviderViewModel
 
                 templateLocations.Add(location);
 
-                value = value.ReplaceTemplateWithKey(key, resultValue);
+                value = value.ReplaceTemplateKeyWithValue(key, resultValue, TemplatePatternType.DoubleHardBrackets);
             }
         }
 
@@ -787,7 +787,7 @@ public partial class ComponentProviderViewModel
     private void ResolveInstallationPathAndSetInstallationFolderPath(
         ApplicationOption applicationOption)
     {
-        if (applicationOption.InstallationPath.ContainsTemplateKeyBrackets())
+        if (applicationOption.InstallationPath.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
         {
             var (resolvedValue, templateLocations) = ResolveValueAndTemplateLocations(applicationOption.InstallationPath);
 
@@ -817,7 +817,7 @@ public partial class ComponentProviderViewModel
 
         string basePath;
         IList<string>? templateLocations = null;
-        if (instFolderPath.ContainsTemplateKeyBrackets())
+        if (instFolderPath.ContainsTemplatePattern(TemplatePatternType.DoubleHardBrackets))
         {
             var (resolvedValue, resolvedTemplateLocations) = ResolveValueAndTemplateLocations(instFolderPath);
             basePath = resolvedValue;
