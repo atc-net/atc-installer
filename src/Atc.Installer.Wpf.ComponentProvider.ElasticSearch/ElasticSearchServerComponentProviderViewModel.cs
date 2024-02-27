@@ -135,7 +135,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
     }
 
     public override bool CanServiceStartCommandHandler()
-        => DisableInstallationActions &&
+        => !DisableInstallationActions &&
            !HideMenuItem &&
            RunningState == ComponentRunningState.Stopped;
 

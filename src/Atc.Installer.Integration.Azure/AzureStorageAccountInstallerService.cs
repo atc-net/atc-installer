@@ -29,7 +29,7 @@ public class AzureStorageAccountInstallerService : IAzureStorageAccountInstaller
             }
 
             var blobsToDownload = GetBlobsToDownload(blobContainerClient, components);
-            return blobsToDownload.Any()
+            return blobsToDownload.Count > 0
                 ? await HandleFileDownloads(
                         downloadFolder,
                         blobsToDownload,
@@ -51,7 +51,7 @@ public class AzureStorageAccountInstallerService : IAzureStorageAccountInstaller
             .OrderByDescending(x => x.BlobName, StringComparer.Ordinal)
             .ToArray();
 
-        if (!blobs.Any())
+        if (blobs.Length == 0)
         {
             return new List<string>();
         }
@@ -87,13 +87,22 @@ public class AzureStorageAccountInstallerService : IAzureStorageAccountInstaller
         {
             var blobClient = blobContainerClient.GetBlobClient(blobPath);
             var fileName = blobClient.Name.Split('/')[^1];
+            if (string.IsNullOrEmpty(fileName))
+            {
+                continue;
+            }
+
             var downloadFileForComponent = Path.Combine(downloadFolder, fileName);
 
             await blobClient
                 .DownloadToAsync(downloadFileForComponent)
                 .ConfigureAwait(true);
 
-            downloadedFiles.Add(new FileInfo(Path.Combine(downloadFolder, fileName)));
+            var file = new FileInfo(Path.Combine(downloadFolder, fileName));
+            if (file is { Exists: true, Length: > 0 })
+            {
+                downloadedFiles.Add(file);
+            }
         }
 
         return downloadedFiles;

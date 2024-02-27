@@ -1,5 +1,6 @@
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 // ReSharper disable InvertIf
+// ReSharper disable ReturnTypeCanBeEnumerable.Local
 // ReSharper disable StringLiteralTypo
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
 namespace Atc.Installer.Wpf.ComponentProvider;
@@ -210,16 +211,66 @@ public partial class ComponentProviderViewModel
             !Directory.Exists(UnpackedZipFolderPath) ||
             DirectoryHelper.ExistsAndContainsNoFiles(UnpackedZipFolderPath))
         {
-            if (Directory.Exists(UnpackedZipFolderPath))
+            PrepareInstallationFilesUnpack(installationFilePath, UnpackedZipFolderPath);
+        }
+    }
+
+    private static List<string> GetFileNameFromZip(
+        string installationFilePath)
+    {
+        using var archive = ZipFile.OpenRead(installationFilePath);
+        return archive.Entries
+            .Select(entry => entry.FullName)
+            .ToList();
+    }
+
+    private void PrepareInstallationFilesUnpack(
+        string installationFilePath,
+        string unpackedFolderPath)
+    {
+        if (InstallationFile is null ||
+            !InstallationFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (Directory.Exists(unpackedFolderPath))
+        {
+            Directory.Delete(unpackedFolderPath, recursive: true);
+        }
+
+        Directory.CreateDirectory(unpackedFolderPath);
+
+        ZipFile.ExtractToDirectory(installationFilePath, unpackedFolderPath, overwriteFiles: true);
+
+        DeleteDevelopmentConfigurationFiles(new DirectoryInfo(unpackedFolderPath));
+
+        // Verify extractions
+        var dllFileNamesFromZip = GetFileNameFromZip(installationFilePath)
+            .Where(x => x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var extractedDllFiles = Directory.GetFiles(unpackedFolderPath, "*.dll", SearchOption.AllDirectories);
+        if (dllFileNamesFromZip.Count != extractedDllFiles.Length)
+        {
+            // Try again
+            Directory.Delete(unpackedFolderPath, recursive: true);
+
+            Thread.Sleep(1_000);
+
+            ZipFile.ExtractToDirectory(installationFilePath, unpackedFolderPath, overwriteFiles: true);
+
+            DeleteDevelopmentConfigurationFiles(new DirectoryInfo(unpackedFolderPath));
+
+            // Verify extractions again
+            extractedDllFiles = Directory.GetFiles(unpackedFolderPath, "*.dll", SearchOption.AllDirectories);
+            if (dllFileNamesFromZip.Count != extractedDllFiles.Length)
             {
-                Directory.Delete(UnpackedZipFolderPath, recursive: true);
+                LogAndSendToastNotificationMessage(
+                    ToastNotificationType.Error,
+                    Name,
+                    $"Extractions of zip file no working as expected. Please try manuel to delete folder: {unpackedFolderPath}");
             }
-
-            Directory.CreateDirectory(UnpackedZipFolderPath);
-
-            ZipFile.ExtractToDirectory(installationFilePath, UnpackedZipFolderPath, overwriteFiles: true);
-
-            DeleteDevelopmentConfigurationFiles(new DirectoryInfo(UnpackedZipFolderPath));
         }
     }
 
