@@ -3,6 +3,7 @@
 // ReSharper disable ReturnTypeCanBeEnumerable.Local
 // ReSharper disable StringLiteralTypo
 // ReSharper disable SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+// ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 namespace Atc.Installer.Wpf.ComponentProvider;
 
 [SuppressMessage("Design", "MA0048:File name must match type name", Justification = "OK - partial class")]
@@ -110,7 +111,7 @@ public partial class ComponentProviderViewModel
 
         switch (HostingFramework)
         {
-            case HostingFrameworkType.DonNetFramework48:
+            case HostingFrameworkType.DotNetFramework48:
             {
                 if (InstalledMainFilePath is not null)
                 {
@@ -201,10 +202,21 @@ public partial class ComponentProviderViewModel
 
         UnpackedZipFolderPath = Path.Combine(InstallerTempDirectory.FullName, @$"{ProjectName}\Unpacked\{Name}");
 
-        if (Directory.Exists(UnpackedZipFolderPath) &&
-            Directory.GetFiles(UnpackedZipFolderPath).Length == 0)
+        if (Directory.Exists(UnpackedZipFolderPath))
         {
-            Directory.Delete(UnpackedZipFolderPath, recursive: true);
+            var minimumExpectedNumberOfFiles = 1;
+            if (HostingFramework is
+                HostingFrameworkType.DotNetFramework48 or
+                HostingFrameworkType.DotNet7 or
+                HostingFrameworkType.DotNet8)
+            {
+                minimumExpectedNumberOfFiles = 10;
+            }
+
+            if (Directory.GetFiles(UnpackedZipFolderPath).Length < minimumExpectedNumberOfFiles)
+            {
+                Directory.Delete(UnpackedZipFolderPath, recursive: true);
+            }
         }
 
         if (unpackIfExist ||
@@ -823,7 +835,7 @@ public partial class ComponentProviderViewModel
 
                 switch (HostingFramework)
                 {
-                    case HostingFrameworkType.DonNetFramework48 or
+                    case HostingFrameworkType.DotNetFramework48 or
                         HostingFrameworkType.DotNet7 or
                         HostingFrameworkType.DotNet8:
                     {
@@ -946,7 +958,7 @@ public partial class ComponentProviderViewModel
         {
             case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet7 }:
             case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNet8 }:
-            case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
+            case { ComponentType: ComponentType.Application, HostingFramework: HostingFrameworkType.DotNetFramework48 }:
                 InstalledMainFilePath = new ValueTemplateItemViewModel(
                     Path.Combine(basePath, $"{Name}.exe"),
                     template: instFolderPath,
@@ -960,7 +972,7 @@ public partial class ComponentProviderViewModel
                 break;
             case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet7 }:
             case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNet8 }:
-            case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
+            case { ComponentType: ComponentType.InternetInformationService, HostingFramework: HostingFrameworkType.DotNetFramework48 }:
                 InstalledMainFilePath = new ValueTemplateItemViewModel(
                     Path.Combine(basePath, $"{Name}.dll"),
                     template: instFolderPath,
@@ -974,7 +986,7 @@ public partial class ComponentProviderViewModel
                 break;
             case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet7 }:
             case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNet8 }:
-            case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DonNetFramework48 }:
+            case { ComponentType: ComponentType.WindowsService, HostingFramework: HostingFrameworkType.DotNetFramework48 }:
                 InstalledMainFilePath = new ValueTemplateItemViewModel(
                     Path.Combine(basePath, $"{Name}.exe"),
                     template: instFolderPath,

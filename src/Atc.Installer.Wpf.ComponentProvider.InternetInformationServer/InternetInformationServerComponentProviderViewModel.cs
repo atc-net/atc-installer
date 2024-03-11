@@ -774,7 +774,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     {
         switch (HostingFramework)
         {
-            case HostingFrameworkType.DonNetFramework48:
+            case HostingFrameworkType.DotNetFramework48:
                 if (iisInstallerService.IsMicrosoftDotNetFramework48())
                 {
                     AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");

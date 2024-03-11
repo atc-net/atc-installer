@@ -21,7 +21,7 @@ public class ComponentProviderVersionCompareVisibilityVisibleValueConverter : IV
         }
 
         if (vm.HostingFramework is
-            HostingFrameworkType.DonNetFramework48 or
+            HostingFrameworkType.DotNetFramework48 or
             HostingFrameworkType.DotNet7 or
             HostingFrameworkType.DotNet8)
         {

@@ -529,10 +529,10 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
             case HostingFrameworkType.DotNet8:
                 AddToInstallationPrerequisites("IsMicrosoftDotNet8", LogCategoryType.Warning, "Microsoft .NET 8 is not installed");
                 break;
-            case HostingFrameworkType.DonNetFramework48 when waInstallerService.IsMicrosoftDotNetFramework48():
+            case HostingFrameworkType.DotNetFramework48 when waInstallerService.IsMicrosoftDotNetFramework48():
                 AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Information, "Microsoft .NET Framework 4.8 is installed");
                 break;
-            case HostingFrameworkType.DonNetFramework48:
+            case HostingFrameworkType.DotNetFramework48:
                 AddToInstallationPrerequisites("IsMicrosoftDotNetFramework48", LogCategoryType.Warning, "Microsoft .NET Framework 4.8 is not installed");
                 break;
             case HostingFrameworkType.Native:
