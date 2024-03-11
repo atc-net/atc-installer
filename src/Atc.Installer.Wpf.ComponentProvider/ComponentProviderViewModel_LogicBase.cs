@@ -524,6 +524,69 @@ public partial class ComponentProviderViewModel
         AddLogItem(LogLevel.Information, "Folder permissions is ensured");
     }
 
+    protected void EnsureRegistrySettings()
+    {
+        AddLogItem(LogLevel.Trace, "Ensure registry settings");
+
+        foreach (var vm in RegistrySettings.Items)
+        {
+            var key = vm.Key;
+            if (key.ContainsTemplatePattern())
+            {
+                key = ResolveTemplateIfNeededByApplicationSettingsLookup(key);
+            }
+
+            if (key.StartsWith("HKEY_LOCAL_MACHINE\\", StringComparison.Ordinal))
+            {
+                key = key.Replace("HKEY_LOCAL_MACHINE\\", string.Empty, StringComparison.Ordinal);
+                switch (vm.Action)
+                {
+                    case InsertRemoveType.Insert:
+                        var insertResult = RegistryHelper.CreateSubKeyInLocalMachine(key);
+                        if (!insertResult.IsSucceeded)
+                        {
+                            AddLogItem(LogLevel.Error, insertResult.ErrorMessage!);
+                        }
+
+                        break;
+                    case InsertRemoveType.Remove:
+                        var removeResult = RegistryHelper.DeleteSubKeyTreeInLocalMachine(key);
+                        if (!removeResult.IsSucceeded)
+                        {
+                            AddLogItem(LogLevel.Error, removeResult.ErrorMessage!);
+                        }
+
+                        break;
+                }
+            }
+            else if (key.StartsWith("HKEY_CURRENT_USER\\", StringComparison.Ordinal))
+            {
+                key = key.Replace("HKEY_CURRENT_USER\\", string.Empty, StringComparison.Ordinal);
+                switch (vm.Action)
+                {
+                    case InsertRemoveType.Insert:
+                        var insertResult = RegistryHelper.CreateSubKeyInCurrentUser(key);
+                        if (!insertResult.IsSucceeded)
+                        {
+                            AddLogItem(LogLevel.Error, insertResult.ErrorMessage!);
+                        }
+
+                        break;
+                    case InsertRemoveType.Remove:
+                        var removeResult = RegistryHelper.DeleteSubKeyTreeInCurrentUser(key);
+                        if (!removeResult.IsSucceeded)
+                        {
+                            AddLogItem(LogLevel.Error, removeResult.ErrorMessage!);
+                        }
+
+                        break;
+                }
+            }
+        }
+
+        AddLogItem(LogLevel.Trace, "Registry settings is ensured");
+    }
+
     protected void EnsureFirewallRules()
     {
         AddLogItem(LogLevel.Trace, "Ensure firewall rules");

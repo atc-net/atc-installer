@@ -976,6 +976,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
         EnsureFolderPermissions();
 
+        EnsureRegistrySettings();
+
         EnsureFirewallRules();
 
         if (HostingFramework == HostingFrameworkType.NodeJs)

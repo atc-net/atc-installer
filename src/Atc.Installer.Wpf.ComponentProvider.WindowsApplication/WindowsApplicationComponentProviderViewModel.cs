@@ -796,6 +796,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         EnsureFolderPermissions();
 
+        EnsureRegistrySettings();
+
         EnsureFirewallRules();
 
         if (TryGetStringFromApplicationSettings("WebProtocol", out _))
@@ -886,6 +888,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         EnsureFolderPermissions();
 
+        EnsureRegistrySettings();
+
         EnsureFirewallRules();
 
         InstallationState = ComponentInstallationState.Installed;
@@ -920,6 +924,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         UpdateConfigurationFiles();
 
         EnsureFolderPermissions();
+
+        EnsureRegistrySettings();
 
         EnsureFirewallRules();
 

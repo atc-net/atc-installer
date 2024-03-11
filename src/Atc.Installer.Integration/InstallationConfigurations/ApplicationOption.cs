@@ -26,6 +26,8 @@ public class ApplicationOption
 
     public IList<FolderPermissionOption> FolderPermissions { get; set; } = new List<FolderPermissionOption>();
 
+    public IList<RegistrySettingOption> RegistrySettings { get; set; } = new List<RegistrySettingOption>();
+
     public IList<FirewallRuleOption> FirewallRules { get; set; } = new List<FirewallRuleOption>();
 
     public IList<ConfigurationSettingsFileOption> ConfigurationSettingsFiles { get; set; } = new List<ConfigurationSettingsFileOption>();
