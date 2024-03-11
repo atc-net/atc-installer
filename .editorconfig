@@ -525,9 +525,11 @@ dotnet_diagnostic.IDE0079.severity = none           # dotnet_remove_unnecessary_
 
 dotnet_diagnostic.MA0134.severity = none            # Observe result of async calls
 
+dotnet_diagnostic.S2629.severity = none            	# Don't use string interpolation in logging message templates.
 dotnet_diagnostic.S3267.severity = none            	# Loops should be simplified with 'LINQ' expressions
 dotnet_diagnostic.S4487.severity = none            	# Remove this unread private field
 dotnet_diagnostic.S6602.severity = none            	# "Find" method should be used instead of the "FirstOrDefault"
 dotnet_diagnostic.S6605.severity = none             # Collection-specific "Exists" method should be used instead of the "Any"
+dotnet_diagnostic.S6667.severity = none             # Logging in a catch clause should pass the caught exception as a parameter.
 
 dotnet_diagnostic.SCS0006.severity = none           # Do Not Use Broken Cryptographic Algorithms - Its ok, only using to calculate a file-hash

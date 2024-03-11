@@ -36,6 +36,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
             DefaultApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: true, RefComponentProviders);
             ApplicationSettings = new ApplicationSettingsViewModel(isDefaultApplicationSettings: false, RefComponentProviders);
             FolderPermissions = new FolderPermissionsViewModel();
+            RegistrySettings = new RegistrySettingsViewModel();
             FirewallRules = new FirewallRulesViewModel();
             ConfigurationSettingsFiles = new ConfigurationSettingsFilesViewModel();
         }
@@ -79,6 +80,9 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
 
         FolderPermissions = new FolderPermissionsViewModel();
         FolderPermissions.Populate(this, applicationOption.FolderPermissions);
+
+        RegistrySettings = new RegistrySettingsViewModel();
+        RegistrySettings.Populate(this, applicationOption.RegistrySettings);
 
         FirewallRules = new FirewallRulesViewModel();
         FirewallRules.Populate(this, applicationOption.FirewallRules);
@@ -154,6 +158,8 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     public ApplicationSettingsViewModel ApplicationSettings { get; }
 
     public FolderPermissionsViewModel FolderPermissions { get; }
+
+    public RegistrySettingsViewModel RegistrySettings { get; }
 
     public FirewallRulesViewModel FirewallRules { get; }
 

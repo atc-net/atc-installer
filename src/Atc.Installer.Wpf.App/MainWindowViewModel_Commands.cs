@@ -118,6 +118,7 @@ public partial class MainWindowViewModel
                                         x.DefaultApplicationSettings.IsDirty ||
                                         x.ApplicationSettings.IsDirty ||
                                         x.FolderPermissions.IsDirty ||
+                                        x.RegistrySettings.IsDirty ||
                                         x.FirewallRules.IsDirty ||
                                         x.ConfigurationSettingsFiles.IsDirty));
 
@@ -258,7 +259,7 @@ public partial class MainWindowViewModel
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal),
             Title = "Select a file",
             Filter = "Excel Files|*.xlsx",
-            FileName = ProjectName,
+            FileName = ProjectName ?? "NoName",
         };
 
         if (saveFileDialog.ShowDialog() != true ||

@@ -130,6 +130,15 @@ public static class ConfigurationFileHelper
                 }
             }
 
+            foreach (var customRegistrySetting in customApplication.RegistrySettings)
+            {
+                if (templateApplication.RegistrySettings.FirstOrDefault(x => x.Key == customRegistrySetting.Key) is
+                    null)
+                {
+                    templateApplication.RegistrySettings.Add(customRegistrySetting);
+                }
+            }
+
             foreach (var customFirewallRule in customApplication.FirewallRules)
             {
                 if (templateApplication.FirewallRules.FirstOrDefault(x => x.Name == customFirewallRule.Name) is null)
