@@ -55,7 +55,6 @@ public class RegistrySettingsViewModel : ViewModelBase
         }
     }
 
-
     private void HandleUpdateApplicationOptionsMessage(
         UpdateApplicationOptionsMessage obj)
         => EnableEditingMode = obj.EnableEditingMode;

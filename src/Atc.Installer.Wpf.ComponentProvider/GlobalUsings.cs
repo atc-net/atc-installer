@@ -39,4 +39,3 @@ global using Atc.Wpf.Mvvm;
 
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Logging.Abstractions;
-global using Microsoft.Win32;
