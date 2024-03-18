@@ -39,6 +39,8 @@ global using Atc.Wpf.Command;
 global using Atc.Wpf.Controls.Dialogs;
 global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Controls.Notifications.Messages;
+global using Atc.Wpf.Controls.Options;
+global using Atc.Wpf.Controls.ViewModels;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
 global using Atc.Wpf.Theming.Themes.Dialogs;

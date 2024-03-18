@@ -69,7 +69,7 @@ public partial class App
     {
         services
             .AddOptions<ApplicationOptions>()
-            .Bind(configuration!.GetRequiredSection(ApplicationOptions.SectionName))
+            .Bind(configuration!.GetRequiredSection(BasicApplicationOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -99,7 +99,7 @@ public partial class App
 
         var applicationOptions = new ApplicationOptions();
         configuration!
-            .GetRequiredSection(ApplicationOptions.SectionName)
+            .GetRequiredSection(BasicApplicationOptions.SectionName)
             .Bind(applicationOptions);
 
         Thread.CurrentThread.CurrentUICulture = GlobalizationConstants.EnglishCultureInfo;

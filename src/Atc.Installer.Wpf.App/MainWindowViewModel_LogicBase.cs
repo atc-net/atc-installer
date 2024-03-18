@@ -1,5 +1,8 @@
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable UnusedVariable
+
+using Atc.Wpf.Controls.Helpers;
+
 namespace Atc.Installer.Wpf.App;
 
 [SuppressMessage("Design", "MA0048:File name must match type name", Justification = "OK - partial class")]
@@ -10,39 +13,12 @@ public partial class MainWindowViewModel
 {
     private void LoadRecentOpenFiles()
     {
-        var recentOpenFilesFile = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
-        if (!File.Exists(recentOpenFilesFile))
-        {
-            return;
-        }
+        var recentOpenFileViewModels = RecentOpenFileHelper.Load(App.InstallerProgramDataDirectory);
 
-        try
-        {
-            var json = File.ReadAllText(recentOpenFilesFile);
-
-            var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
-                json,
-                App.JsonSerializerOptions) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
-
-            RecentOpenFiles.Clear();
-
-            RecentOpenFiles.SuppressOnChangedNotification = true;
-            foreach (var recentOpenFile in recentOpenFilesOption.RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
-            {
-                if (!File.Exists(recentOpenFile.FilePath))
-                {
-                    continue;
-                }
-
-                RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, recentOpenFile.TimeStamp, recentOpenFile.FilePath));
-            }
-
-            RecentOpenFiles.SuppressOnChangedNotification = false;
-        }
-        catch
-        {
-            // Skip
-        }
+        RecentOpenFiles.Clear();
+        RecentOpenFiles.SuppressOnChangedNotification = true;
+        RecentOpenFiles.AddRange(recentOpenFileViewModels);
+        RecentOpenFiles.SuppressOnChangedNotification = false;
     }
 
     private void AddLoadedFileToRecentOpenFiles(
@@ -50,36 +26,7 @@ public partial class MainWindowViewModel
     {
         RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, DateTime.Now, file.FullName));
 
-        var recentOpenFilesOption = new RecentOpenFilesOption();
-        foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
-        {
-            var item = new RecentOpenFileOption
-            {
-                TimeStamp = vm.TimeStamp,
-                FilePath = vm.File,
-            };
-
-            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.FilePath == item.FilePath) is not null)
-            {
-                continue;
-            }
-
-            if (!File.Exists(item.FilePath))
-            {
-                continue;
-            }
-
-            recentOpenFilesOption.RecentOpenFiles.Add(item);
-        }
-
-        var recentOpenFilesFilePath = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
-        if (!Directory.Exists(App.InstallerProgramDataDirectory.FullName))
-        {
-            Directory.CreateDirectory(App.InstallerProgramDataDirectory.FullName);
-        }
-
-        var json = JsonSerializer.Serialize(recentOpenFilesOption, App.JsonSerializerOptions);
-        File.WriteAllText(recentOpenFilesFilePath, json);
+        RecentOpenFileHelper.Save(App.InstallerProgramDataProjectsDirectory, RecentOpenFiles);
 
         LoadRecentOpenFiles();
     }
