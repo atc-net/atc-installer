@@ -102,13 +102,9 @@ public partial class App
             .GetRequiredSection(BasicApplicationOptions.SectionName)
             .Bind(applicationOptions);
 
-        Thread.CurrentThread.CurrentUICulture = GlobalizationConstants.EnglishCultureInfo;
+        CultureManager.SetCultures(applicationOptions.Language);
 
-        var theme = string.IsNullOrEmpty(applicationOptions.Theme)
-            ? "Light.Steel"
-            : applicationOptions.Theme;
-
-        ThemeManager.Current.ChangeTheme(Current, theme);
+        ThemeManagerHelper.SetThemeAndAccent(Current, applicationOptions.Theme);
 
         var mainWindow = host
             .Services
