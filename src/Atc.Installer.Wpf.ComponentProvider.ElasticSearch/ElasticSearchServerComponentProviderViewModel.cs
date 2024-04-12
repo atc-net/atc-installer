@@ -7,7 +7,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
     private string? testConnectionResult;
 
     public ElasticSearchServerComponentProviderViewModel(
-        ILogger<ComponentProviderViewModel> logger,
+        ILoggerFactory loggerFactory,
         IElasticSearchServerInstallerService elasticSearchServerInstallerService,
         INetworkShellService networkShellService,
         IWindowsFirewallService windowsFirewallService,
@@ -19,7 +19,7 @@ public partial class ElasticSearchServerComponentProviderViewModel : ComponentPr
         ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            logger,
+            loggerFactory,
             networkShellService,
             windowsFirewallService,
             refComponentProviders,

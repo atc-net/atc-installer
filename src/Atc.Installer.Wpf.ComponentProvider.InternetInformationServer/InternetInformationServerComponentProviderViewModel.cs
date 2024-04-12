@@ -9,7 +9,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     private bool enableEditingMode;
 
     public InternetInformationServerComponentProviderViewModel(
-        ILogger<ComponentProviderViewModel> logger,
+        ILoggerFactory loggerFactory,
         IInternetInformationServerInstallerService internetInformationServerInstallerService,
         INetworkShellService networkShellService,
         IWindowsFirewallService windowsFirewallService,
@@ -20,7 +20,7 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
         ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            logger,
+            loggerFactory,
             networkShellService,
             windowsFirewallService,
             refComponentProviders,

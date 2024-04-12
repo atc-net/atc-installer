@@ -47,7 +47,7 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
     }
 
     public ComponentProviderViewModel(
-        ILogger<ComponentProviderViewModel> logger,
+        ILoggerFactory loggerFactory,
         INetworkShellService networkShellService,
         IWindowsFirewallService windowsFirewallService,
         ObservableCollectionEx<ComponentProviderViewModel> refComponentProviders,
@@ -62,10 +62,10 @@ public partial class ComponentProviderViewModel : ViewModelBase, IComponentProvi
         ArgumentNullException.ThrowIfNull(defaultApplicationSettings);
         ArgumentNullException.ThrowIfNull(applicationOption);
 
-        this.Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        Logger = loggerFactory.CreateLogger<ComponentProviderViewModel>();
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
         this.windowsFirewallService = windowsFirewallService ?? throw new ArgumentNullException(nameof(windowsFirewallService));
-        this.RefComponentProviders = refComponentProviders;
+        RefComponentProviders = refComponentProviders;
         InstallerTempDirectory = installerTempDirectory;
         InstallationDirectory = installationDirectory;
         ProjectName = projectName;

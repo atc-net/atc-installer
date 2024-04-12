@@ -6,7 +6,8 @@ namespace Atc.Installer.Wpf.App;
 [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
 public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowViewModel
 {
-    private readonly ILogger<ComponentProviderViewModel> loggerComponentProvider;
+    private readonly ILoggerFactory loggerFactory;
+    private readonly ILogger<MainWindowViewModel> logger;
     private readonly IGitHubReleaseService gitHubReleaseService;
     private readonly INetworkShellService networkShellService;
     private readonly IWindowsFirewallService windowsFirewallService;
@@ -28,25 +29,26 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
     public MainWindowViewModel()
     {
-        this.loggerComponentProvider = NullLogger<ComponentProviderViewModel>.Instance;
+        loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+        logger = NullLogger<MainWindowViewModel>.Instance;
 
-        this.gitHubReleaseService = new GitHubReleaseService();
+        gitHubReleaseService = new GitHubReleaseService();
 
         var installedAppsInstallerService = new InstalledAppsInstallerService();
-        this.networkShellService = new NetworkShellService();
-        this.windowsFirewallService = new WindowsFirewallService();
+        networkShellService = new NetworkShellService();
+        windowsFirewallService = new WindowsFirewallService();
 
-        this.waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
-        this.iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
+        waInstallerService = new WindowsApplicationInstallerService(installedAppsInstallerService);
+        iisInstallerService = new InternetInformationServerInstallerService(installedAppsInstallerService);
 
-        this.esInstallerService = new ElasticSearchServerInstallerService(waInstallerService, installedAppsInstallerService);
-        this.pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
+        esInstallerService = new ElasticSearchServerInstallerService(waInstallerService, installedAppsInstallerService);
+        pgSqlInstallerService = new PostgreSqlServerInstallerService(waInstallerService, installedAppsInstallerService);
 
-        this.azureStorageAccountInstallerService = new AzureStorageAccountInstallerService();
+        azureStorageAccountInstallerService = new AzureStorageAccountInstallerService();
 
-        this.checkForUpdatesBoxDialogViewModel = new CheckForUpdatesBoxDialogViewModel(gitHubReleaseService);
+        checkForUpdatesBoxDialogViewModel = new CheckForUpdatesBoxDialogViewModel(gitHubReleaseService);
 
-        this.installationDirectory = new DirectoryInfo(Path.Combine(App.InstallerTempDirectory.FullName, "InstallationFiles"));
+        installationDirectory = new DirectoryInfo(Path.Combine(App.InstallerTempDirectory.FullName, "InstallationFiles"));
 
         ApplicationOptions = new ApplicationOptionsViewModel(new ApplicationOptions());
 
@@ -58,7 +60,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         ProjectName = "MyProject";
         ComponentProviders.Add(
             new WindowsApplicationComponentProviderViewModel(
-                NullLogger<ComponentProviderViewModel>.Instance,
+                NullLoggerFactory.Instance,
                 waInstallerService,
                 networkShellService,
                 windowsFirewallService,
@@ -75,7 +77,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         ComponentProviders.Add(
             new InternetInformationServerComponentProviderViewModel(
-                NullLogger<ComponentProviderViewModel>.Instance,
+                NullLoggerFactory.Instance,
                 iisInstallerService,
                 networkShellService,
                 windowsFirewallService,
@@ -92,7 +94,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     }
 
     public MainWindowViewModel(
-        ILogger<ComponentProviderViewModel> loggerComponentProvider,
+        ILoggerFactory loggerFactory,
         IGitHubReleaseService gitHubReleaseService,
         INetworkShellService networkShellService,
         IWindowsFirewallService windowsFirewallService,
@@ -107,18 +109,19 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         ArgumentNullException.ThrowIfNull(applicationOptions);
         var applicationOptionsValue = applicationOptions.Value;
 
-        this.loggerComponentProvider = loggerComponentProvider ?? throw new ArgumentNullException(nameof(loggerComponentProvider));
+        this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+        logger = loggerFactory.CreateLogger<MainWindowViewModel>();
         this.gitHubReleaseService = gitHubReleaseService ?? throw new ArgumentNullException(nameof(gitHubReleaseService));
         this.networkShellService = networkShellService ?? throw new ArgumentNullException(nameof(networkShellService));
         this.windowsFirewallService = windowsFirewallService ?? throw new ArgumentNullException(nameof(windowsFirewallService));
-        this.esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
-        this.iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
-        this.pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
-        this.waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
+        esInstallerService = elasticSearchServerInstallerService ?? throw new ArgumentNullException(nameof(elasticSearchServerInstallerService));
+        iisInstallerService = internetInformationServerInstallerService ?? throw new ArgumentNullException(nameof(internetInformationServerInstallerService));
+        pgSqlInstallerService = postgreSqlServerInstallerService ?? throw new ArgumentNullException(nameof(postgreSqlServerInstallerService));
+        waInstallerService = windowsApplicationInstallerService ?? throw new ArgumentNullException(nameof(windowsApplicationInstallerService));
         this.azureStorageAccountInstallerService = azureStorageAccountInstallerService ?? throw new ArgumentNullException(nameof(azureStorageAccountInstallerService));
         this.checkForUpdatesBoxDialogViewModel = checkForUpdatesBoxDialogViewModel ?? throw new ArgumentNullException(nameof(checkForUpdatesBoxDialogViewModel));
 
-        loggerComponentProvider.Log(LogLevel.Trace, $"Starting {AssemblyHelper.GetSystemName()} - Version: {AssemblyHelper.GetSystemVersion()}");
+        logger.Log(LogLevel.Trace, $"Starting {AssemblyHelper.GetSystemName()} - Version: {AssemblyHelper.GetSystemVersion()}");
 
         ApplicationOptions = new ApplicationOptionsViewModel(applicationOptionsValue);
         Icon = ApplicationOptions.Icon ?? App.DefaultIcon;
@@ -130,7 +133,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
         Messenger.Default.Register<UpdateDefaultApplicationSettingsMessage>(this, HandleUpdateDefaultApplicationSettingsMessage);
 
-        loggerComponentProvider.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
+        logger.Log(LogLevel.Trace, $"{AssemblyHelper.GetSystemName()} is started");
 
         if (ApplicationOptions.OpenRecentFileOnStartup &&
             RecentOpenFiles.Count > 0)
@@ -380,7 +383,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         var vm = new WindowsApplicationComponentProviderViewModel(
-            loggerComponentProvider,
+            loggerFactory,
             waInstallerService,
             networkShellService,
             windowsFirewallService,
@@ -402,7 +405,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         var vm = new ElasticSearchServerComponentProviderViewModel(
-            loggerComponentProvider,
+            loggerFactory,
             esInstallerService,
             networkShellService,
             windowsFirewallService,
@@ -425,7 +428,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         var vm = new InternetInformationServerComponentProviderViewModel(
-            loggerComponentProvider,
+            loggerFactory,
             iisInstallerService,
             networkShellService,
             windowsFirewallService,
@@ -447,7 +450,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
 
         var vm = new PostgreSqlServerComponentProviderViewModel(
-            loggerComponentProvider,
+            loggerFactory,
             pgSqlInstallerService,
             networkShellService,
             windowsFirewallService,
@@ -462,6 +465,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     }
 
     [SuppressMessage("Major Bug", "S2583:Conditionally executed code should be reachable", Justification = "OK.")]
+    [SuppressMessage("Minor Bug", "S4158:Empty collections should not be accessed or iterated", Justification = "OK.")]
     private void Populate(
         FileInfo installationFile,
         InstallationOption installationOptions)

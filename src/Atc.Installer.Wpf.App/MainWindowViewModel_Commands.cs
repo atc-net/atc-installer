@@ -146,7 +146,7 @@ public partial class MainWindowViewModel
 
         IsBusy = true;
 
-        loggerComponentProvider.Log(LogLevel.Trace, "Downloading installation files from Azure StorageAccount");
+        logger.Log(LogLevel.Trace, "Downloading installation files from Azure StorageAccount");
 
         var reloadProjectInstallationFile = false;
         var templateSettingsFileContentHash = GetTemplateSettingsWithInstallationFileContentHash(installationDirectory!);
@@ -201,7 +201,7 @@ public partial class MainWindowViewModel
             vm.PrepareInstallationFiles(unpackIfExist: true);
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
 
-            loggerComponentProvider.Log(LogLevel.Information, $"Downloaded installation file: {fileInfo.Name}");
+            logger.Log(LogLevel.Information, $"Downloaded installation file: {fileInfo.Name}");
             if (vm.UnpackedZipFolderPath is not null)
             {
                 handledUnpackedZipFolderPaths.Add(vm.UnpackedZipFolderPath);
@@ -221,7 +221,7 @@ public partial class MainWindowViewModel
             vm.AnalyzeAndUpdateStatesInBackgroundThread();
         }
 
-        loggerComponentProvider.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
+        logger.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
 
         IsBusy = false;
 

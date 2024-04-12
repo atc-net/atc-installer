@@ -67,7 +67,7 @@ public partial class MainWindowViewModel
     {
         try
         {
-            loggerComponentProvider.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
+            logger.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
 
             StopMonitoringServices();
 
@@ -89,11 +89,11 @@ public partial class MainWindowViewModel
 
             StartMonitoringServices();
 
-            loggerComponentProvider.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
+            logger.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
         }
         catch (Exception ex)
         {
-            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
+            logger.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
         }
     }
@@ -102,7 +102,7 @@ public partial class MainWindowViewModel
     {
         try
         {
-            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
+            logger.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
 
             var installationOption = new InstallationOption();
             if (ProjectName is not null)
@@ -138,7 +138,7 @@ public partial class MainWindowViewModel
                 .SaveInstallationSettings(InstallationFile, installationOption)
                 .ConfigureAwait(true);
 
-            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
+            logger.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
 
             IsDirty = false;
             foreach (var componentProvider in ComponentProviders)
@@ -171,7 +171,7 @@ public partial class MainWindowViewModel
         }
         catch (Exception ex)
         {
-            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {InstallationFile!.FullName}, Error: {ex.Message}");
+            logger.Log(LogLevel.Error, $"Configuration file: {InstallationFile!.FullName}, Error: {ex.Message}");
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
         }
     }
