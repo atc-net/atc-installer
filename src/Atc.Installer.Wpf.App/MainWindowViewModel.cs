@@ -19,6 +19,8 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private readonly ICheckForUpdatesBoxDialogViewModel checkForUpdatesBoxDialogViewModel;
     private readonly ToastNotificationManager notificationManager = new();
     private string? newVersionIsAvailable;
+    private AzureOptionsViewModel? azureOptions;
+    private ApplicationOptionsViewModel applicationOptions = new();
     private DirectoryInfo? installationDirectory;
     private BitmapImage? icon;
     private string? projectName;
@@ -158,9 +160,25 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
     }
 
-    public ApplicationOptionsViewModel ApplicationOptions { get; set; }
+    public ApplicationOptionsViewModel ApplicationOptions
+    {
+        get => applicationOptions;
+        set
+        {
+            applicationOptions = value;
+            RaisePropertyChanged();
+        }
+    }
 
-    public AzureOptionsViewModel? AzureOptions { get; set; }
+    public AzureOptionsViewModel? AzureOptions
+    {
+        get => azureOptions;
+        set
+        {
+            azureOptions = value;
+            RaisePropertyChanged();
+        }
+    }
 
     public ObservableCollectionEx<KeyValueTemplateItemViewModel> DefaultApplicationSettings { get; private set; } = new();
 

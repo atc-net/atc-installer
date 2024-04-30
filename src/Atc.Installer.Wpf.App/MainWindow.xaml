@@ -82,7 +82,13 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Installation">
-                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount">
+                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}">
+                        <MenuItem.Header>
+                            <TextBlock>
+                                <Run Text="Download components from Azure StorageAccount - " />
+                                <Run Text="{Binding Path=AzureOptions.AccountName, Mode=OneWay, FallbackValue='N/A'}" />
+                            </TextBlock>
+                        </MenuItem.Header>
                         <MenuItem.Icon>
                             <Image Source="{Binding Source={x:Static fontIcons:FontMaterialDesignType.Azure}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource BlueBrush}}" />
                         </MenuItem.Icon>

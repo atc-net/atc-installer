@@ -38,6 +38,13 @@ public class AzureOptionsViewModel : ViewModelBase
         }
     }
 
+    public string? AccountName
+        => StorageConnectionString
+            .Split(';')
+            .FirstOrDefault(x => x.StartsWith("AccountName=", StringComparison.OrdinalIgnoreCase))
+            ?.Split('=', StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
+
     public override string ToString()
         => $"{nameof(StorageConnectionString)}: {StorageConnectionString}, {nameof(BlobContainerName)}: {BlobContainerName}";
 }
