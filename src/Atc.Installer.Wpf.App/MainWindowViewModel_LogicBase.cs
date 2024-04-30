@@ -1,8 +1,5 @@
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable UnusedVariable
-
-using Atc.Wpf.Controls.Helpers;
-
 namespace Atc.Installer.Wpf.App;
 
 [SuppressMessage("Design", "MA0048:File name must match type name", Justification = "OK - partial class")]

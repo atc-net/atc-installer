@@ -81,8 +81,9 @@ public partial class MainWindowViewModel
         }
 
         await LoadConfigurationFile(
-            new FileInfo(openFileDialog.FileName),
-            CancellationToken.None).ConfigureAwait(true);
+                new FileInfo(openFileDialog.FileName),
+                CancellationToken.None)
+            .ConfigureAwait(true);
     }
 
     private void OpenApplicationSettingsCommandHandler()

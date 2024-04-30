@@ -13,7 +13,7 @@ public partial class App
     [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "OK.")]
     public static readonly BitmapImage DefaultIcon = new(new Uri("pack://application:,,,/Resources/AppIcon.ico", UriKind.Absolute));
 
-    public static DirectoryInfo InstallerTempDirectory => new(Path.Combine(Path.GetTempPath(), "atc-installer"));
+    public static DirectoryInfo InstallerTempDirectory { get; private set; } = new(Path.Combine(Path.GetTempPath(), "atc-installer"));
 
     public static DirectoryInfo InstallerProgramDataDirectory => new(Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "ATC"), "atc-installer"));
 
@@ -33,12 +33,6 @@ public partial class App
 
     public App()
     {
-        EnsureInstallerDirectoriesIsCreated();
-
-        RestoreInstallerCustomAppSettingsIfNeeded();
-
-        TaskHelper.RunSync(UpdateProjectsInstallerFilesIfNeeded);
-
         host = Host.CreateDefaultBuilder()
             .ConfigureLogging((_, logging) =>
                 {
@@ -60,6 +54,21 @@ public partial class App
             .Build();
 
         ServiceProvider = host.Services;
+
+        if (TryParsePath(
+                host.Services.GetRequiredService<IConfiguration>()["Application:TempPath"],
+                out var directoryInfo))
+        {
+            MoveOldTempPathIfNeeded(InstallerTempDirectory, directoryInfo);
+
+            InstallerTempDirectory = directoryInfo;
+        }
+
+        EnsureInstallerDirectoriesIsCreated();
+
+        RestoreInstallerCustomAppSettingsIfNeeded();
+
+        TaskHelper.RunSync(UpdateProjectsInstallerFilesIfNeeded);
     }
 
     public IServiceProvider ServiceProvider { get; }
@@ -124,6 +133,54 @@ public partial class App
         host.Dispose();
     }
 
+    private static void MoveOldTempPathIfNeeded(
+        DirectoryInfo tempSource,
+        DirectoryInfo tempDestination)
+    {
+        if (tempSource.FullName == tempDestination.FullName ||
+            !Directory.Exists(tempSource.FullName) ||
+            (Directory.GetFiles(tempSource.FullName).Length == 0 &&
+             Directory.GetDirectories(tempSource.FullName).Length == 0))
+        {
+            return;
+        }
+
+        tempDestination.Create();
+
+        foreach (var file in tempSource.GetFiles())
+        {
+            file.MoveTo(
+                Path.Combine(
+                    tempDestination.FullName,
+                    file.Name));
+        }
+
+        foreach (var dir in tempSource.GetDirectories())
+        {
+            var targetDir = new DirectoryInfo(
+                Path.Combine(
+                    tempDestination.FullName,
+                    dir.Name));
+
+            if (!targetDir.Exists)
+            {
+                targetDir.Create();
+            }
+
+            MoveOldTempPathIfNeeded(dir, targetDir);
+
+            if (Directory.Exists(dir.FullName))
+            {
+                dir.Delete(true);
+            }
+        }
+
+        if (Directory.Exists(tempSource.FullName))
+        {
+            tempSource.Delete(true);
+        }
+    }
+
     private static void EnsureInstallerDirectoriesIsCreated()
     {
         if (!InstallerTempDirectory.Exists)
@@ -182,5 +239,30 @@ public partial class App
                 rollingInterval: RollingInterval.Day,
                 formatProvider: GlobalizationConstants.EnglishCultureInfo)
             .CreateLogger();
+    }
+
+    public static bool TryParsePath(
+        string? path,
+        out DirectoryInfo directoryInfo)
+    {
+        directoryInfo = new DirectoryInfo(Path.GetTempPath());
+
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            // This throws an exception if the path contains
+            // invalid characters or is incorrectly formatted.
+            directoryInfo = new DirectoryInfo(Path.GetFullPath(path));
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -37,6 +37,7 @@ global using Atc.Serialization;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;
 global using Atc.Wpf.Controls.Dialogs;
+global using Atc.Wpf.Controls.Helpers;
 global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Controls.Notifications.Messages;
 global using Atc.Wpf.Controls.Options;
