@@ -10,7 +10,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     private readonly IWindowsApplicationInstallerService waInstallerService;
 
     public WindowsApplicationComponentProviderViewModel(
-        ILogger<ComponentProviderViewModel> logger,
+        ILoggerFactory loggerFactory,
         IWindowsApplicationInstallerService windowsApplicationInstallerService,
         INetworkShellService networkShellService,
         IWindowsFirewallService windowsFirewallService,
@@ -21,7 +21,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
         ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            logger,
+            loggerFactory,
             networkShellService,
             windowsFirewallService,
             refComponentProviders,
@@ -164,7 +164,7 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
         if (IsWindowsService)
         {
-            await StartWindowsService();
+            await StartWindowsService().ConfigureAwait(false);
         }
         else
         {

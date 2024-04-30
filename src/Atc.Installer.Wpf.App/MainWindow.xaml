@@ -43,18 +43,19 @@
                             <Image Source="{Binding Source={x:Static fontIcons:FontBootstrapType.File}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource RoyalBlueBrush}}" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="_Recent Files" InputGestureText="Ctrl+R">
-                        <MenuItem.ItemsSource>
-                            <Binding Path="RecentOpenFiles" />
-                        </MenuItem.ItemsSource>
-                        <MenuItem.ItemTemplate>
-                            <DataTemplate>
-                                <MenuItem
-                                    Command="{Binding Path=DataContext.OpenRecentConfigurationFileCommand, RelativeSource={RelativeSource AncestorType={x:Type Menu}}}"
-                                    CommandParameter="{Binding Path=File}"
-                                    Header="{Binding Path=FileDisplay}" />
-                            </DataTemplate>
-                        </MenuItem.ItemTemplate>
+                    <MenuItem
+                        Header="_Recent Files"
+                        InputGestureText="Ctrl+R"
+                        ItemsSource="{Binding RecentOpenFiles}">
+                        <MenuItem.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource AtcApps.Styles.MenuItem}" TargetType="{x:Type MenuItem}">
+                                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                <Setter Property="Header" Value="{Binding Path=FileDisplay}" />
+                                <Setter Property="Command" Value="{Binding ElementName=MainWindowControl, Path=DataContext.OpenRecentConfigurationFileCommand}" />
+                                <Setter Property="CommandParameter" Value="{Binding Path=File}" />
+                            </Style>
+                        </MenuItem.ItemContainerStyle>
                     </MenuItem>
                     <MenuItem
                         Command="{Binding Path=SaveConfigurationFileCommand}"
@@ -81,7 +82,13 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_Installation">
-                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}" Header="_Download components from Azure StorageAccount">
+                    <MenuItem Command="{Binding Path=DownloadInstallationFilesFromAzureStorageAccountCommand}">
+                        <MenuItem.Header>
+                            <TextBlock>
+                                <Run Text="Download components from Azure StorageAccount - " />
+                                <Run Text="{Binding Path=AzureOptions.AccountName, Mode=OneWay, FallbackValue='N/A'}" />
+                            </TextBlock>
+                        </MenuItem.Header>
                         <MenuItem.Icon>
                             <Image Source="{Binding Source={x:Static fontIcons:FontMaterialDesignType.Azure}, Converter={StaticResource FontIconImageSourceValueConverter}, ConverterParameter={StaticResource BlueBrush}}" />
                         </MenuItem.Icon>

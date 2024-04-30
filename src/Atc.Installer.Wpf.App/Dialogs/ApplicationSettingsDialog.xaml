@@ -10,7 +10,7 @@
     x:Name="DialogApplicationSettings"
     Title="Application Settings"
     Width="600"
-    Height="400"
+    Height="500"
     d:DataContext="{d:DesignInstance Type=dialogs:ApplicationSettingsDialogViewModel}"
     ShowCloseButton="False"
     ShowMaxRestoreButton="False"
@@ -61,10 +61,10 @@
                 LabelWidthNumber="150"
                 MinLength="3"
                 Text="{Binding Path=ApplicationOptions.Title}" />
-            <atc:LabelThemeAndAccentColorSelectors LabelWidthNumber="150" />
+            <atc:LabelThemeAndAccentColorSelectors LabelWidthNumber="150" Orientation="Vertical" />
             <atc:LabelCheckBox
                 HideAreas="Validation"
-                IsChecked="{Binding Path=ApplicationOptions.OpenRecentConfigurationFileOnStartup}"
+                IsChecked="{Binding Path=ApplicationOptions.OpenRecentFileOnStartup}"
                 LabelText="Open recent configuration on startup"
                 LabelWidthNumber="210" />
             <atc:LabelCheckBox

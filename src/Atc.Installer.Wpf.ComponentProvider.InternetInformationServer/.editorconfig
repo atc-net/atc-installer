@@ -12,13 +12,6 @@
 dotnet_diagnostic.MA0004.severity = error           # Use Task.ConfigureAwait(false) https://github.com/meziantou/Meziantou.Analyzer/blob/main/docs/Rules/MA0004.md
 dotnet_diagnostic.MA0048.severity = none            # To support partial classes - File will not match type name.
 
-
 ##########################################
 # Custom - Code Analyzers Rules
 ##########################################
-
-dotnet_diagnostic.CA1031.severity = none                # Do not catch general execptions
-
-dotnet_diagnostic.MA0049.severity = none                # File should match
-
-dotnet_diagnostic.S4487.severity = none                	# Remove unread private field

@@ -10,39 +10,12 @@ public partial class MainWindowViewModel
 {
     private void LoadRecentOpenFiles()
     {
-        var recentOpenFilesFile = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
-        if (!File.Exists(recentOpenFilesFile))
-        {
-            return;
-        }
+        var recentOpenFileViewModels = RecentOpenFileHelper.Load(App.InstallerProgramDataDirectory);
 
-        try
-        {
-            var json = File.ReadAllText(recentOpenFilesFile);
-
-            var recentOpenFilesOption = JsonSerializer.Deserialize<RecentOpenFilesOption>(
-                json,
-                App.JsonSerializerOptions) ?? throw new IOException($"Invalid format in {recentOpenFilesFile}");
-
-            RecentOpenFiles.Clear();
-
-            RecentOpenFiles.SuppressOnChangedNotification = true;
-            foreach (var recentOpenFile in recentOpenFilesOption.RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
-            {
-                if (!File.Exists(recentOpenFile.FilePath))
-                {
-                    continue;
-                }
-
-                RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, recentOpenFile.TimeStamp, recentOpenFile.FilePath));
-            }
-
-            RecentOpenFiles.SuppressOnChangedNotification = false;
-        }
-        catch
-        {
-            // Skip
-        }
+        RecentOpenFiles.Clear();
+        RecentOpenFiles.SuppressOnChangedNotification = true;
+        RecentOpenFiles.AddRange(recentOpenFileViewModels);
+        RecentOpenFiles.SuppressOnChangedNotification = false;
     }
 
     private void AddLoadedFileToRecentOpenFiles(
@@ -50,36 +23,7 @@ public partial class MainWindowViewModel
     {
         RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, DateTime.Now, file.FullName));
 
-        var recentOpenFilesOption = new RecentOpenFilesOption();
-        foreach (var vm in RecentOpenFiles.OrderByDescending(x => x.TimeStamp))
-        {
-            var item = new RecentOpenFileOption
-            {
-                TimeStamp = vm.TimeStamp,
-                FilePath = vm.File,
-            };
-
-            if (recentOpenFilesOption.RecentOpenFiles.FirstOrDefault(x => x.FilePath == item.FilePath) is not null)
-            {
-                continue;
-            }
-
-            if (!File.Exists(item.FilePath))
-            {
-                continue;
-            }
-
-            recentOpenFilesOption.RecentOpenFiles.Add(item);
-        }
-
-        var recentOpenFilesFilePath = Path.Combine(App.InstallerProgramDataDirectory.FullName, Constants.RecentOpenFilesFileName);
-        if (!Directory.Exists(App.InstallerProgramDataDirectory.FullName))
-        {
-            Directory.CreateDirectory(App.InstallerProgramDataDirectory.FullName);
-        }
-
-        var json = JsonSerializer.Serialize(recentOpenFilesOption, App.JsonSerializerOptions);
-        File.WriteAllText(recentOpenFilesFilePath, json);
+        RecentOpenFileHelper.Save(App.InstallerProgramDataProjectsDirectory, RecentOpenFiles);
 
         LoadRecentOpenFiles();
     }
@@ -120,7 +64,7 @@ public partial class MainWindowViewModel
     {
         try
         {
-            loggerComponentProvider.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
+            logger.Log(LogLevel.Trace, $"Loading configuration file: {file.FullName}");
 
             StopMonitoringServices();
 
@@ -142,11 +86,11 @@ public partial class MainWindowViewModel
 
             StartMonitoringServices();
 
-            loggerComponentProvider.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
+            logger.Log(LogLevel.Trace, $"Loaded configuration file: {file.FullName}");
         }
         catch (Exception ex)
         {
-            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
+            logger.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
         }
     }
@@ -155,7 +99,7 @@ public partial class MainWindowViewModel
     {
         try
         {
-            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
+            logger.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
 
             var installationOption = new InstallationOption();
             if (ProjectName is not null)
@@ -191,7 +135,7 @@ public partial class MainWindowViewModel
                 .SaveInstallationSettings(InstallationFile, installationOption)
                 .ConfigureAwait(true);
 
-            loggerComponentProvider.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
+            logger.Log(LogLevel.Trace, $"Saving configuration file: {InstallationFile!.FullName}");
 
             IsDirty = false;
             foreach (var componentProvider in ComponentProviders)
@@ -224,7 +168,7 @@ public partial class MainWindowViewModel
         }
         catch (Exception ex)
         {
-            loggerComponentProvider.Log(LogLevel.Error, $"Configuration file: {InstallationFile!.FullName}, Error: {ex.Message}");
+            logger.Log(LogLevel.Error, $"Configuration file: {InstallationFile!.FullName}, Error: {ex.Message}");
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
         }
     }

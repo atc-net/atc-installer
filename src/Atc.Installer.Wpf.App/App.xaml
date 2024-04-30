@@ -12,7 +12,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Atc.Wpf.Controls;component/Styles/Controls.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style BasedOn="{StaticResource AtcApps.Styles.MenuItem}" TargetType="MenuItem">
+            <Style BasedOn="{StaticResource AtcApps.Styles.MenuItem}" TargetType="{x:Type MenuItem}">
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
             </Style>

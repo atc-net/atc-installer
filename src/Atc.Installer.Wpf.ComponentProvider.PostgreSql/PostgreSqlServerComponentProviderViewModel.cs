@@ -7,7 +7,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
     private string? testConnectionResult;
 
     public PostgreSqlServerComponentProviderViewModel(
-        ILogger<ComponentProviderViewModel> logger,
+        ILoggerFactory loggerFactory,
         IPostgreSqlServerInstallerService postgreSqlServerInstallerService,
         INetworkShellService networkShellService,
         IWindowsFirewallService windowsFirewallService,
@@ -19,7 +19,7 @@ public partial class PostgreSqlServerComponentProviderViewModel : ComponentProvi
         ObservableCollectionEx<KeyValueTemplateItemViewModel> defaultApplicationSettings,
         ApplicationOption applicationOption)
         : base(
-            logger,
+            loggerFactory,
             networkShellService,
             windowsFirewallService,
             refComponentProviders,

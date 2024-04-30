@@ -15,11 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Atc" Version="2.0.433" />
-    <PackageReference Include="Atc.Wpf" Version="2.0.468" />
-    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.468" />
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.468" />
-    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.468" />
+    <PackageReference Include="Atc" Version="2.0.472" />
+    <PackageReference Include="Atc.Wpf" Version="2.0.505" />
+    <PackageReference Include="Atc.Wpf.Controls" Version="2.0.505" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.505" />
+    <PackageReference Include="Atc.Wpf.Theming" Version="2.0.505" />
   </ItemGroup>
 
   <ItemGroup>

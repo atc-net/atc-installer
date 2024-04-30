@@ -5,7 +5,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
     private string title = string.Empty;
     private string theme = string.Empty;
     private BitmapImage? icon;
-    private bool openRecentConfigurationFileOnStartup;
+    private bool openRecentFileOnStartup;
     private bool enableEditingMode;
     private bool showOnlyBaseSettings;
 
@@ -21,7 +21,7 @@ public class ApplicationOptionsViewModel : ViewModelBase
         title = applicationOptions.Title;
         theme = applicationOptions.Theme;
         icon = Atc.Wpf.Helpers.BitmapImageHelper.ConvertFromBase64(applicationOptions.Icon);
-        openRecentConfigurationFileOnStartup = applicationOptions.OpenRecentConfigurationFileOnStartup;
+        openRecentFileOnStartup = applicationOptions.OpenRecentFileOnStartup;
         enableEditingMode = applicationOptions.EnableEditingMode;
         showOnlyBaseSettings = applicationOptions.ShowOnlyBaseSettings;
     }
@@ -60,17 +60,17 @@ public class ApplicationOptionsViewModel : ViewModelBase
         }
     }
 
-    public bool OpenRecentConfigurationFileOnStartup
+    public bool OpenRecentFileOnStartup
     {
-        get => openRecentConfigurationFileOnStartup;
+        get => openRecentFileOnStartup;
         set
         {
-            if (value == openRecentConfigurationFileOnStartup)
+            if (value == openRecentFileOnStartup)
             {
                 return;
             }
 
-            openRecentConfigurationFileOnStartup = value;
+            openRecentFileOnStartup = value;
             IsDirty = true;
             RaisePropertyChanged();
         }

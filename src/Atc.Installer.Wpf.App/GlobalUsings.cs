@@ -37,12 +37,16 @@ global using Atc.Serialization;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Command;
 global using Atc.Wpf.Controls.Dialogs;
+global using Atc.Wpf.Controls.Helpers;
 global using Atc.Wpf.Controls.Notifications;
 global using Atc.Wpf.Controls.Notifications.Messages;
+global using Atc.Wpf.Controls.Options;
+global using Atc.Wpf.Controls.ViewModels;
 global using Atc.Wpf.Messaging;
 global using Atc.Wpf.Mvvm;
+global using Atc.Wpf.Theming.Helpers;
 global using Atc.Wpf.Theming.Themes.Dialogs;
-
+global using Atc.Wpf.Translation;
 global using ClosedXML.Excel;
 
 global using ControlzEx.Theming;
