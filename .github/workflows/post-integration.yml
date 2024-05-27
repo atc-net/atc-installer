@@ -35,6 +35,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: 📐 Clear NuGet Cache
+        run: dotnet nuget locals all --clear
+
       - name: ⚙️ Set up JDK 17
         uses: actions/setup-java@v3
         with:

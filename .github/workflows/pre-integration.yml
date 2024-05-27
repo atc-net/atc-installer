@@ -21,6 +21,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: 📐 Clear NuGet Cache
+        run: dotnet nuget locals all --clear
+
       - name: 📐 Ensure nuget.org added as package source on Windows
         run: dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org --configfile $env:APPDATA\NuGet\NuGet.Config
         continue-on-error: true
