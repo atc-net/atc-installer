@@ -87,6 +87,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public override async Task ServiceStopCommandHandler()
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceStopCommandHandler())
         {
             return;
@@ -153,6 +155,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public override async Task ServiceStartCommandHandler()
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceStartCommandHandler())
         {
             return;
@@ -217,6 +221,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
 
     public override async Task ServiceRemoveCommandHandler()
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceRemoveCommandHandler())
         {
             return;
@@ -639,6 +645,8 @@ public class WindowsApplicationComponentProviderViewModel : ComponentProviderVie
     private async Task ServiceDeployAndStart(
         bool useAutoStart)
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceDeployCommandHandler())
         {
             return;

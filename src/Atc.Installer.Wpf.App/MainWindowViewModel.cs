@@ -18,6 +18,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
     private readonly IAzureStorageAccountInstallerService azureStorageAccountInstallerService;
     private readonly ICheckForUpdatesBoxDialogViewModel checkForUpdatesBoxDialogViewModel;
     private readonly ToastNotificationManager notificationManager = new();
+    private DateTime lastUserActionTimestamp = DateTime.Now;
     private string? newVersionIsAvailable;
     private AzureOptionsViewModel? azureOptions;
     private ApplicationOptionsViewModel applicationOptions = new();
@@ -131,6 +132,7 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         LoadRecentOpenFiles();
 
+        Messenger.Default.Register<UpdateUserActionTimestampMessage>(this, HandleUpdateUserActionTimestampMessage);
         Messenger.Default.Register<ToastNotificationMessage>(this, HandleToastNotificationMessage);
         Messenger.Default.Register<RefreshSelectedComponentProviderMessage>(this, HandleRefreshSelectedComponentProviderMessage);
         Messenger.Default.Register<UpdateDefaultApplicationSettingsMessage>(this, HandleUpdateDefaultApplicationSettingsMessage);
@@ -145,6 +147,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
 
         Task.Factory.StartNew(
             async () => await CheckForUpdates().ConfigureAwait(false),
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+
+        Task.Factory.StartNew(
+            async () => await CheckInactivityAndShutdown().ConfigureAwait(false),
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
@@ -280,6 +288,12 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
         }
     }
 
+    private void HandleUpdateUserActionTimestampMessage(
+        UpdateUserActionTimestampMessage obj)
+    {
+        lastUserActionTimestamp = DateTime.Now;
+    }
+
     private void HandleToastNotificationMessage(
         ToastNotificationMessage obj)
     {
@@ -356,6 +370,36 @@ public partial class MainWindowViewModel : MainWindowViewModelBase, IMainWindowV
             lv.GreaterThan(cv))
         {
             NewVersionIsAvailable = "New version of the installer is available";
+        }
+    }
+
+    private async Task CheckInactivityAndShutdown()
+    {
+        while (true)
+        {
+            if (cancellationTokenSource is null)
+            {
+                continue;
+            }
+
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                break;
+            }
+
+            await Task
+                .Delay(TimeSpan.FromSeconds(30), cancellationTokenSource.Token)
+                .ConfigureAwait(false);
+
+            if (lastUserActionTimestamp.DateTimeDiff(
+                    DateTime.Now,
+                    DateTimeDiffCompareType.Minutes) <= 30)
+            {
+                continue;
+            }
+
+            logger.Log(LogLevel.Information, "Shutdown due to inactivity");
+            await Application.Current.Dispatcher.InvokeAsync(() => Application.Current.Shutdown());
         }
     }
 

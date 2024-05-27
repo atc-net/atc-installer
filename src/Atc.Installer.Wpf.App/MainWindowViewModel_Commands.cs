@@ -67,6 +67,8 @@ public partial class MainWindowViewModel
 
     private async Task OpenConfigurationFileCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         var openFileDialog = new OpenFileDialog
         {
             InitialDirectory = App.InstallerProgramDataProjectsDirectory.FullName,
@@ -88,6 +90,8 @@ public partial class MainWindowViewModel
 
     private void OpenApplicationSettingsCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         var vm = new ApplicationSettingsDialogViewModel(ApplicationOptions);
         var dialogResult = new ApplicationSettingsDialog(vm).ShowDialog();
         if (!dialogResult.HasValue)
@@ -135,6 +139,8 @@ public partial class MainWindowViewModel
 
     private async Task DownloadInstallationFilesFromAzureStorageAccountCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         if (!CanDownloadInstallationFilesFromAzureStorageAccountCommandHandler())
         {
             return;
@@ -245,6 +251,8 @@ public partial class MainWindowViewModel
 
     private async Task ReportingToExcelCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         if (!CanReportingToExcelCommandHandler())
         {
             return;
@@ -332,6 +340,8 @@ public partial class MainWindowViewModel
 
     private void OpenApplicationAboutCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         // ReSharper disable once UseObjectOrCollectionInitializer
         var aboutBoxDialog = new AboutBoxDialog();
         aboutBoxDialog.IconImage.Source = ApplicationOptions.Icon ?? App.DefaultIcon;
@@ -343,6 +353,8 @@ public partial class MainWindowViewModel
 
     private Task ServiceStopSelectedCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
@@ -360,6 +372,8 @@ public partial class MainWindowViewModel
 
     private Task ServiceDeploySelectedCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
@@ -377,6 +391,8 @@ public partial class MainWindowViewModel
 
     private Task ServiceRemoveSelectedCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
@@ -394,6 +410,8 @@ public partial class MainWindowViewModel
 
     private Task ServiceStartSelectedCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         var tasks = new List<Task>();
         foreach (var vm in ComponentProviders)
         {
@@ -408,6 +426,8 @@ public partial class MainWindowViewModel
 
     private void ApplicationExitCommandHandler()
     {
+        lastUserActionTimestamp = DateTime.Now;
+
         if (CanSaveConfigurationFileCommandHandler())
         {
             var dialogBox = new QuestionDialogBox(

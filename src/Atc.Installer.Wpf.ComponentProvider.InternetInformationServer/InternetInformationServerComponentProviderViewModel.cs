@@ -285,6 +285,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override async Task ServiceStopCommandHandler()
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceStopCommandHandler())
         {
             return;
@@ -346,6 +348,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
 
     public override async Task ServiceStartCommandHandler()
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceStartCommandHandler())
         {
             return;
@@ -697,6 +701,8 @@ public class InternetInformationServerComponentProviderViewModel : ComponentProv
     private async Task ServiceDeployAndStart(
         bool useAutoStart)
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         if (!CanServiceDeployCommandHandler())
         {
             return;
