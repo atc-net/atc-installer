@@ -8,9 +8,11 @@ global using Atc.Helpers;
 global using Atc.Installer.Integration;
 global using Atc.Installer.Integration.InstallationConfigurations;
 global using Atc.Installer.Integration.WindowsApplication;
+global using Atc.Installer.Wpf.ComponentProvider.Messages;
 global using Atc.Installer.Wpf.ComponentProvider.ViewModels;
 global using Atc.Serialization;
 global using Atc.Wpf.Collections;
 global using Atc.Wpf.Controls.Notifications;
+global using Atc.Wpf.Messaging;
 
 global using Microsoft.Extensions.Logging;

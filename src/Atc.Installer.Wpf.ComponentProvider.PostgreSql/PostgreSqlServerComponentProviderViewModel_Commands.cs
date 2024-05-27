@@ -21,6 +21,8 @@ public partial class PostgreSqlServerComponentProviderViewModel
 
     private async Task TestConnectionCommandHandler()
     {
+        Messenger.Default.Send(new UpdateUserActionTimestampMessage());
+
         AddLogItem(LogLevel.Trace, "Test connection");
 
         IsBusy = true;

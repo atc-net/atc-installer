@@ -33,6 +33,8 @@ public partial class App
 
     public App()
     {
+        RestoreInstallerCustomAppSettingsIfNeeded();
+
         host = Host.CreateDefaultBuilder()
             .ConfigureLogging((_, logging) =>
                 {
@@ -65,8 +67,6 @@ public partial class App
         }
 
         EnsureInstallerDirectoriesIsCreated();
-
-        RestoreInstallerCustomAppSettingsIfNeeded();
 
         TaskHelper.RunSync(UpdateProjectsInstallerFilesIfNeeded);
     }
