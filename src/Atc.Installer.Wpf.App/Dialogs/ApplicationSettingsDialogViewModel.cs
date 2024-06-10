@@ -48,11 +48,11 @@ public class ApplicationSettingsDialogViewModel : ViewModelBase, IApplicationSet
             if (file.Exists)
             {
                 var dynamicJson = new DynamicJson(file);
-                dynamicJson.SetValue("Application.Title", ApplicationOptions.Title);
-                dynamicJson.SetValue("Application.Theme", ApplicationOptions.Theme);
-                dynamicJson.SetValue("Application.OpenRecentConfigurationFileOnStartup", ApplicationOptions.OpenRecentFileOnStartup);
-                dynamicJson.SetValue("Application.EnableEditingMode", ApplicationOptions.EnableEditingMode);
-                dynamicJson.SetValue("Application.ShowOnlyBaseSettings", ApplicationOptions.ShowOnlyBaseSettings);
+                dynamicJson.SetValue($"Application.{nameof(ApplicationOptions.Title)}", ApplicationOptions.Title);
+                dynamicJson.SetValue($"Application.{nameof(ApplicationOptions.Theme)}", ApplicationOptions.Theme);
+                dynamicJson.SetValue($"Application.{nameof(ApplicationOptions.OpenRecentFileOnStartup)}", ApplicationOptions.OpenRecentFileOnStartup);
+                dynamicJson.SetValue($"Application.{nameof(ApplicationOptions.EnableEditingMode)}", ApplicationOptions.EnableEditingMode);
+                dynamicJson.SetValue($"Application.{nameof(ApplicationOptions.ShowOnlyBaseSettings)}", ApplicationOptions.ShowOnlyBaseSettings);
                 File.WriteAllText(file.FullName, dynamicJson.ToJson());
 
                 File.Copy(
