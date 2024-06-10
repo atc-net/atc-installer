@@ -27,7 +27,7 @@ public partial class MainWindow
         if (MainWindowControl.Width >= SystemParameters.PrimaryScreenWidth ||
             MainWindowControl.Height >= SystemParameters.PrimaryScreenHeight)
         {
-            vm!.WindowState = WindowState.Maximized;
+            vm.WindowState = WindowState.Maximized;
         }
     }
 
