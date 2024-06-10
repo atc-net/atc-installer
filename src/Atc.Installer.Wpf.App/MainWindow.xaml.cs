@@ -23,6 +23,12 @@ public partial class MainWindow
     {
         var vm = DataContext as IMainWindowViewModel;
         vm!.OnLoaded(this, e);
+
+        if (MainWindowControl.Width >= SystemParameters.PrimaryScreenWidth ||
+            MainWindowControl.Height >= SystemParameters.PrimaryScreenHeight)
+        {
+            vm!.WindowState = WindowState.Maximized;
+        }
     }
 
     private void OnClosing(
