@@ -1,6 +1,6 @@
 # ATC coding rules - https://github.com/atc-net/atc-coding-rules
-# Version: 1.0.0
-# Updated: 27-03-2024
+# Version: 1.0.1
+# Updated: 03-06-2024
 # Location: blazor
 # Distribution: Frameworks
 
@@ -10,6 +10,7 @@
 [*.{cs}]
 
 dotnet_diagnostic.MA0048.severity = none            # To support code-behind [component].razor.cs files / Inherit from ComponentBase - File will not match type name.
+
 
 ##########################################
 # Custom - Code Analyzers Rules
