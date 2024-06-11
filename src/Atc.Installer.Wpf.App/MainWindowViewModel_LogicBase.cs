@@ -23,7 +23,7 @@ public partial class MainWindowViewModel
     {
         RecentOpenFiles.Add(new RecentOpenFileViewModel(App.InstallerProgramDataProjectsDirectory, DateTime.Now, file.FullName));
 
-        RecentOpenFileHelper.Save(App.InstallerProgramDataProjectsDirectory, RecentOpenFiles);
+        RecentOpenFileHelper.Save(App.InstallerProgramDataDirectory, RecentOpenFiles);
 
         LoadRecentOpenFiles();
     }
