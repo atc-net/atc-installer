@@ -10,12 +10,16 @@ public partial class MainWindowViewModel
 {
     private void LoadRecentOpenFiles()
     {
+        logger.Log(LogLevel.Trace, "Load RecentOpenFiles");
+
         var recentOpenFileViewModels = RecentOpenFileHelper.Load(App.InstallerProgramDataDirectory);
 
         RecentOpenFiles.Clear();
         RecentOpenFiles.SuppressOnChangedNotification = true;
         RecentOpenFiles.AddRange(recentOpenFileViewModels);
         RecentOpenFiles.SuppressOnChangedNotification = false;
+
+        logger.Log(LogLevel.Trace, $"Loaded RecentOpenFiles: {recentOpenFileViewModels.Count}");
     }
 
     private void AddLoadedFileToRecentOpenFiles(
@@ -91,7 +95,17 @@ public partial class MainWindowViewModel
         catch (Exception ex)
         {
             logger.Log(LogLevel.Error, $"Configuration file: {file.FullName}, Error: {ex.Message}");
-            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+
+            var dialogBox = new InfoDialogBox(
+                Application.Current.MainWindow!,
+                new DialogBoxSettings(DialogBoxType.Ok, LogCategoryType.Error)
+                {
+                    TitleBarText = "Error",
+                    Width = 480,
+                    Height = 220,
+                },
+                $"Load configuration file:{Environment.NewLine}{Environment.NewLine}{ex.Message}");
+            dialogBox.ShowDialog();
         }
     }
 
@@ -169,7 +183,17 @@ public partial class MainWindowViewModel
         catch (Exception ex)
         {
             logger.Log(LogLevel.Error, $"Configuration file: {InstallationFile!.FullName}, Error: {ex.Message}");
-            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+
+            var dialogBox = new InfoDialogBox(
+                Application.Current.MainWindow!,
+                new DialogBoxSettings(DialogBoxType.Ok, LogCategoryType.Error)
+                {
+                    TitleBarText = "Error",
+                    Width = 480,
+                    Height = 220,
+                },
+                $"Save configuration file:{Environment.NewLine}{Environment.NewLine}{ex.Message}");
+            dialogBox.ShowDialog();
         }
     }
 
