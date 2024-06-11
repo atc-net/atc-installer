@@ -156,79 +156,98 @@ public partial class MainWindowViewModel
         logger.Log(LogLevel.Trace, "Downloading installation files from Azure StorageAccount");
 
         var reloadProjectInstallationFile = false;
-        var templateSettingsFileContentHash = GetTemplateSettingsWithInstallationFileContentHash(installationDirectory!);
-        if (templateSettingsFileContentHash is not null)
-        {
-            var projectNameTerms = ProjectName!.Split('.', StringSplitOptions.RemoveEmptyEntries);
 
-            var list = new List<(string ComponentName, string? ContentHash)>
+        try
+        {
+            var templateSettingsFileContentHash = GetTemplateSettingsWithInstallationFileContentHash(installationDirectory!);
+            if (templateSettingsFileContentHash is not null)
+            {
+                var projectNameTerms = ProjectName!.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+                var list = new List<(string ComponentName, string? ContentHash)>
             {
                 ("Settings", templateSettingsFileContentHash),
                 ($"{projectNameTerms[0]}.Settings", templateSettingsFileContentHash),
             };
 
-            if (projectNameTerms.Length > 1)
-            {
-                list.Add(($"{projectNameTerms[0]}.{projectNameTerms[1]}.Settings", templateSettingsFileContentHash));
+                if (projectNameTerms.Length > 1)
+                {
+                    list.Add(($"{projectNameTerms[0]}.{projectNameTerms[1]}.Settings", templateSettingsFileContentHash));
+                }
+
+                var files = await azureStorageAccountInstallerService
+                    .DownloadLatestFilesByNames(
+                        AzureOptions!.StorageConnectionString,
+                        AzureOptions!.BlobContainerName,
+                        installationDirectory!.FullName,
+                        list)
+                    .ConfigureAwait(true);
+
+                if (files.Any())
+                {
+                    reloadProjectInstallationFile = await ConfigurationFileHelper
+                        .UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(installationDirectory)
+                        .ConfigureAwait(true);
+                }
             }
 
-            var files = await azureStorageAccountInstallerService
+            var componentFiles = await azureStorageAccountInstallerService
                 .DownloadLatestFilesByNames(
                     AzureOptions!.StorageConnectionString,
                     AzureOptions!.BlobContainerName,
                     installationDirectory!.FullName,
-                    list)
+                    GetComponentsWithInstallationFileContentHash())
                 .ConfigureAwait(true);
 
-            if (files.Any())
+            var handledUnpackedZipFolderPaths = new List<string>();
+            foreach (var vm in ComponentProviders)
             {
-                reloadProjectInstallationFile = await ConfigurationFileHelper
-                    .UpdateInstallationSettingsFromCustomAndTemplateSettingsIfNeeded(installationDirectory)
-                    .ConfigureAwait(true);
+                var fileInfo = componentFiles.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
+                if (fileInfo is null)
+                {
+                    continue;
+                }
+
+                vm.PrepareInstallationFiles(unpackIfExist: true);
+                vm.AnalyzeAndUpdateStatesInBackgroundThread();
+
+                logger.Log(LogLevel.Information, $"Downloaded installation file: {fileInfo.Name}");
+                if (vm.UnpackedZipFolderPath is not null)
+                {
+                    handledUnpackedZipFolderPaths.Add(vm.UnpackedZipFolderPath);
+                }
             }
+
+            foreach (var vm in ComponentProviders)
+            {
+                if (vm.UnpackedZipFolderPath is null ||
+                    handledUnpackedZipFolderPaths.Contains(vm.UnpackedZipFolderPath, StringComparer.Ordinal) ||
+                    DirectoryHelper.ExistsAndContainsFiles(vm.UnpackedZipFolderPath))
+                {
+                    continue;
+                }
+
+                vm.PrepareInstallationFiles(unpackIfExist: true);
+                vm.AnalyzeAndUpdateStatesInBackgroundThread();
+            }
+
+            logger.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
         }
-
-        var componentFiles = await azureStorageAccountInstallerService
-            .DownloadLatestFilesByNames(
-                AzureOptions!.StorageConnectionString,
-                AzureOptions!.BlobContainerName,
-                installationDirectory!.FullName,
-                GetComponentsWithInstallationFileContentHash())
-            .ConfigureAwait(true);
-
-        var handledUnpackedZipFolderPaths = new List<string>();
-        foreach (var vm in ComponentProviders)
+        catch (Exception ex)
         {
-            var fileInfo = componentFiles.FirstOrDefault(x => x.Name.StartsWith(vm.Name, StringComparison.OrdinalIgnoreCase));
-            if (fileInfo is null)
-            {
-                continue;
-            }
+            logger.Log(LogLevel.Error, ex, $"Error downloading installation files from Azure StorageAccount: {ex.Message}");
 
-            vm.PrepareInstallationFiles(unpackIfExist: true);
-            vm.AnalyzeAndUpdateStatesInBackgroundThread();
-
-            logger.Log(LogLevel.Information, $"Downloaded installation file: {fileInfo.Name}");
-            if (vm.UnpackedZipFolderPath is not null)
-            {
-                handledUnpackedZipFolderPaths.Add(vm.UnpackedZipFolderPath);
-            }
+            var dialogBox = new InfoDialogBox(
+                Application.Current.MainWindow!,
+                new DialogBoxSettings(DialogBoxType.Ok, LogCategoryType.Error)
+                {
+                    TitleBarText = "Error",
+                    Width = 480,
+                    Height = 220,
+                },
+                $"Error downloading installation files from Azure StorageAccount:{Environment.NewLine}{Environment.NewLine}{ex.Message}");
+            dialogBox.ShowDialog();
         }
-
-        foreach (var vm in ComponentProviders)
-        {
-            if (vm.UnpackedZipFolderPath is null ||
-                handledUnpackedZipFolderPaths.Contains(vm.UnpackedZipFolderPath, StringComparer.Ordinal) ||
-                DirectoryHelper.ExistsAndContainsFiles(vm.UnpackedZipFolderPath))
-            {
-                continue;
-            }
-
-            vm.PrepareInstallationFiles(unpackIfExist: true);
-            vm.AnalyzeAndUpdateStatesInBackgroundThread();
-        }
-
-        logger.Log(LogLevel.Trace, "Downloaded installation files from Azure StorageAccount");
 
         IsBusy = false;
 

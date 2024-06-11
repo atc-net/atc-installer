@@ -45,7 +45,7 @@
   <ItemGroup>
     <!--<PackageReference Include="Atc.Wpf" Version="2.0.468" />
     <PackageReference Include="Atc.Wpf.Controls" Version="2.0.468" />-->
-    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.505" />
+    <PackageReference Include="Atc.Wpf.FontIcons" Version="2.0.517" />
     <!--<PackageReference Include="Atc.Wpf.Theming" Version="2.0.468" />-->
     <PackageReference Include="ClosedXML" Version="0.104.0-preview2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
@@ -53,7 +53,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog" Version="4.0.0" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00968" />

@@ -15,32 +15,25 @@ public class AzureStorageAccountInstallerService : IAzureStorageAccountInstaller
         ArgumentException.ThrowIfNullOrEmpty(downloadFolder);
         ArgumentNullException.ThrowIfNull(components);
 
-        try
-        {
-            var blobServiceClient = new BlobServiceClient(storageConnectionString);
-            var blobContainerClient = blobServiceClient.GetBlobContainerClient(blobContainerName);
-            var blobContainerExist = await blobContainerClient
-                .ExistsAsync()
-                .ConfigureAwait(true);
+        var blobServiceClient = new BlobServiceClient(storageConnectionString);
+        var blobContainerClient = blobServiceClient.GetBlobContainerClient(blobContainerName);
+        var blobContainerExist = await blobContainerClient
+            .ExistsAsync()
+            .ConfigureAwait(true);
 
-            if (!blobContainerExist)
-            {
-                return new List<FileInfo>();
-            }
-
-            var blobsToDownload = GetBlobsToDownload(blobContainerClient, components);
-            return blobsToDownload.Count > 0
-                ? await HandleFileDownloads(
-                        downloadFolder,
-                        blobsToDownload,
-                        blobContainerClient)
-                    .ConfigureAwait(true)
-                : new List<FileInfo>();
-        }
-        catch
+        if (!blobContainerExist)
         {
             return new List<FileInfo>();
         }
+
+        var blobsToDownload = GetBlobsToDownload(blobContainerClient, components);
+        return blobsToDownload.Count > 0
+            ? await HandleFileDownloads(
+                    downloadFolder,
+                    blobsToDownload,
+                    blobContainerClient)
+                .ConfigureAwait(true)
+            : new List<FileInfo>();
     }
 
     private static List<string> GetBlobsToDownload(
