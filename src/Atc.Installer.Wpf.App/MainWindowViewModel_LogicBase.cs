@@ -241,7 +241,7 @@ public partial class MainWindowViewModel
         using var md5 = MD5.Create();
         using var stream = File.OpenRead(file.FullName);
         var hash = md5.ComputeHash(stream);
-        return BitConverter.ToString(hash).Replace("-", string.Empty, StringComparison.Ordinal);
+        return Convert.ToHexString(hash);
     }
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
