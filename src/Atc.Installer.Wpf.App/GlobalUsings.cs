@@ -5,6 +5,7 @@ global using System.IO;
 global using System.Reflection;
 global using System.Runtime.CompilerServices;
 global using System.Security.Cryptography;
+global using System.Text.Encodings.Web;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
 global using System.Windows;

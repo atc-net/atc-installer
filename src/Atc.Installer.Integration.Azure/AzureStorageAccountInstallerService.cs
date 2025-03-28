@@ -136,7 +136,6 @@ public class AzureStorageAccountInstallerService : IAzureStorageAccountInstaller
         string base64)
     {
         var bytes = Convert.FromBase64String(base64);
-        var hex = BitConverter.ToString(bytes).Replace("-", string.Empty, StringComparison.Ordinal);
-        return hex;
+        return Convert.ToHexString(bytes);
     }
 }

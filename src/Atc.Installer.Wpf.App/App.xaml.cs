@@ -1,4 +1,5 @@
 // ReSharper disable NotAccessedField.Local
+// ReSharper disable AsyncVoidMethod
 namespace Atc.Installer.Wpf.App;
 
 /// <summary>
@@ -27,6 +28,7 @@ public partial class App
         {
             var jsonSerializerOptions = JsonSerializerOptionsFactory.Create();
             jsonSerializerOptions.PropertyNamingPolicy = null;
+            jsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
             return jsonSerializerOptions;
         }
     }
